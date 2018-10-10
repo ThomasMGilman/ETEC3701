@@ -1,0 +1,31 @@
+ENTRY (_main)
+SECTIONS {
+
+    . = 0x100000 ;      /*Load address*/
+    
+    .text : {
+        _textStart = .;  /*start of text section (alternate name)*/    
+        *(.text)        /*program code*/
+        *(.rodata)      /*read only data*/
+        *(.rdata)       /*read only data*/
+        *(.rdata$zzz)   /*read only data*/
+        _textEnd = .;    /*end of text section*/
+        
+        . = ALIGN( ABSOLUTE(.) , 0x1000 );      /* pad to a 4K boundary */
+
+        _dataStart = .;
+        *(.data) 
+        _dataEnd = .;
+        
+        _bssStart = . ; 
+        *(COMMON) 
+        *(.bss)  
+        _bssEnd = .;
+    } 
+    
+    /DISCARD/ : {
+        *(.eh_frame)
+        *(.comment)
+    }
+    
+}

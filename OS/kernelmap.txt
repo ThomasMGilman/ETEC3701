@@ -1,0 +1,173 @@
+
+Allocating common symbols
+Common symbol       size              file
+
+mbi                 0x4               console.o
+framebuffer         0x4               console.o
+decl2               0x200             testsuite.o
+buff                0x80              console.o
+lastCharDrawn       0x1               console.o
+SB                  0x400             kernelmain.o
+
+Discarded input sections
+
+ .eh_frame      0x0000000000000000       0x34 kernelmain.o
+ .eh_frame      0x0000000000000000       0x38 stdarg.o
+ .eh_frame      0x0000000000000000      0x190 console.o
+ .eh_frame      0x0000000000000000      0x178 util.o
+ .eh_frame      0x0000000000000000       0xc8 kprintf.o
+ .eh_frame      0x0000000000000000       0x38 testsuite.o
+ .eh_frame      0x0000000000000000       0xf8 disk.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+                0x0000000000400000                __image_base__ = 0x400000
+                0x0000000000000000                __dll__ = 0x0
+                0x0000000000400000                ___ImageBase = 0x400000
+                0x0000000000001000                __section_alignment__ = 0x1000
+                0x0000000000000200                __file_alignment__ = 0x200
+                0x0000000000000004                __major_os_version__ = 0x4
+                0x0000000000000000                __minor_os_version__ = 0x0
+                0x0000000000000001                __major_image_version__ = 0x1
+                0x0000000000000000                __minor_image_version__ = 0x0
+                0x0000000000000004                __major_subsystem_version__ = 0x4
+                0x0000000000000000                __minor_subsystem_version__ = 0x0
+                0x0000000000000003                __subsystem__ = 0x3
+                0x0000000000200000                __size_of_stack_reserve__ = 0x200000
+                0x0000000000001000                __size_of_stack_commit__ = 0x1000
+                0x0000000000100000                __size_of_heap_reserve__ = 0x100000
+                0x0000000000001000                __size_of_heap_commit__ = 0x1000
+                0x0000000000000000                __loader_flags__ = 0x0
+                0x0000000000000000                __dll_characteristics__ = 0x0
+                0x0000000000100000                . = 0x100000
+
+.text           0x0000000000100000     0xb800
+                0x0000000000100000                _textStart = .
+ *(.text)
+ .text          0x0000000000100000       0x58 kernelasm.o
+ .text          0x0000000000100058       0x18 kernelmain.o
+                0x0000000000100058                kmain
+ .text          0x0000000000100070       0x24 stdarg.o
+                0x0000000000100070                _va_arg
+ .text          0x0000000000100094      0x708 console.o
+                0x0000000000100094                loop
+                0x00000000001000b9                set_pixel
+                0x0000000000100186                clearScreen
+                0x0000000000100227                smoothlyTransitionColors
+                0x00000000001003c4                backspace
+                0x0000000000100431                newLine
+                0x000000000010046f                scroll
+                0x00000000001004fc                consoleDrawChar
+                0x0000000000100610                console_putc
+                0x0000000000100738                consoleDrawString
+                0x0000000000100777                consol_init
+ .text          0x000000000010079c      0x1f8 util.o
+                0x000000000010079c                outb
+                0x00000000001007bb                outw
+                0x00000000001007dc                inb
+                0x00000000001007f8                inw
+                0x0000000000100815                logString
+                0x000000000010085c                clearBss
+                0x0000000000100878                kstrln
+                0x00000000001008a0                kmemcmp
+                0x00000000001008fb                kmemcpy
+                0x0000000000100936                kmemset
+                0x0000000000100960                Factorial
+ .text          0x0000000000100994      0xc04 kprintf.o
+                0x00000000001009f9                kprintf
+                0x0000000000100a27                ksprintf
+ .text          0x0000000000101598      0x1dc testsuite.o
+                0x0000000000101598                sweet
+ .text          0x0000000000101774      0x404 disk.o
+                0x0000000000101774                selectSector
+                0x0000000000101809                isBusy
+                0x0000000000101825                isDiskReady
+                0x0000000000101892                disk_read_sector
+                0x0000000000101958                disk_write_sector
+                0x0000000000101a20                disk_read_block
+                0x0000000000101a53                listDiskInfo
+ *(.rodata)
+ *(.rdata)
+ *fill*         0x0000000000101b78        0x8 
+ .rdata         0x0000000000101b80     0x2000 kernelmain.o
+ .rdata         0x0000000000103b80     0x2000 console.o
+ .rdata         0x0000000000105b80     0x21e0 kprintf.o
+ .rdata         0x0000000000107d60      0x4a0 testsuite.o
+ .rdata         0x0000000000108200      0x10c disk.o
+ *(.rdata$zzz)
+ .rdata$zzz     0x000000000010830c       0x14 kernelmain.o
+ .rdata$zzz     0x0000000000108320       0x14 stdarg.o
+ .rdata$zzz     0x0000000000108334       0x14 console.o
+ .rdata$zzz     0x0000000000108348       0x14 util.o
+ .rdata$zzz     0x000000000010835c       0x14 kprintf.o
+ .rdata$zzz     0x0000000000108370       0x14 testsuite.o
+ .rdata$zzz     0x0000000000108384       0x14 disk.o
+                0x0000000000108398                _textEnd = .
+                0x0000000000109000                . = ALIGN (ABSOLUTE (.), 0x1000)
+ *fill*         0x0000000000108398      0xc68 
+                0x0000000000109000                _dataStart = .
+ *(.data)
+ .data          0x0000000000109000        0x0 kernelmain.o
+ .data          0x0000000000109000        0x0 stdarg.o
+ .data          0x0000000000109000       0x60 console.o
+                0x0000000000109000                colorPattern
+                0x0000000000109048                red
+                0x000000000010904c                green
+ .data          0x0000000000109060        0x0 util.o
+ .data          0x0000000000109060        0x0 kprintf.o
+ .data          0x0000000000109060        0x4 testsuite.o
+                0x0000000000109060                decl
+ .data          0x0000000000109064        0x0 disk.o
+                0x0000000000109064                _dataEnd = .
+                0x0000000000109064                _bssStart = .
+ *(COMMON)
+ *fill*         0x0000000000109064       0x1c 
+ COMMON         0x0000000000109080      0x400 kernelmain.o
+                0x0000000000109080                SB
+ COMMON         0x0000000000109480       0xa1 console.o
+                0x0000000000109480                mbi
+                0x0000000000109484                framebuffer
+                0x00000000001094a0                buff
+                0x0000000000109520                lastCharDrawn
+ *fill*         0x0000000000109521       0x1f 
+ COMMON         0x0000000000109540      0x200 testsuite.o
+                0x0000000000109540                decl2
+ *(.bss)
+ .bss           0x0000000000109740     0x1000 kernelasm.o
+ .bss           0x000000000010a740        0x0 kernelmain.o
+ .bss           0x000000000010a740        0x0 stdarg.o
+ .bss           0x000000000010a740       0x10 console.o
+                0x000000000010a740                pixCol
+                0x000000000010a744                pixRow
+                0x000000000010a748                colorChangeIndex
+                0x000000000010a74c                blue
+ .bss           0x000000000010a750        0x0 util.o
+ .bss           0x000000000010a750        0x0 kprintf.o
+ .bss           0x000000000010a750        0x0 testsuite.o
+ *fill*         0x000000000010a750       0x10 
+ .bss           0x000000000010a760     0x1000 disk.o
+                0x000000000010b760                _bssEnd = .
+
+.drectve        0x000000000010c000      0x200
+ .drectve       0x000000000010c000       0x14 kernelmain.o
+ .drectve       0x000000000010c014       0x58 console.o
+ .drectve       0x000000000010c06c       0x2c testsuite.o
+ .drectve       0x000000000010c098       0x14 disk.o
+
+/DISCARD/
+ *(.eh_frame)
+ *(.comment)
+LOAD kernelasm.o
+LOAD kernelmain.o
+LOAD stdarg.o
+LOAD console.o
+LOAD util.o
+LOAD kprintf.o
+LOAD testsuite.o
+LOAD disk.o
+OUTPUT(kernel.tmp pei-i386)
