@@ -117,6 +117,6 @@ int disk_read_partial(unsigned blockNum, void*bg, unsigned start, unsigned cout)
 
 int disk_read_inode(unsigned num, struct Inode* ino);
 
-int list_dir(int dirInode, int dirNum);
+int list_dir(int inodeWanted);
 
-void listDiskInfo();
+int listDiskInfo();

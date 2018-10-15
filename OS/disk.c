@@ -20,7 +20,7 @@ int isBusy()
 int isDiskReady()
 {
     while(isBusy())                                 //wait while disk is working
-        logString("Waiting for disk_ready!!\n\0");
+        ;//logString("Waiting for disk_ready!!\n\0");
     for(;;)
     {
         if(inb(0x1f7) & 8)                          //ready
@@ -36,13 +36,13 @@ int disk_read_sector(unsigned sector, void* datablock, unsigned numSec)
     while(numSec--)
     {
         while(isBusy())
-            logString("Waiting before disk_read!!\n\0");
+            ;//logString("Waiting before disk_read!!\n\0");
 
         selectSector(sector);
         outb(0x1f7, 0x20);		 //start a read
 
         if(isDiskReady() == 1)
-            logString("Disk Ready\n\0");
+            ;//logString("Disk Ready\n\0");
         else
         {
             logString("Disk Error!!\n\0");
@@ -65,13 +65,13 @@ int disk_write_sector(unsigned sector, const void* datablock, unsigned numSec)
     while(numSec--)
     {
         while(isBusy())
-            logString("Waiting before disk_write!!\n\0");
+            ;//logString("Waiting before disk_write!!\n\0");
 
         selectSector(sector);
         outb(0x1f7, 0x30);		 //start writting
 
         if(isDiskReady() == 1)
-            logString("Disk Ready\n\0");
+            ;//logString("Disk Ready\n\0");
         else
         {
             logString("Disk Error!!\n\0");
@@ -106,7 +106,7 @@ int disk_read_partial(unsigned blockNum, void *bg, unsigned start, unsigned coun
     static char buffer[4096];
     int pass;
     if((pass = disk_read_block(blockNum, bg)) < 0 
-     || buffer+start+count > 4095)                  //check if reading out of bounds of array
+     || start+count > 4095)                  //check if reading out of bounds of array
         return pass;
 
     kmemcpy(bg, buffer+start, count);
@@ -122,36 +122,49 @@ int disk_read_inode(unsigned num, struct Inode* ino)
         return pass;
 
     ino = (struct Inode*)buffer;
+    char msg[50];
+    ksprintf(msg, "InodeBlockReading:%d\nInodeSize:%d\n", InodeBlock, ino[2].size);
+    logString(msg);
     return 0;
 }
 
-int list_dir(int dirInode, int subNum)
+int list_dir(int inodeWanted)
 {
-    struct Inode *inode;
+    static char buffer[4096];
+    static struct Inode *inode;
+    struct DirEntry *dir;
     signed pass;
+    unsigned dirInode;
+    if(inodeWanted <= 0)    //give them first inode to read
+        dirInode = 0;   
+    else
+        dirInode = inodeWanted - 1;
+
     if((pass = disk_read_inode(dirInode, inode)) < 0)
         return pass;
 
-    static char buffer[4096];
-    struct DirEntry *dir;
-    unsigned offset = 0;
-    unsigned dirNum = 0;
-    while(offset < inode[dirInode].size || dirNum < 12)
+    unsigned offset = 0, dirNum = 0, atEnd = 1;
+    while((offset < inode[dirInode].size  && dirNum < 12 && atEnd) && offset != inode[dirInode].size)
     {
-        if((pass = disk_read_block(inode[dirInode].direct[dirNum], buffer)) < 0)
+        if((pass = disk_read_block(inode[dirInode].direct[dirNum++], buffer)) < 0)  //get dir
             return pass;
         dir = (struct DirEntry*) buffer;
-        kprintf("< %d> %*.s", dirInode, dir->name_len, dir->name);
-        offset += dir->rec_len;
+        if(dir->rec_len == 0)
+            atEnd = 0;
+        else if(dir->inode > 0)
+        {
+            kprintf("< %d> %*.s\n", dir->inode, dir->name_len, dir->name);          //print dir name
+            offset += dir->rec_len;                                                 //adjust offset count for block size
+        }
+        logString("listingDir\n");
     }
-    return 0;                    //get the offset
+    return 0;
 }
 
-void listDiskInfo()
+int listDiskInfo()
 {
     unsigned bg_num = 0, Groups;                     //blockGroup, Num Groups, BGD num
     static union blockGroup BG;
-    struct Inode *root_Inode;
 
     //SUPERBLOCK INFO
     signed pass;
@@ -176,9 +189,7 @@ void listDiskInfo()
 
         if((pass = disk_read_block(block, &BG)) < 0)
         {
-            char* errorMsg;
-            ksprintf(errorMsg, "Failed to read blockGroup:%d",block);
-            logString(errorMsg);
+            logString("Failed to read blockGroup\n");
             return pass;
         }
         //three BGD's per BGDT
@@ -187,11 +198,12 @@ void listDiskInfo()
             kprintf("Group %d: Free Blocks = %d\n", bgd_num, BG.bgd[bgd_num].free_blocks);
     }
 
-    //Get root directory Info
-    if((pass = disk_read_inode(1, root_Inode)) < 0)
+    if(list_dir(2))
     {
-        logString("Failed to read root Inode");
+        logString("error reading directory info");
         return pass;
     }
+    logString("Done\n");
 
+    return 0; //all is good
 }

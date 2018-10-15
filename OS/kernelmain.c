@@ -4,7 +4,8 @@
 
 void kmain(struct MultibootInfo *mbi){
     consol_init(mbi);   //initialize framebuffer and blank screen
-    listDiskInfo();
+    if(listDiskInfo() != 0)
+        logString("error listing DiskInfo");
     while(1){           //loop forever
     }  
 }

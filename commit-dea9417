@@ -1,0 +1,463 @@
+From dea9417c8bc33547353a91e8616e6559cdfeda5e Mon Sep 17 00:00:00 2001
+From: ThomasGilman <Thomas.Gilman@ymail.com>
+Date: Mon, 15 Oct 2018 08:39:31 -0400
+Subject: Add changes to reading dir and return signed int for errors on
+ functions
+
+
+diff --git a/OS/disk.c b/OS/disk.c
+index c20a8cb..e2e353b 100644
+--- a/OS/disk.c
++++ b/OS/disk.c
+@@ -20,7 +20,7 @@ int isBusy()
+ int isDiskReady()
+ {
+     while(isBusy())                                 //wait while disk is working
+-        logString("Waiting for disk_ready!!\n\0");
++        ;//logString("Waiting for disk_ready!!\n\0");
+     for(;;)
+     {
+         if(inb(0x1f7) & 8)                          //ready
+@@ -30,22 +30,23 @@ int isDiskReady()
+     }
+ }
+ 
+-void disk_read_sector(unsigned sector, void* datablock, unsigned numSec)
++int disk_read_sector(unsigned sector, void* datablock, unsigned numSec)
+ {
+     unsigned dataOffset = 0;
+     while(numSec--)
+     {
+         while(isBusy())
+-            logString("Waiting before disk_read!!\n\0");
++            ;//logString("Waiting before disk_read!!\n\0");
+ 
+         selectSector(sector);
+         outb(0x1f7, 0x20);		 //start a read
+ 
+         if(isDiskReady() == 1)
+-            logString("Disk Ready\n\0");
++            ;//logString("Disk Ready\n\0");
+         else
+         {
+             logString("Disk Error!!\n\0");
++            return -1;
+         }
+         unsigned index;
+         for(index = 0; index < 256; ++index)
+@@ -56,23 +57,25 @@ void disk_read_sector(unsigned sector, void* datablock, unsigned numSec)
+         sector++;
+         dataOffset += 256;
+     }
++    return 0;
+ }
+ 
+-void disk_write_sector(unsigned sector, const void* datablock, unsigned numSec)
++int disk_write_sector(unsigned sector, const void* datablock, unsigned numSec)
+ {
+     while(numSec--)
+     {
+         while(isBusy())
+-            logString("Waiting before disk_write!!\n\0");
++            ;//logString("Waiting before disk_write!!\n\0");
+ 
+         selectSector(sector);
+         outb(0x1f7, 0x30);		 //start writting
+ 
+         if(isDiskReady() == 1)
+-            logString("Disk Ready\n\0");
++            ;//logString("Disk Ready\n\0");
+         else
+         {
+             logString("Disk Error!!\n\0");
++            return -1;
+         }
+         unsigned short* dataToWrite = (void*)datablock;
+         unsigned index;
+@@ -84,28 +87,93 @@ void disk_write_sector(unsigned sector, const void* datablock, unsigned numSec)
+         outb(0x1f7, 0xe7);      //flush
+         sector++;
+     }
++    return 0;
+ }
+ 
+-void disk_read_block(unsigned blockNum, void *bg)
++int disk_read_block(unsigned blockNum, void *bg)
+ {
+-    unsigned spb = 8;                               //number of sectors per block, 512byte sectors
+-    unsigned blockSecStart = blockNum * spb;        //Convert blocks to units of sectors
+-    disk_read_sector(blockSecStart, bg, spb);       //read in full block
++    unsigned spb = 8;                                           //number of sectors per block, 512byte sectors
++    unsigned blockSecStart = blockNum * spb;                    //Convert blocks to units of sectors
++    signed pass;
++    if((pass = disk_read_sector(blockSecStart, bg, spb)) < 0)   //read in full block and check for errors
++        return pass;
++
++    return 0;
+ }
+ 
+-// void disk_read_inode(unsigned inodeNum, void *In)
+-// {
++int disk_read_partial(unsigned blockNum, void *bg, unsigned start, unsigned count)
++{
++    static char buffer[4096];
++    int pass;
++    if((pass = disk_read_block(blockNum, bg)) < 0 
++     || start+count > 4095)                  //check if reading out of bounds of array
++        return pass;
++
++    kmemcpy(bg, buffer+start, count);
++    return 0;
++}
+ 
+-// }
++int disk_read_inode(unsigned num, struct Inode* ino)
++{
++    static char buffer[4096];                                            //1 block is 4KB
++    unsigned InodeBlock = 4 + ((num / 32) * SB.blocks_per_group);       //InodeBlockGroup
++    signed pass;
++    if((pass = disk_read_block(InodeBlock, buffer)) < 0)
++        return pass;
++
++    ino = (struct Inode*)buffer;
++    char msg[50];
++    ksprintf(msg, "InodeBlockReading:%d\nInodeSize:%d\n", InodeBlock, ino[2].size);
++    logString(msg);
++    return 0;
++}
+ 
+-void listDiskInfo()
++int list_dir(int inodeWanted)
+ {
+-    unsigned bg_num = 0, Groups;           //blockGroup, Num Groups, BGD num
++    static char buffer[4096];
++    static struct Inode *inode;
++    struct DirEntry *dir;
++    signed pass;
++    unsigned dirInode;
++    if(inodeWanted <= 0)    //give them first inode to read
++        dirInode = 0;   
++    else
++        dirInode = inodeWanted - 1;
++
++    if((pass = disk_read_inode(dirInode, inode)) < 0)
++        return pass;
++
++    unsigned offset = 0, dirNum = 0, atEnd = 1;
++    while((offset < inode[dirInode].size  && dirNum < 12 && atEnd) && offset != inode[dirInode].size)
++    {
++        if((pass = disk_read_block(inode[dirInode].direct[dirNum++], buffer)) < 0)  //get dir
++            return pass;
++        dir = (struct DirEntry*) buffer;
++        if(dir->rec_len == 0)
++            atEnd = 0;
++        else if(dir->inode > 0)
++        {
++            kprintf("< %d> %*.s\n", dir->inode, dir->name_len, dir->name);          //print dir name
++            offset += dir->rec_len;                                                 //adjust offset count for block size
++        }
++        logString("listingDir\n");
++    }
++    return 0;
++}
++
++int listDiskInfo()
++{
++    unsigned bg_num = 0, Groups;                     //blockGroup, Num Groups, BGD num
+     static union blockGroup BG;
+-    //struct Inode root;
+ 
+     //SUPERBLOCK INFO
+-    disk_read_sector(2, &SB, 2);                    //main SUPERBLOCK 1KB big starts at offset of 1KB
++    signed pass;
++    if((pass = disk_read_sector(2, &SB, 2)) < 0)    //main SUPERBLOCK 1KB big starts at offset of 1KB
++    {
++        logString("Failed to read SuperBlock");
++        return pass;
++    }
++
+     kprintf("Volume Label: %.*s  Free:%d\n",16, SB.volname, SB.free_block_count);
+     kprintf("BlocksPerGroup: %d  TotalBlocks: %d\n", SB.blocks_per_group, SB.block_count);
+     Groups = SB.block_count / SB.blocks_per_group;  //Get num block groups in memory
+@@ -118,15 +186,24 @@ void listDiskInfo()
+         kprintf("Reading BGDT from Group %d\n", bg_num);
+         block = 1 + (SB.blocks_per_group*(bg_num++));
+         kprintf("Reading starting at block %d\n", block);
+-        disk_read_block(block, &BG);
+-        
++
++        if((pass = disk_read_block(block, &BG)) < 0)
++        {
++            logString("Failed to read blockGroup\n");
++            return pass;
++        }
+         //three BGD's per BGDT
+         unsigned bgd_num;
+         for(bgd_num = 0; bgd_num <= Groups; bgd_num++)
+             kprintf("Group %d: Free Blocks = %d\n", bgd_num, BG.bgd[bgd_num].free_blocks);
+     }
+ 
+-    //Get root directory Info
+-    //disk_read_block(4, BG.block);
+-    
++    if(list_dir(2))
++    {
++        logString("error reading directory info");
++        return pass;
++    }
++    logString("Done\n");
++
++    return 0; //all is good
+ }
+\ No newline at end of file
+diff --git a/OS/disk.h b/OS/disk.h
+index 8dbc265..4399e29 100644
+--- a/OS/disk.h
++++ b/OS/disk.h
+@@ -107,12 +107,16 @@ int isBusy();
+ 
+ int isDiskReady();
+ 
+-void disk_read_sector(unsigned sector, void* datablock, unsigned numSec);
++int disk_read_sector(unsigned sector, void* datablock, unsigned numSec);
+ 
+-void disk_write_sector(unsigned sector, const void* datablock, unsigned numSec);
++int disk_write_sector(unsigned sector, const void* datablock, unsigned numSec);
+ 
+-void disk_read_block(unsigned blockNum, void *bg);
++int disk_read_block(unsigned blockNum, void *bg);
+ 
+-void disk_read_inode();
++int disk_read_partial(unsigned blockNum, void*bg, unsigned start, unsigned cout);
+ 
+-void listDiskInfo();
+\ No newline at end of file
++int disk_read_inode(unsigned num, struct Inode* ino);
++
++int list_dir(int inodeWanted);
++
++int listDiskInfo();
+\ No newline at end of file
+diff --git a/OS/disk.o b/OS/disk.o
+index e2b6c2e..dcaee9b 100644
+Binary files a/OS/disk.o and b/OS/disk.o differ
+diff --git a/OS/fscmd.txt b/OS/fscmd.txt
+index 7acd00a..7f5b4da 100644
+--- a/OS/fscmd.txt
++++ b/OS/fscmd.txt
+@@ -1,9 +1,13 @@
+ write kernel.bin kernel.bin
+-write about.txt about.txt
+-write article1.txt article1.txt
+-write article1.txt article1.txt
+-write article2.txt article2.txt
+-write article3.txt article3.txt
+-write article4.txt article4.txt
+-write article5.txt article5.txt
+-write article6.txt article6.txt
+\ No newline at end of file
++mkdir submarine
++cd submarine
++write const.py const.py
++write constitution.txt constitution.txt
++mkdir "sub basement"
++cd "sub basement"
++write article1.txt we
++write article2.txt the
++cd ..
++write article3.txt people
++cd ..
++write article4.txt "of the Untied States"
+\ No newline at end of file
+diff --git a/OS/kernel.bin b/OS/kernel.bin
+index c843db9..a6f892c 100644
+Binary files a/OS/kernel.bin and b/OS/kernel.bin differ
+diff --git a/OS/kernel.tmp b/OS/kernel.tmp
+index f200c16..9f61caf 100644
+Binary files a/OS/kernel.tmp and b/OS/kernel.tmp differ
+diff --git a/OS/kernelasm.o b/OS/kernelasm.o
+index 8c7584a..f5313f0 100644
+Binary files a/OS/kernelasm.o and b/OS/kernelasm.o differ
+diff --git a/OS/kernelmain.c b/OS/kernelmain.c
+index 6780c22..bad7937 100644
+--- a/OS/kernelmain.c
++++ b/OS/kernelmain.c
+@@ -4,7 +4,8 @@
+ 
+ void kmain(struct MultibootInfo *mbi){
+     consol_init(mbi);   //initialize framebuffer and blank screen
+-    listDiskInfo();
++    if(listDiskInfo() != 0)
++        logString("error listing DiskInfo");
+     while(1){           //loop forever
+     }  
+ }
+\ No newline at end of file
+diff --git a/OS/kernelmain.o b/OS/kernelmain.o
+index 1b3b7e3..50c5809 100644
+Binary files a/OS/kernelmain.o and b/OS/kernelmain.o differ
+diff --git a/OS/kernelmap.txt b/OS/kernelmap.txt
+index 3824e74..36d366d 100644
+--- a/OS/kernelmap.txt
++++ b/OS/kernelmap.txt
+@@ -17,7 +17,7 @@ Discarded input sections
+  .eh_frame      0x0000000000000000      0x178 util.o
+  .eh_frame      0x0000000000000000       0xc8 kprintf.o
+  .eh_frame      0x0000000000000000       0x38 testsuite.o
+- .eh_frame      0x0000000000000000       0xf8 disk.o
++ .eh_frame      0x0000000000000000      0x158 disk.o
+ 
+ Memory Configuration
+ 
+@@ -46,70 +46,73 @@ Linker script and memory map
+                 0x0000000000000000                __dll_characteristics__ = 0x0
+                 0x0000000000100000                . = 0x100000
+ 
+-.text           0x0000000000100000     0xb800
++.text           0x0000000000100000     0xe800
+                 0x0000000000100000                _textStart = .
+  *(.text)
+  .text          0x0000000000100000       0x58 kernelasm.o
+- .text          0x0000000000100058       0x18 kernelmain.o
++ .text          0x0000000000100058       0x28 kernelmain.o
+                 0x0000000000100058                kmain
+- .text          0x0000000000100070       0x24 stdarg.o
+-                0x0000000000100070                _va_arg
+- .text          0x0000000000100094      0x708 console.o
+-                0x0000000000100094                loop
+-                0x00000000001000b9                set_pixel
+-                0x0000000000100186                clearScreen
+-                0x0000000000100227                smoothlyTransitionColors
+-                0x00000000001003c4                backspace
+-                0x0000000000100431                newLine
+-                0x000000000010046f                scroll
+-                0x00000000001004fc                consoleDrawChar
+-                0x0000000000100610                console_putc
+-                0x0000000000100738                consoleDrawString
+-                0x0000000000100777                consol_init
+- .text          0x000000000010079c      0x1f8 util.o
+-                0x000000000010079c                outb
+-                0x00000000001007bb                outw
+-                0x00000000001007dc                inb
+-                0x00000000001007f8                inw
+-                0x0000000000100815                logString
+-                0x000000000010085c                clearBss
+-                0x0000000000100878                kstrln
+-                0x00000000001008a0                kmemcmp
+-                0x00000000001008fb                kmemcpy
+-                0x0000000000100936                kmemset
+-                0x0000000000100960                Factorial
+- .text          0x0000000000100994      0xc04 kprintf.o
+-                0x00000000001009f9                kprintf
+-                0x0000000000100a27                ksprintf
+- .text          0x0000000000101598      0x1dc testsuite.o
+-                0x0000000000101598                sweet
+- .text          0x0000000000101774      0x404 disk.o
+-                0x0000000000101774                selectSector
+-                0x0000000000101809                isBusy
+-                0x0000000000101825                isDiskReady
+-                0x0000000000101892                disk_read_sector
+-                0x0000000000101958                disk_write_sector
+-                0x0000000000101a20                disk_read_block
+-                0x0000000000101a53                listDiskInfo
++ .text          0x0000000000100080       0x24 stdarg.o
++                0x0000000000100080                _va_arg
++ .text          0x00000000001000a4      0x708 console.o
++                0x00000000001000a4                loop
++                0x00000000001000c9                set_pixel
++                0x0000000000100196                clearScreen
++                0x0000000000100237                smoothlyTransitionColors
++                0x00000000001003d4                backspace
++                0x0000000000100441                newLine
++                0x000000000010047f                scroll
++                0x000000000010050c                consoleDrawChar
++                0x0000000000100620                console_putc
++                0x0000000000100748                consoleDrawString
++                0x0000000000100787                consol_init
++ .text          0x00000000001007ac      0x1f8 util.o
++                0x00000000001007ac                outb
++                0x00000000001007cb                outw
++                0x00000000001007ec                inb
++                0x0000000000100808                inw
++                0x0000000000100825                logString
++                0x000000000010086c                clearBss
++                0x0000000000100888                kstrln
++                0x00000000001008b0                kmemcmp
++                0x000000000010090b                kmemcpy
++                0x0000000000100946                kmemset
++                0x0000000000100970                Factorial
++ .text          0x00000000001009a4      0xc04 kprintf.o
++                0x0000000000100a09                kprintf
++                0x0000000000100a37                ksprintf
++ .text          0x00000000001015a8      0x1dc testsuite.o
++                0x00000000001015a8                sweet
++ .text          0x0000000000101784      0x678 disk.o
++                0x0000000000101784                selectSector
++                0x0000000000101819                isBusy
++                0x0000000000101835                isDiskReady
++                0x0000000000101895                disk_read_sector
++                0x000000000010194d                disk_write_sector
++                0x0000000000101a07                disk_read_block
++                0x0000000000101a4c                disk_read_partial
++                0x0000000000101aa7                disk_read_inode
++                0x0000000000101b26                list_dir
++                0x0000000000101c6e                listDiskInfo
+  *(.rodata)
+  *(.rdata)
+- *fill*         0x0000000000101b78        0x8 
+- .rdata         0x0000000000101b80     0x2000 kernelmain.o
+- .rdata         0x0000000000103b80     0x2000 console.o
+- .rdata         0x0000000000105b80     0x21e0 kprintf.o
+- .rdata         0x0000000000107d60      0x4a0 testsuite.o
+- .rdata         0x0000000000108200      0x10c disk.o
++ *fill*         0x0000000000101dfc        0x4 
++ .rdata         0x0000000000101e00     0x2020 kernelmain.o
++ .rdata         0x0000000000103e20     0x2000 console.o
++ .rdata         0x0000000000105e20     0x21e0 kprintf.o
++ .rdata         0x0000000000108000      0x4a0 testsuite.o
++ .rdata         0x00000000001084a0      0x140 disk.o
+  *(.rdata$zzz)
+- .rdata$zzz     0x000000000010830c       0x14 kernelmain.o
+- .rdata$zzz     0x0000000000108320       0x14 stdarg.o
+- .rdata$zzz     0x0000000000108334       0x14 console.o
+- .rdata$zzz     0x0000000000108348       0x14 util.o
+- .rdata$zzz     0x000000000010835c       0x14 kprintf.o
+- .rdata$zzz     0x0000000000108370       0x14 testsuite.o
+- .rdata$zzz     0x0000000000108384       0x14 disk.o
+-                0x0000000000108398                _textEnd = .
++ .rdata$zzz     0x00000000001085e0       0x14 kernelmain.o
++ .rdata$zzz     0x00000000001085f4       0x14 stdarg.o
++ .rdata$zzz     0x0000000000108608       0x14 console.o
++ .rdata$zzz     0x000000000010861c       0x14 util.o
++ .rdata$zzz     0x0000000000108630       0x14 kprintf.o
++ .rdata$zzz     0x0000000000108644       0x14 testsuite.o
++ .rdata$zzz     0x0000000000108658       0x14 disk.o
++                0x000000000010866c                _textEnd = .
+                 0x0000000000109000                . = ALIGN (ABSOLUTE (.), 0x1000)
+- *fill*         0x0000000000108398      0xc68 
++ *fill*         0x000000000010866c      0x994 
+                 0x0000000000109000                _dataStart = .
+  *(.data)
+  .data          0x0000000000109000        0x0 kernelmain.o
+@@ -150,14 +153,14 @@ Linker script and memory map
+  .bss           0x000000000010a750        0x0 kprintf.o
+  .bss           0x000000000010a750        0x0 testsuite.o
+  *fill*         0x000000000010a750       0x10 
+- .bss           0x000000000010a760     0x1000 disk.o
+-                0x000000000010b760                _bssEnd = .
++ .bss           0x000000000010a760     0x4020 disk.o
++                0x000000000010e780                _bssEnd = .
+ 
+-.drectve        0x000000000010c000      0x200
+- .drectve       0x000000000010c000       0x14 kernelmain.o
+- .drectve       0x000000000010c014       0x58 console.o
+- .drectve       0x000000000010c06c       0x2c testsuite.o
+- .drectve       0x000000000010c098       0x14 disk.o
++.drectve        0x000000000010f000      0x200
++ .drectve       0x000000000010f000       0x14 kernelmain.o
++ .drectve       0x000000000010f014       0x58 console.o
++ .drectve       0x000000000010f06c       0x2c testsuite.o
++ .drectve       0x000000000010f098       0x14 disk.o
+ 
+ /DISCARD/
+  *(.eh_frame)
