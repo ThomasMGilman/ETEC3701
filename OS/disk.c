@@ -113,17 +113,18 @@ int disk_read_partial(unsigned blockNum, void *bg, unsigned start, unsigned coun
     return 0;
 }
 
-int disk_read_inode(unsigned num, struct Inode* ino)
+int disk_read_inode(unsigned num, struct Inode** ino)
 {
-    static char buffer[4096];                                            //1 block is 4KB
-    unsigned InodeBlock = 4 + ((num / 32) * SB.blocks_per_group);       //InodeBlockGroup
+    static char buffer[4096];                                       //1 block is 4KB
+    unsigned InodeBlock = 4 + ((num / 32) * SB.blocks_per_group);   //InodeBlockGroup
     signed pass;
     if((pass = disk_read_block(InodeBlock, buffer)) < 0)
         return pass;
 
-    ino = (struct Inode*)buffer;
-    char msg[50];
-    ksprintf(msg, "InodeBlockReading:%d\nInodeSize:%d\n", InodeBlock, ino[2].size);
+    *ino = (struct Inode*)(buffer + sizeof(struct Inode) * num);
+
+    char msg[75];
+    ksprintf(msg, "InodeInfo:\nInodeBlockReading:%d\nInodeNum:%d\nInodeSize:%d\n\n", InodeBlock, num+1, (*ino)->size);
     logString(msg);
     return 0;
 }
@@ -131,33 +132,61 @@ int disk_read_inode(unsigned num, struct Inode* ino)
 int list_dir(int inodeWanted)
 {
     static char buffer[4096];
-    static struct Inode *inode;
+    char msg[100];
+    struct Inode* inode;
     struct DirEntry *dir;
     signed pass;
-    unsigned dirInode;
-    if(inodeWanted <= 0)    //give them first inode to read
-        dirInode = 0;   
-    else
-        dirInode = inodeWanted - 1;
+    if(inodeWanted < 0)    //give them first inode to read
+        inodeWanted = 0;   
 
-    if((pass = disk_read_inode(dirInode, inode)) < 0)
+    if((pass = disk_read_inode(inodeWanted, &inode)) < 0)
         return pass;
 
-    unsigned offset = 0, dirNum = 0, atEnd = 1;
-    while((offset < inode[dirInode].size  && dirNum < 12 && atEnd) && offset != inode[dirInode].size)
+    ksprintf(msg,"InodeSize:%d\n\n", inode->size);
+    logString(msg);
+    if(inode->size > 0 && inode->size <= 4096)
     {
-        if((pass = disk_read_block(inode[dirInode].direct[dirNum++], buffer)) < 0)  //get dir
-            return pass;
-        dir = (struct DirEntry*) buffer;
-        if(dir->rec_len == 0)
-            atEnd = 0;
-        else if(dir->inode > 0)
+        unsigned dirNum = 0;
+        while(dirNum < 12)
         {
-            kprintf("< %d> %*.s\n", dir->inode, dir->name_len, dir->name);          //print dir name
-            offset += dir->rec_len;                                                 //adjust offset count for block size
+            ksprintf(msg,"inodeWanted:%d\ndirNum:%d\nInodeSize:%d\n\n",inodeWanted+1, dirNum, inode->size);
+            logString(msg);
+
+            if((pass = disk_read_block(inode->direct[dirNum++], buffer)) < 0)  //get dir
+                return pass;
+                
+            char *p = &buffer[0];
+            unsigned offset = 0, atEnd = 1;
+            while(offset < 4096 && atEnd)
+            {
+                dir = (struct DirEntry*)(p+offset);
+                if(dir->rec_len == 0)
+                    atEnd = 0;
+                else if(dir->inode > 0)
+                {
+                    kprintf("< %u> %*.s\n", dir->inode, dir->name_len, dir->name);          //print dir name
+                    offset += dir->rec_len;                                                 //adjust offset count for block size
+                }
+            }
+            logString("read dir");
         }
-        logString("listingDir\n");
     }
+    else
+    {
+        if(inode->size == 0)
+        {
+            ksprintf(msg,"Empty Inode:%d\n",inode->size);
+            logString(msg);
+            return 0;
+        }
+        else
+        {
+            ksprintf(msg,"Bad InodeSize:%d\n",inode->size);
+            logString(msg);
+            return -1;
+        }
+    }
+    
     return 0;
 }
 
@@ -198,7 +227,7 @@ int listDiskInfo()
             kprintf("Group %d: Free Blocks = %d\n", bgd_num, BG.bgd[bgd_num].free_blocks);
     }
 
-    if(list_dir(2))
+    if(list_dir(1))
     {
         logString("error reading directory info");
         return pass;
