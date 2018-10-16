@@ -83,7 +83,7 @@ Linker script and memory map
                 0x0000000000100a37                ksprintf
  .text          0x00000000001015a8      0x1dc testsuite.o
                 0x00000000001015a8                sweet
- .text          0x0000000000101784      0x780 disk.o
+ .text          0x0000000000101784      0x6f8 disk.o
                 0x0000000000101784                selectSector
                 0x0000000000101819                isBusy
                 0x0000000000101835                isDiskReady
@@ -92,27 +92,27 @@ Linker script and memory map
                 0x0000000000101a07                disk_read_block
                 0x0000000000101a4c                disk_read_partial
                 0x0000000000101aa7                disk_read_inode
-                0x0000000000101b3a                list_dir
-                0x0000000000101d76                listDiskInfo
+                0x0000000000101b3a                list_dirs
+                0x0000000000101cee                listDiskInfo
  *(.rodata)
  *(.rdata)
- *fill*         0x0000000000101f04       0x1c 
- .rdata         0x0000000000101f20     0x2020 kernelmain.o
- .rdata         0x0000000000103f40     0x2000 console.o
- .rdata         0x0000000000105f40     0x21e0 kprintf.o
- .rdata         0x0000000000108120      0x4a0 testsuite.o
- .rdata         0x00000000001085c0      0x1b0 disk.o
+ *fill*         0x0000000000101e7c        0x4 
+ .rdata         0x0000000000101e80     0x2020 kernelmain.o
+ .rdata         0x0000000000103ea0     0x2000 console.o
+ .rdata         0x0000000000105ea0     0x21e0 kprintf.o
+ .rdata         0x0000000000108080      0x4a0 testsuite.o
+ .rdata         0x0000000000108520      0x18c disk.o
  *(.rdata$zzz)
- .rdata$zzz     0x0000000000108770       0x14 kernelmain.o
- .rdata$zzz     0x0000000000108784       0x14 stdarg.o
- .rdata$zzz     0x0000000000108798       0x14 console.o
- .rdata$zzz     0x00000000001087ac       0x14 util.o
- .rdata$zzz     0x00000000001087c0       0x14 kprintf.o
- .rdata$zzz     0x00000000001087d4       0x14 testsuite.o
- .rdata$zzz     0x00000000001087e8       0x14 disk.o
-                0x00000000001087fc                _textEnd = .
+ .rdata$zzz     0x00000000001086ac       0x14 kernelmain.o
+ .rdata$zzz     0x00000000001086c0       0x14 stdarg.o
+ .rdata$zzz     0x00000000001086d4       0x14 console.o
+ .rdata$zzz     0x00000000001086e8       0x14 util.o
+ .rdata$zzz     0x00000000001086fc       0x14 kprintf.o
+ .rdata$zzz     0x0000000000108710       0x14 testsuite.o
+ .rdata$zzz     0x0000000000108724       0x14 disk.o
+                0x0000000000108738                _textEnd = .
                 0x0000000000109000                . = ALIGN (ABSOLUTE (.), 0x1000)
- *fill*         0x00000000001087fc      0x804 
+ *fill*         0x0000000000108738      0x8c8 
                 0x0000000000109000                _dataStart = .
  *(.data)
  .data          0x0000000000109000        0x0 kernelmain.o

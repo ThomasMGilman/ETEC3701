@@ -1,4 +1,12 @@
 write kernel.bin kernel.bin
+write about.txt about.txt
+write article1.txt article1.txt
+write article1.txt article1.txt
+write article2.txt article2.txt
+write article3.txt article3.txt
+write article4.txt article4.txt
+write article5.txt article5.txt
+write article6.txt article6.txt
 mkdir submarine
 cd submarine
 write const.py const.py
