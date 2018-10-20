@@ -33,3 +33,14 @@ int file_close(int fd);
 //inodesPerBlock = 4096/128 = 32
 //inodesToSkip = 40 % 8
 //kmemcpy(ino, buffer+inodesToSkipOver*sizeof(inode),sizeof(inode))
+
+
+//file write{
+//DirEntry for foo.txt
+//allocate inode -> inode bitmap
+//  free inode count-> BGDT <- Several
+//  update free space and stuff on superblock
+//Allocate data blocks -> blockbitmap
+//  free block count-> BGDTs <- several
+//  update space on superblock
+//write data

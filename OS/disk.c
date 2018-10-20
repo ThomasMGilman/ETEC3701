@@ -123,13 +123,13 @@ int disk_read_inode(unsigned num, struct Inode** ino)
 
     *ino = (struct Inode*)(buffer + sizeof(struct Inode) * num);
 
-    char msg[75];
+    //char msg[75];
     // ksprintf(msg, "InodeInfo:\nInodeBlockReading:%d\nInodeNum:%d\nInodeSize:%d\n\n", InodeBlock, num+1, (*ino)->size);
     // logString(msg);
     return 0;
 }
 
-int list_dirs(int inodeWanted)
+int list_dirs(unsigned inodeWanted, unsigned subIndent)
 {
     if(inodeWanted < 0)
     {
@@ -146,12 +146,13 @@ int list_dirs(int inodeWanted)
         struct DirEntry *dir;
         static char buffer[4096];
         unsigned dirNum = 0;
-        while(dirNum < 12)
+        unsigned offset = 0, atEnd = 1;
+        while(dirNum < 12 && atEnd)
         {
             if((pass = disk_read_block(inode->direct[dirNum++], buffer)) < 0)  //get directory
                 return pass;
             char *p = &buffer[0];                                              //point to start of dir entries
-            unsigned offset = 0, atEnd = 1;
+            
             while(offset < 4096 && atEnd)
             {
                 dir = (struct DirEntry*)(p+offset);
@@ -222,7 +223,7 @@ int listDiskInfo()
             kprintf("Group %d: Free Blocks = %d\n", bgd_num, BG.bgd[bgd_num].free_blocks);
     }
 
-    if(list_dirs(1))
+    if(list_dirs(1, 0))
     {
         logString("error reading directory info");
         return pass;
