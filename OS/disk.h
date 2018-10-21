@@ -1,5 +1,7 @@
 #pragma once
 
+#define BLOCK_SIZE 4096
+
 struct Superblock SB;
 
 /*SB uses full block 

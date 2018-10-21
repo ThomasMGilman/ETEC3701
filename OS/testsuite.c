@@ -1,59 +1,70 @@
-
+#include "errno.h"
 #include "kprintf.h"
-#include "disk.h"
 
-const char* decl = 
-"IN CONGRESS, July 4, 1776.\n\n"
-"The unanimous Declaration of the thirteen united States of America,\n\n"
-"When in the Course of human events, it becomes necessary for one people to "
-"dissolve the political bands which have connected them with another, "
-"and to assume among the powers of the earth, the separate and equal station to "
-"to which the Laws of Nature and of Nature's God entitle them, a decent "
-"respect to the opinions of mankind requires that they should declare the "
-"causes which impel them to the separation. \n\n"
-"We hold these truths to be self-evident, that all men are created equal, "
-"that they are endowed by their Creator with certain unalienable Rights, that "
-"among these are Life, Liberty and the pursuit of Happiness. \n"
-"\t--That to secure these rights, Governments are instituted among Men,\n"
-" \t--That whenever any Form of Government becomes destructive of these "
-"ends, it is the Right of the\t\tPeople\t\tto alter or to abolish it, and to "
-"institute new Government, laying its foundation on such principles and "
-"organizing its powers in such form, as to them shall seem most likely to "
-"effect their Safety and Happiness.\n";
+extern int file_open(const char* fname, int flags);
+extern int file_close(int fd);
 
-char decl2[512];
 void sweet(){
     int i;
+    char tmp[32];
+    int fd;
 
-    for(i=0;i<512;++i)
-        decl2[i] = 'A';
-        
-    disk_write_sector( 4, decl+512, 1);
-    disk_write_sector( 2,decl, 1);
-    disk_write_sector( 3,decl2, 1);
-    
-    disk_read_sector( 2, decl2, 1);
-    for(i=0;i<512;++i){
-        if( decl[i] != decl2[i] ){
-            kprintf("Bad\n");
-            kprintf("index:%d, decl[i]:%d, decl2[i]:%d\n",i,decl[i], decl2[i]);
-            return;
-        }
-    }
-    disk_read_sector( 3, decl2, 1);
-    for(i=0;i<512;++i){
-        if( decl2[i] != 'A' ){
-            kprintf("Badder\n");
-            return;
-        }
-    }
-    disk_read_sector( 4, decl2, 1);
-    for(i=0;i<512;++i){
-        if( decl[512+i] != decl2[i] ){
-            kprintf("Baddest\n");
-            return;
-        }
-    }
+    const char* nonexist[] = {
+        "blargh", "blargleblargleboom", 
+        "blargleblargleboom.burpblah", "b.burpblah",
+        "b.b", "art.txt","article1234.txt",
+        "ARTICLE2.TXT",
+        "article1.T","article1txt",0};
             
-    kprintf("Muy bien\n");
+    for(i=0; nonexist[i] ; ++i){
+        fd = file_open( nonexist[i], 0);
+        if( fd >= 0 ){
+            kprintf("Opened nonexistent file %s\n",nonexist[i]);
+            return;
+        }
+    }
+
+    for(i=-4;i<10;++i){
+        if( file_close(i) == 0 ){
+            kprintf("Closed nonopen %d\n",i);
+            return;
+        }
+    }
+    
+    int used[6];
+    for(i=0;i<6;++i)
+        used[i] = -1;
+    int j;
+    for(i=1;i<=6;++i){
+        ksprintf(tmp,"article%d.txt",i);
+        fd = file_open(tmp,0);
+        if(fd < 0 ){
+            kprintf("Could not open %s\n",tmp);
+            return;
+        }
+        for(j=0;j<6;++j){
+            if( used[j] == fd ){
+                kprintf("Duplicate fd\n");
+                return;
+            }
+        }
+        used[i-1]=fd;
+    }
+
+    for(i=0;i<6;++i){
+        if( file_close(used[i]) != SUCCESS ){
+            kprintf("Could not close %d\n",used[i]);
+            return ;
+        }
+    }
+    
+    //exhaustion test
+    for(i=0;i<100000;++i){
+        file_open("article1.txt",0);
+    }
+    fd = file_open("article1.txt",0);
+    if(fd >= 0 )
+        kprintf("Exhaustion test failed\n");
+        
+    kprintf("All OK");
 }

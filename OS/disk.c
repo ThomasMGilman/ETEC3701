@@ -115,74 +115,78 @@ int disk_read_partial(unsigned blockNum, void *bg, unsigned start, unsigned coun
 
 int disk_read_inode(unsigned num, struct Inode** ino)
 {
-    static char buffer[4096];                                       //1 block is 4KB
-    unsigned InodeBlock = 4 + ((num / 32) * SB.blocks_per_group);   //InodeBlockGroup
+    static char buffer[4096];                                                       //1 block is 4KB
+    unsigned inodeFromTableStart;
+    unsigned InodeBlock = 4 + (((num-1) / SB.inodes_per_group) * SB.blocks_per_group);  //InodeBlockGroup
     signed pass;
     if((pass = disk_read_block(InodeBlock, buffer)) < 0)
         return pass;
-
-    *ino = (struct Inode*)(buffer + sizeof(struct Inode) * num);
-
-    //char msg[75];
-    // ksprintf(msg, "InodeInfo:\nInodeBlockReading:%d\nInodeNum:%d\nInodeSize:%d\n\n", InodeBlock, num+1, (*ino)->size);
-    // logString(msg);
+    inodeFromTableStart = num % SB.inodes_per_group; 
+    *ino = (struct Inode*)(buffer + sizeof(struct Inode) * inodeFromTableStart);
     return 0;
 }
 
 int list_dirs(unsigned inodeWanted, unsigned subIndent)
 {
-    if(inodeWanted < 0)
-    {
-        logString("passed invalid Inode\n");
-        return -1;
-    }
-
-    struct Inode* inode;
+    struct Inode* inode, *dirInode;
+    struct DirEntry *dir;
+    static char buffer[4096];
+    char* p;
     signed pass;
+    unsigned dirNum = 0, offset = 0, atEnd = 1, tmpIndent = subIndent;
+
     if((pass = disk_read_inode(inodeWanted, &inode)) < 0)
         return pass;
-    if(inode->size > 0 && inode->size <= 4096)
+    if(inode->size == 0 || inode->size > 4096)
     {
-        struct DirEntry *dir;
-        static char buffer[4096];
-        unsigned dirNum = 0;
-        unsigned offset = 0, atEnd = 1;
-        while(dirNum < 12 && atEnd)
+        if(inode->size == 0)
         {
-            if((pass = disk_read_block(inode->direct[dirNum++], buffer)) < 0)  //get directory
-                return pass;
-            char *p = &buffer[0];                                              //point to start of dir entries
-            
-            while(offset < 4096 && atEnd)
-            {
-                dir = (struct DirEntry*)(p+offset);
-                if(dir->rec_len == 0)
-                    atEnd = 0;
-                else if(dir->inode > 0)
-                {
-                    kprintf("< %u> %.*s\n",dir->inode, dir->name_len, dir->name);          //print dir name
-                    offset += dir->rec_len;                                                //adjust offset count for block size
-                }
-            }
+            ksprintf(buffer,"Empty Inode:%d\n",inode->size);
+            logString(buffer);
+            return 0;
         }
+        ksprintf(buffer,"Bad InodeSize:%d\n",inode->size);
+        logString(buffer);
+        return -1;
     }
     else
     {
-        char msg[30];
-        if(inode->size == 0)
+        while(dirNum < 12 || atEnd)
         {
-            ksprintf(msg,"Empty Inode:%d\n",inode->size);
-            logString(msg);
-            return 0;
-        }
-        else
-        {
-            ksprintf(msg,"Bad InodeSize:%d\n",inode->size);
-            logString(msg);
-            return -1;
+            if((pass = disk_read_block(inode->direct[dirNum++], buffer)) < 0)   //get directory
+                return pass;
+            p = &buffer[0];                                                     //point to start of dir entries
+            while(offset < 4096 && atEnd)
+            {
+                dir = (struct DirEntry*)(p+offset);
+                if(dir->rec_len == 0 || (offset + dir->rec_len) > 4096)
+                    atEnd = 0;
+                else if(dir->inode > 0)
+                {
+                    if((pass = disk_read_inode(dir->inode, &dirInode)) < 0)
+                        return pass;
+                    if((dirInode->mode>>12) & 4)
+                    {
+                        while(tmpIndent--) kprintf("\t");
+                        kprintf("< %u> %.*s\n",dir->inode, dir->name_len, dir->name);          //print dir name
+                        if((pass = list_dirs(dir->inode, subIndent+1)) < 0)
+                            return pass;
+                        if((pass = disk_read_block(inode->direct[dirNum-1], buffer)) < 0)   //get directory
+                            return pass;
+                        p = &buffer[0];
+                    }
+                    else
+                    {
+                        while(tmpIndent--) kprintf("\t");
+                        kprintf("< %u> %.*s\n",dir->inode, dir->name_len, dir->name);          //print dir name
+                    }
+                    offset += dir->rec_len;                                             //adjust offset count for block size
+                    tmpIndent = subIndent;
+                }
+            }
+            offset = 0;
         }
     }
-    
     return 0;
 }
 

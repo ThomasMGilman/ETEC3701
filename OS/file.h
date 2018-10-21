@@ -4,7 +4,7 @@
 #pragma once
 #define MAX_FILES 30
 
-struct File file_table[MAX_FILES];
+//struct File file_table[MAX_FILES];
 
 struct File{
     int in_use;         //if using file set to 1
@@ -16,6 +16,8 @@ struct File{
 int file_open(const char* fileName, int flags);
 
 int file_close(int fd);
+
+unsigned get_file_inode(unsigned dir_inode, const char* filename);
 //if fd > MAX_FILES Error
 //else set that file_table[fd].in_use = 0;
 //then return 0;
