@@ -41,8 +41,9 @@ all:
 	$(CC)	-c	console.c
 	$(CC)	-c	util.c
 	$(CC)	-c	kprintf.c
-	#$(CC)	-c	testsuite.c
 	$(CC)	-c	disk.c
+	$(CC)	-c	interrupt.c
+	#$(CC)	-c	testsuite.c
 	$(LD) -Map kernelmap.txt -T linkerscript.txt -o kernel.tmp \
 		kernelasm.o	\
 		kernelmain.o \
@@ -51,6 +52,7 @@ all:
 		util.o	\
 		kprintf.o	\
 		disk.o	\
+		interrupt.o	\
 		#testsuite.o
 	$(OBJCOPY) -Obinary kernel.tmp kernel.bin
 	$(TRUNCATE) -s 400000000 hd.img

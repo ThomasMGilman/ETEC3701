@@ -4,7 +4,7 @@ Common symbol       size              file
 
 mbi                 0x4               console.o
 framebuffer         0x4               console.o
-decl2               0x200             testsuite.o
+idt                 0x100             interrupt.o
 buff                0x80              console.o
 lastCharDrawn       0x1               console.o
 SB                  0x400             kernelmain.o
@@ -16,8 +16,8 @@ Discarded input sections
  .eh_frame      0x0000000000000000      0x190 console.o
  .eh_frame      0x0000000000000000      0x178 util.o
  .eh_frame      0x0000000000000000       0xc8 kprintf.o
- .eh_frame      0x0000000000000000       0x38 testsuite.o
- .eh_frame      0x0000000000000000      0x158 disk.o
+ .eh_frame      0x0000000000000000      0x1b8 disk.o
+ .eh_frame      0x0000000000000000       0xcc interrupt.o
 
 Memory Configuration
 
@@ -50,69 +50,76 @@ Linker script and memory map
                 0x0000000000100000                _textStart = .
  *(.text)
  .text          0x0000000000100000       0x58 kernelasm.o
- .text          0x0000000000100058       0x28 kernelmain.o
+ .text          0x0000000000100058       0x20 kernelmain.o
                 0x0000000000100058                kmain
- .text          0x0000000000100080       0x24 stdarg.o
-                0x0000000000100080                _va_arg
- .text          0x00000000001000a4      0x708 console.o
-                0x00000000001000a4                loop
-                0x00000000001000c9                set_pixel
-                0x0000000000100196                clearScreen
-                0x0000000000100237                smoothlyTransitionColors
-                0x00000000001003d4                backspace
-                0x0000000000100441                newLine
-                0x000000000010047f                scroll
-                0x000000000010050c                consoleDrawChar
-                0x0000000000100620                console_putc
-                0x0000000000100748                consoleDrawString
-                0x0000000000100787                consol_init
- .text          0x00000000001007ac      0x1f8 util.o
-                0x00000000001007ac                outb
-                0x00000000001007cb                outw
-                0x00000000001007ec                inb
-                0x0000000000100808                inw
-                0x0000000000100825                logString
-                0x000000000010086c                clearBss
-                0x0000000000100888                kstrln
-                0x00000000001008b0                kmemcmp
-                0x000000000010090b                kmemcpy
-                0x0000000000100946                kmemset
-                0x0000000000100970                Factorial
- .text          0x00000000001009a4      0xc04 kprintf.o
-                0x0000000000100a09                kprintf
-                0x0000000000100a37                ksprintf
- .text          0x00000000001015a8      0x1dc testsuite.o
-                0x00000000001015a8                sweet
- .text          0x0000000000101784      0x6f8 disk.o
-                0x0000000000101784                selectSector
-                0x0000000000101819                isBusy
-                0x0000000000101835                isDiskReady
-                0x0000000000101895                disk_read_sector
-                0x000000000010194d                disk_write_sector
-                0x0000000000101a07                disk_read_block
-                0x0000000000101a4c                disk_read_partial
-                0x0000000000101aa7                disk_read_inode
-                0x0000000000101b3a                list_dirs
-                0x0000000000101cee                listDiskInfo
+ .text          0x0000000000100078       0x24 stdarg.o
+                0x0000000000100078                _va_arg
+ .text          0x000000000010009c      0x708 console.o
+                0x000000000010009c                loop
+                0x00000000001000c1                set_pixel
+                0x000000000010018e                clearScreen
+                0x000000000010022f                smoothlyTransitionColors
+                0x00000000001003cc                backspace
+                0x0000000000100439                newLine
+                0x0000000000100477                scroll
+                0x0000000000100504                consoleDrawChar
+                0x0000000000100618                console_putc
+                0x0000000000100740                consoleDrawString
+                0x000000000010077f                consol_init
+ .text          0x00000000001007a4      0x1f8 util.o
+                0x00000000001007a4                outb
+                0x00000000001007c3                outw
+                0x00000000001007e4                inb
+                0x0000000000100800                inw
+                0x000000000010081d                logString
+                0x0000000000100864                clearBss
+                0x0000000000100880                kstrln
+                0x00000000001008a8                kmemcmp
+                0x0000000000100903                kmemcpy
+                0x000000000010093e                kmemset
+                0x0000000000100968                Factorial
+ .text          0x000000000010099c      0xc04 kprintf.o
+                0x0000000000100a01                kprintf
+                0x0000000000100a2f                ksprintf
+ .text          0x00000000001015a0      0x830 disk.o
+                0x00000000001015a0                selectSector
+                0x0000000000101635                isBusy
+                0x0000000000101651                isDiskReady
+                0x00000000001016b1                disk_read_sector
+                0x0000000000101769                disk_write_sector
+                0x0000000000101823                disk_read_block
+                0x0000000000101868                disk_read_partial
+                0x00000000001018c3                disk_read_inode
+                0x0000000000101938                list_SB_info
+                0x0000000000101985                list_BGDTS_info
+                0x0000000000101a5b                list_dirs
+                0x0000000000101d27                listDiskInfo
+                0x0000000000101d8d                disk_init
+ .text          0x0000000000101dd0      0x16c interrupt.o
+                0x0000000000101dd0                haltForever
+                0x0000000000101dd6                unknownInterrupt
+                0x0000000000101e0e                unknownInterruptWithCode
+                0x0000000000101e59                table
+                0x0000000000101eae                interrupt_init
  *(.rodata)
  *(.rdata)
- *fill*         0x0000000000101e7c        0x4 
- .rdata         0x0000000000101e80     0x2020 kernelmain.o
- .rdata         0x0000000000103ea0     0x2000 console.o
- .rdata         0x0000000000105ea0     0x21e0 kprintf.o
- .rdata         0x0000000000108080      0x4a0 testsuite.o
- .rdata         0x0000000000108520      0x18c disk.o
+ *fill*         0x0000000000101f3c        0x4 
+ .rdata         0x0000000000101f40     0x2000 kernelmain.o
+ .rdata         0x0000000000103f40     0x2000 console.o
+ .rdata         0x0000000000105f40     0x21e0 kprintf.o
+ .rdata         0x0000000000108120      0x148 disk.o
+ .rdata         0x0000000000108268       0x40 interrupt.o
  *(.rdata$zzz)
- .rdata$zzz     0x00000000001086ac       0x14 kernelmain.o
- .rdata$zzz     0x00000000001086c0       0x14 stdarg.o
- .rdata$zzz     0x00000000001086d4       0x14 console.o
- .rdata$zzz     0x00000000001086e8       0x14 util.o
- .rdata$zzz     0x00000000001086fc       0x14 kprintf.o
- .rdata$zzz     0x0000000000108710       0x14 testsuite.o
- .rdata$zzz     0x0000000000108724       0x14 disk.o
-                0x0000000000108738                _textEnd = .
+ .rdata$zzz     0x00000000001082a8       0x14 kernelmain.o
+ .rdata$zzz     0x00000000001082bc       0x14 stdarg.o
+ .rdata$zzz     0x00000000001082d0       0x14 console.o
+ .rdata$zzz     0x00000000001082e4       0x14 util.o
+ .rdata$zzz     0x00000000001082f8       0x14 kprintf.o
+ .rdata$zzz     0x000000000010830c       0x14 disk.o
+ .rdata$zzz     0x0000000000108320       0x14 interrupt.o
+                0x0000000000108334                _textEnd = .
                 0x0000000000109000                . = ALIGN (ABSOLUTE (.), 0x1000)
- *fill*         0x0000000000108738      0x8c8 
+ *fill*         0x0000000000108334      0xccc 
                 0x0000000000109000                _dataStart = .
  *(.data)
  .data          0x0000000000109000        0x0 kernelmain.o
@@ -123,13 +130,13 @@ Linker script and memory map
                 0x000000000010904c                green
  .data          0x0000000000109060        0x0 util.o
  .data          0x0000000000109060        0x0 kprintf.o
- .data          0x0000000000109060        0x4 testsuite.o
-                0x0000000000109060                decl
- .data          0x0000000000109064        0x0 disk.o
-                0x0000000000109064                _dataEnd = .
-                0x0000000000109064                _bssStart = .
+ .data          0x0000000000109060        0x0 disk.o
+ .data          0x0000000000109060       0x18 interrupt.o
+                0x0000000000109060                gdt
+                0x0000000000109078                _dataEnd = .
+                0x0000000000109078                _bssStart = .
  *(COMMON)
- *fill*         0x0000000000109064       0x1c 
+ *fill*         0x0000000000109078        0x8 
  COMMON         0x0000000000109080      0x400 kernelmain.o
                 0x0000000000109080                SB
  COMMON         0x0000000000109480       0xa1 console.o
@@ -138,29 +145,29 @@ Linker script and memory map
                 0x00000000001094a0                buff
                 0x0000000000109520                lastCharDrawn
  *fill*         0x0000000000109521       0x1f 
- COMMON         0x0000000000109540      0x200 testsuite.o
-                0x0000000000109540                decl2
+ COMMON         0x0000000000109540      0x100 interrupt.o
+                0x0000000000109540                idt
  *(.bss)
- .bss           0x0000000000109740     0x1000 kernelasm.o
- .bss           0x000000000010a740        0x0 kernelmain.o
- .bss           0x000000000010a740        0x0 stdarg.o
- .bss           0x000000000010a740       0x10 console.o
-                0x000000000010a740                pixCol
-                0x000000000010a744                pixRow
-                0x000000000010a748                colorChangeIndex
-                0x000000000010a74c                blue
- .bss           0x000000000010a750        0x0 util.o
- .bss           0x000000000010a750        0x0 kprintf.o
- .bss           0x000000000010a750        0x0 testsuite.o
- *fill*         0x000000000010a750       0x10 
- .bss           0x000000000010a760     0x4000 disk.o
-                0x000000000010e760                _bssEnd = .
+ .bss           0x0000000000109640     0x1000 kernelasm.o
+ .bss           0x000000000010a640        0x0 kernelmain.o
+ .bss           0x000000000010a640        0x0 stdarg.o
+ .bss           0x000000000010a640       0x10 console.o
+                0x000000000010a640                pixCol
+                0x000000000010a644                pixRow
+                0x000000000010a648                colorChangeIndex
+                0x000000000010a64c                blue
+ .bss           0x000000000010a650        0x0 util.o
+ .bss           0x000000000010a650        0x0 kprintf.o
+ *fill*         0x000000000010a650       0x10 
+ .bss           0x000000000010a660     0x4000 disk.o
+ .bss           0x000000000010e660        0x0 interrupt.o
+                0x000000000010e660                _bssEnd = .
 
 .drectve        0x000000000010f000      0x200
  .drectve       0x000000000010f000       0x14 kernelmain.o
  .drectve       0x000000000010f014       0x58 console.o
- .drectve       0x000000000010f06c       0x2c testsuite.o
- .drectve       0x000000000010f098       0x14 disk.o
+ .drectve       0x000000000010f06c       0x14 disk.o
+ .drectve       0x000000000010f080       0x14 interrupt.o
 
 /DISCARD/
  *(.eh_frame)
@@ -171,6 +178,6 @@ LOAD stdarg.o
 LOAD console.o
 LOAD util.o
 LOAD kprintf.o
-LOAD testsuite.o
 LOAD disk.o
+LOAD interrupt.o
 OUTPUT(kernel.tmp pei-i386)

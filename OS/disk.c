@@ -126,6 +126,36 @@ int disk_read_inode(unsigned num, struct Inode** ino)
     return 0;
 }
 
+void list_SB_info()
+{
+    kprintf("Volume Label: %.*s  Free:%d\n",16, SB.volname, SB.free_block_count);
+    kprintf("BlocksPerGroup: %d  TotalBlocks: %d\n", SB.blocks_per_group, SB.block_count);
+}
+
+int list_BGDTS_info()
+{
+    signed pass;
+    unsigned bg_num = 0, Groups, block, bgd_num;    //blockGroup, Num Groups, BGD num
+    static union blockGroup BG;
+    Groups = SB.block_count / SB.blocks_per_group;  //Get num block groups in memory
+    //BGDT INFO
+    while(bg_num <= Groups)
+    {
+        //Populate BGDT for BlockGroup
+        block = 1 + (SB.blocks_per_group*(bg_num++));
+        kprintf("Reading BGDT from Group %d\nReading starting at block %d\n", bg_num, block);
+        if((pass = disk_read_block(block, &BG)) < 0)
+        {
+            logString("Failed to read blockGroup\n");
+            return pass;
+        }
+        //three BGD's per BGDT
+        for(bgd_num = 0; bgd_num <= Groups; bgd_num++)
+            kprintf("Group %d: Free Blocks = %d\n", bgd_num, BG.bgd[bgd_num].free_blocks);
+    }
+    return 0;
+}
+
 int list_dirs(unsigned inodeWanted, unsigned subIndent)
 {
     struct Inode* inode, *dirInode;
@@ -165,20 +195,20 @@ int list_dirs(unsigned inodeWanted, unsigned subIndent)
                 {
                     if((pass = disk_read_inode(dir->inode, &dirInode)) < 0)
                         return pass;
-                    if((dirInode->mode>>12) & 4)
+                    if((dirInode->mode>>12) & 4)    //directory dir
                     {
                         while(tmpIndent--) kprintf("\t");
-                        kprintf("< %u> %.*s\n",dir->inode, dir->name_len, dir->name);          //print dir name
+                        kprintf("< %u> %.*s\n",dir->inode, dir->name_len, dir->name);        //print dir name
                         if((pass = list_dirs(dir->inode, subIndent+1)) < 0)
                             return pass;
                         if((pass = disk_read_block(inode->direct[dirNum-1], buffer)) < 0)   //get directory
                             return pass;
                         p = &buffer[0];
                     }
-                    else
+                    else                                                                    //file dir
                     {
                         while(tmpIndent--) kprintf("\t");
-                        kprintf("< %u> %.*s\n",dir->inode, dir->name_len, dir->name);          //print dir name
+                        kprintf("< %u> %.*s\n",dir->inode, dir->name_len, dir->name);   //print dir name
                     }
                     offset += dir->rec_len;                                             //adjust offset count for block size
                     tmpIndent = subIndent;
@@ -192,9 +222,23 @@ int list_dirs(unsigned inodeWanted, unsigned subIndent)
 
 int listDiskInfo()
 {
-    unsigned bg_num = 0, Groups;                     //blockGroup, Num Groups, BGD num
-    static union blockGroup BG;
-
+    signed pass;
+    list_SB_info();
+    if((pass = list_BGDTS_info()) < 0)
+    {
+        logString("ERROR: Bad BGDT Read\n");
+        return pass;
+    }
+    if(list_dirs(1, 0))         //list root dirs
+    {
+        logString("ERROR: Bad directory Read\n");
+        return pass;
+    }
+    logString("Done\n");
+    return 0; //all is good
+}
+int disk_init()
+{
     //SUPERBLOCK INFO
     signed pass;
     if((pass = disk_read_sector(2, &SB, 2)) < 0)    //main SUPERBLOCK 1KB big starts at offset of 1KB
@@ -202,37 +246,5 @@ int listDiskInfo()
         logString("Failed to read SuperBlock");
         return pass;
     }
-
-    kprintf("Volume Label: %.*s  Free:%d\n",16, SB.volname, SB.free_block_count);
-    kprintf("BlocksPerGroup: %d  TotalBlocks: %d\n", SB.blocks_per_group, SB.block_count);
-    Groups = SB.block_count / SB.blocks_per_group;  //Get num block groups in memory
-
-    //BGDT INFO
-    unsigned block;
-    while(bg_num <= Groups)
-    {
-        //Populate BGDT for BlockGroup
-        kprintf("Reading BGDT from Group %d\n", bg_num);
-        block = 1 + (SB.blocks_per_group*(bg_num++));
-        kprintf("Reading starting at block %d\n", block);
-
-        if((pass = disk_read_block(block, &BG)) < 0)
-        {
-            logString("Failed to read blockGroup\n");
-            return pass;
-        }
-        //three BGD's per BGDT
-        unsigned bgd_num;
-        for(bgd_num = 0; bgd_num <= Groups; bgd_num++)
-            kprintf("Group %d: Free Blocks = %d\n", bgd_num, BG.bgd[bgd_num].free_blocks);
-    }
-
-    if(list_dirs(1, 0))
-    {
-        logString("error reading directory info");
-        return pass;
-    }
-    logString("Done\n");
-
-    return 0; //all is good
+    return 0;
 }
