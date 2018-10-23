@@ -5,7 +5,10 @@
 int file_open(const char* fileName, int flags)
 {
     struct File* file;
-    int fd, index, noSpace;
+    struct Inode* rootIno;
+    struct DirEntry* dir;
+    char buffer[4096];
+    int fd, index, noSpace, pass, dirNum = 0, atEnd = 1;
     while(index++ < MAX_FILES)
     {
         if(file_table[index].in_use == 0)   //found free space

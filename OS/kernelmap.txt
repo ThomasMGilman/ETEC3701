@@ -81,7 +81,7 @@ Linker script and memory map
  .text          0x00000000001009b0      0xc04 kprintf.o
                 0x0000000000100a15                kprintf
                 0x0000000000100a43                ksprintf
- .text          0x00000000001015b4      0x830 disk.o
+ .text          0x00000000001015b4      0x8fc disk.o
                 0x00000000001015b4                selectSector
                 0x0000000000101649                isBusy
                 0x0000000000101665                isDiskReady
@@ -92,39 +92,39 @@ Linker script and memory map
                 0x00000000001018d7                disk_read_inode
                 0x000000000010194c                list_SB_info
                 0x0000000000101999                list_BGDTS_info
-                0x0000000000101a6f                list_dirs
-                0x0000000000101d3b                listDiskInfo
-                0x0000000000101da1                disk_init
- .text          0x0000000000101de4      0x334 interrupt.o
-                0x0000000000101de4                haltForever
-                0x0000000000101dea                divideByZeroInterrupt
-                0x0000000000101e22                debugTrapInterrupt
-                0x0000000000101e5a                badOpcodeInterrupt
-                0x0000000000101e92                unknownInterrupt
-                0x0000000000101eca                unknownInterruptWithCode
-                0x0000000000101f15                protectionFaultInterrupt
-                0x0000000000101f60                pageFaultInterrupt
-                0x0000000000101fab                table
-                0x0000000000102000                interrupt_init
+                0x0000000000101a6f                checkDirs
+                0x0000000000101de6                listDiskInfo
+                0x0000000000101e6a                disk_init
+ .text          0x0000000000101eb0      0x334 interrupt.o
+                0x0000000000101eb0                haltForever
+                0x0000000000101eb6                divideByZeroInterrupt
+                0x0000000000101eee                debugTrapInterrupt
+                0x0000000000101f26                badOpcodeInterrupt
+                0x0000000000101f5e                unknownInterrupt
+                0x0000000000101f96                unknownInterruptWithCode
+                0x0000000000101fe1                protectionFaultInterrupt
+                0x000000000010202c                pageFaultInterrupt
+                0x0000000000102077                table
+                0x00000000001020cc                interrupt_init
  *(.rodata)
  *(.rdata)
- *fill*         0x0000000000102118        0x8 
- .rdata         0x0000000000102120     0x2020 kernelmain.o
- .rdata         0x0000000000104140     0x2000 console.o
- .rdata         0x0000000000106140     0x21e0 kprintf.o
- .rdata         0x0000000000108320      0x148 disk.o
- .rdata         0x0000000000108468      0x168 interrupt.o
+ *fill*         0x00000000001021e4       0x1c 
+ .rdata         0x0000000000102200     0x2020 kernelmain.o
+ .rdata         0x0000000000104220     0x2000 console.o
+ .rdata         0x0000000000106220     0x21e0 kprintf.o
+ .rdata         0x0000000000108400      0x148 disk.o
+ .rdata         0x0000000000108548      0x168 interrupt.o
  *(.rdata$zzz)
- .rdata$zzz     0x00000000001085d0       0x14 kernelmain.o
- .rdata$zzz     0x00000000001085e4       0x14 stdarg.o
- .rdata$zzz     0x00000000001085f8       0x14 console.o
- .rdata$zzz     0x000000000010860c       0x14 util.o
- .rdata$zzz     0x0000000000108620       0x14 kprintf.o
- .rdata$zzz     0x0000000000108634       0x14 disk.o
- .rdata$zzz     0x0000000000108648       0x14 interrupt.o
-                0x000000000010865c                _textEnd = .
+ .rdata$zzz     0x00000000001086b0       0x14 kernelmain.o
+ .rdata$zzz     0x00000000001086c4       0x14 stdarg.o
+ .rdata$zzz     0x00000000001086d8       0x14 console.o
+ .rdata$zzz     0x00000000001086ec       0x14 util.o
+ .rdata$zzz     0x0000000000108700       0x14 kprintf.o
+ .rdata$zzz     0x0000000000108714       0x14 disk.o
+ .rdata$zzz     0x0000000000108728       0x14 interrupt.o
+                0x000000000010873c                _textEnd = .
                 0x0000000000109000                . = ALIGN (ABSOLUTE (.), 0x1000)
- *fill*         0x000000000010865c      0x9a4 
+ *fill*         0x000000000010873c      0x8c4 
                 0x0000000000109000                _dataStart = .
  *(.data)
  .data          0x0000000000109000        0x0 kernelmain.o

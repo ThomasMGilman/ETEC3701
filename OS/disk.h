@@ -123,7 +123,7 @@ void list_SB_info();
 
 int list_BGDTS_info();
 
-int list_dirs(unsigned inodeWanted, unsigned subIndent);
+int checkDirs(unsigned inodeWanted, unsigned subIndent, unsigned listDirs, unsigned fileNameLen, const char* fileName);
 
 int listDiskInfo();
 

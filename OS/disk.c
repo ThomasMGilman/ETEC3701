@@ -1,6 +1,7 @@
 #include "disk.h"
 #include "util.h"
 #include "kprintf.h"
+#include "errno.h"
 
 void selectSector(unsigned int sector)
 {
@@ -156,14 +157,14 @@ int list_BGDTS_info()
     return 0;
 }
 
-int list_dirs(unsigned inodeWanted, unsigned subIndent)
+int checkDirs(unsigned inodeWanted, unsigned subIndent, unsigned listDirs, unsigned fileNameLen, const char* fileName)
 {
     struct Inode* inode, *dirInode;
     struct DirEntry *dir;
     static char buffer[4096];
     char* p;
     signed pass;
-    unsigned dirNum = 0, offset = 0, atEnd = 1, tmpIndent = subIndent;
+    unsigned dirNum = 0, offset = 0, atEnd = 1, tmpIndent = subIndent, counter;
 
     if((pass = disk_read_inode(inodeWanted, &inode)) < 0)
         return pass;
@@ -197,9 +198,12 @@ int list_dirs(unsigned inodeWanted, unsigned subIndent)
                         return pass;
                     if((dirInode->mode>>12) & 4)    //directory dir
                     {
-                        while(tmpIndent--) kprintf("\t");
-                        kprintf("< %u> %.*s\n",dir->inode, dir->name_len, dir->name);        //print dir name
-                        if((pass = list_dirs(dir->inode, subIndent+1)) < 0)
+                        if(listDirs)
+                        {
+                            while(tmpIndent--) kprintf("\t");
+                                kprintf("< %u> %.*s\n",dir->inode, dir->name_len, dir->name);        //print dir name
+                        }
+                        if((pass = checkDirs(dir->inode, subIndent+1, listDirs, fileNameLen, fileName)) < 0)
                             return pass;
                         if((pass = disk_read_block(inode->direct[dirNum-1], buffer)) < 0)   //get directory
                             return pass;
@@ -207,21 +211,40 @@ int list_dirs(unsigned inodeWanted, unsigned subIndent)
                     }
                     else                                                                    //file dir
                     {
-                        while(tmpIndent--) kprintf("\t");
-                        kprintf("< %u> %.*s\n",dir->inode, dir->name_len, dir->name);   //print dir name
+                        if(listDirs)
+                        {
+                            while(tmpIndent--) kprintf("\t");
+                                kprintf("< %u> %.*s\n",dir->inode, dir->name_len, dir->name);//print dir name
+                        }
                     }
-                    offset += dir->rec_len;                                             //adjust offset count for block size
+                    if(dir->name_len == fileNameLen && fileNameLen > 0)         //check FileName with fileName passed
+                    {
+                        counter = 0;
+                        while(counter++ < fileNameLen)
+                        {
+                            if(fileName[counter] != dir->name[counter])
+                                break;
+                            else if(fileName[counter] == dir->name[counter]     //found file
+                                    && counter == fileNameLen - 1)
+                                return dir->inode;
+                        }
+                    }
+                    offset += dir->rec_len;                                     //adjust offset count for block size
                     tmpIndent = subIndent;
                 }
             }
             offset = 0;
         }
     }
-    return 0;
+    if(fileNameLen > 0)
+        return -ENOENT;
+    else
+        return 0;
 }
 
 int listDiskInfo()
 {
+    char* emptyBuff[1] = {'\0'};
     signed pass;
     list_SB_info();
     if((pass = list_BGDTS_info()) < 0)
@@ -229,7 +252,7 @@ int listDiskInfo()
         logString("ERROR: Bad BGDT Read\n");
         return pass;
     }
-    if(list_dirs(1, 0))         //list root dirs
+    if(checkDirs(1, 0, 0, 0, *emptyBuff))         //list root dirs
     {
         logString("ERROR: Bad directory Read\n");
         return pass;
