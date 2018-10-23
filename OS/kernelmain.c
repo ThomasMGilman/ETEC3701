@@ -13,9 +13,10 @@ void kmain(struct MultibootInfo *mbi){
        logString("error listing DiskInfo");
     // int a=5;
     // int b=0;
-    // int c = a/b;
+    // int c = a/b;                                 //Division by zero
     // kprintf("%d\n",c);
-    //asm volatile ("int 3" :::"memory");
+    // asm volatile ("int 3" :::"memory");           //Interrupt3 debug trap
+    // asm volatile( ".byte 15,255" ::: "memory");   //bad opcode
     while(1){           //loop forever
     }  
 }
