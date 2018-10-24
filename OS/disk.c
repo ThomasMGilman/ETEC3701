@@ -252,7 +252,7 @@ int listDiskInfo()
         logString("ERROR: Bad BGDT Read\n");
         return pass;
     }
-    if(checkDirs(1, 0, 0, 0, *emptyBuff))         //list root dirs
+    if(checkDirs(1, 0, 1, 0, *emptyBuff))         //list root dirs
     {
         logString("ERROR: Bad directory Read\n");
         return pass;
