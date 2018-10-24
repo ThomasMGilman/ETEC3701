@@ -3,4 +3,5 @@
 #define ENOENT 1 //no such directory entry
 #define EINVAL 2 //invalid parameter
 #define EMFILE 3 //too many open files
-#define DRIERR 4 //fatal error reading disk inode
+#define ENOSYS 4 //no such system call
+#define DRIERR 5 //fatal error reading disk inode
