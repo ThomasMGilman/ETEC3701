@@ -46,7 +46,7 @@ int file_read(int fd, void* buf, int count)
     ;
 }
 
-int file_write(int fd, const void* buf, int count);
+int file_write(int fd, const void* buf, int count)
 {
     return -ENOSYS; //no such system call
 }
