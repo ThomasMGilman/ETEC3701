@@ -1,40 +1,39 @@
 #include "file.h"
-#include "disk.h"
 #include "errno.h"
+
+int kprintf( const char* fmt0, ... );
+int disk_read_inode(unsigned num, struct Inode** ino);
+int checkDirs(unsigned inodeWanted, unsigned subIndent, unsigned listDirs, unsigned fileNameLen, const char* fileName);
+
+struct File file_table[MAX_FILES];
 
 int file_open(const char* fileName, int flags)
 {
-    struct File* file;
-    struct Inode* rootIno;
-    struct DirEntry* dir;
-    char buffer[4096];
-    int fd, index, noSpace, pass, dirNum = 0, atEnd = 1;
-    while(index++ < MAX_FILES)
+    struct File file;
+    struct Inode* fileIno;
+    int fd = 0, pass;
+    while(fd++ < MAX_FILES)
     {
-        if(file_table[index].in_use == 0)   //found free space
-        {
-            fd = index;
+        if(file_table[fd].in_use == 0)   //found free space
             break;
-        }
-        if(index == MAX_FILES - 1 && file_table[index].in_use == 1)
+        if(fd == MAX_FILES - 1 && file_table[fd].in_use == 1)
             return -EMFILE;
     }
-    file_table[index] = *file;
-    file->flags = flags;
+    file = file_table[fd];
+    file.flags = flags;
     //filename: check it
-    unsigned fn_len = kstrlen(fileName);
-    //for each entry e of root dir:
-        //if(e.name_len == fnl && kmemcmp(e.name, filename, fnl) == 0)
-            //file_table[fd].in_use = 1;
-            //disk_read_inode(e.inode, &file_table[fd].ino);
-            //return fd;
-        //else error if filename isnt there (in root directory)
-            //return -ENOENT;
+    if((pass = checkDirs(1, 0, 0, kstrln((char*)fileName), fileName)) < 0)
+        return -ENOENT;
+    if((pass = disk_read_inode(pass, &fileIno)) < 0)
+        return -DRIERR;
+    kmemcmp(&file.ino, fileIno,sizeof(struct Inode));
+    file_table[fd].in_use = 1;
+    return fd;
 }
 
 int file_close(int fd)
 {
-    if(fd > MAX_FILES) //no such file
+    if(fd >= MAX_FILES) //no such file
         return -EINVAL;
     if(file_table[fd].in_use == 0) //file not open
         return -EINVAL;
@@ -42,25 +41,17 @@ int file_close(int fd)
     return SUCCESS;
 }
 
-unsigned get_file_inode(unsigned dir_inode, const char* filename)
+int file_read(int fd, void* buf, int count)
 {
-    signed pass;
-    struct Inode *ino;
-    if((pass = disk_read_inode(dir_inode, &ino)) < 0)
-        return pass;
+    ;
+}
 
+int file_write(int fd, const void* buf, int count);
+{
+    return -ENOSYS; //no such system call
+}
 
-    //get inode location ex):
-    // GLOBALS:  inodesPerGroup = 100     blockPerGroup = 1000
-    // inode I want 3141
-    // group = (3141-1)/100 = 31
-    // inodeTableStartingBlock = 1000 * 31 + 4 = 31004
-    // inodesFromTableStart = (3141-1) % 100 = 40
-    // bytesFromTableStart = 40*sizeof(Inode) = 40*128 = 5120bytes
-    // blocksFromTableStart = 5120/4096 = 1
-
-    // load_block(alpha + beta, buffer)
-    // inodesPerBlock = 4096/128 = 32
-    // inodesToSkip = 40 % 8
-    // kmemcpy(ino, buffer+inodesToSkipOver*sizeof(inode),sizeof(inode))
+int file_seek(int fd, int offset, int whence)
+{
+    ;
 }

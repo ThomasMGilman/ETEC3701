@@ -1,16 +1,16 @@
 #include "console.h"
-#include "util.h"
 #include "disk.h"
-#include "file.h"
 #include "interrupt.h"
-#include "kprintf.h"
+
+void sweet();
 
 void kmain(struct MultibootInfo *mbi){
     consol_init(mbi);   //initialize framebuffer and blank screen
     disk_init();
     interrupt_init();
-    if(listDiskInfo() != 0)
-       logString("error listing DiskInfo");
+    //if(listDiskInfo() != 0)
+    //   logString("error listing DiskInfo");
+    sweet();
     // int a=5;
     // int b=0;
     // int c = a/b;                                 //Division by zero

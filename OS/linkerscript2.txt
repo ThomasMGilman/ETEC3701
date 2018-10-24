@@ -1,0 +1,40 @@
+ENTRY (_start)
+STARTUP(crtasm.o)
+INPUT(crtc.o)
+SECTIONS {
+    . = 0x400000 ;      /*Load address*/
+
+    .text : {
+        textStart = .;  /*start of text section*/    
+        _textStart = .;  /*start of text section*/    
+        *(.text)        /*program code*/
+        *(.rodata)      /*read only data*/
+        *(.rdata)       /*read only data*/
+        *(.rdata$zzz)   /*read only data*/
+        textEnd = .;    /*end of text section*/
+        _textEnd = .;    /*end of text section*/
+        
+        . = ALIGN( ABSOLUTE(.) , 0x1000 );      /* pad to a 4K boundary */
+
+        dataStart = .;      /*start of data section*/
+        _dataStart = .;
+        *(.data) 
+        dataEnd = .;        /*end of data section*/
+        _dataEnd = .;
+        /* end of data section */
+        
+        bssStart = . ; 
+        _bssStart = . ; 
+        *(COMMON) 
+        *(.bss)  
+        bssEnd = .;
+        _bssEnd = .;
+        
+    } 
+    
+    /DISCARD/ : {
+        *(.eh_frame)
+        *(.comment)
+    }
+    
+}

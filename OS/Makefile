@@ -42,8 +42,9 @@ all:
 	$(CC)	-c	util.c
 	$(CC)	-c	kprintf.c
 	$(CC)	-c	disk.c
+	$(CC)	-c	file.c
 	$(CC)	-c	interrupt.c
-	#$(CC)	-c	testsuite.c
+	$(CC)	-c	testsuite.c
 	$(LD) -Map kernelmap.txt -T linkerscript.txt -o kernel.tmp \
 		kernelasm.o	\
 		kernelmain.o \
@@ -52,8 +53,9 @@ all:
 		util.o	\
 		kprintf.o	\
 		disk.o	\
+		file.o	\
 		interrupt.o	\
-		#testsuite.o
+		testsuite.o
 	$(OBJCOPY) -Obinary kernel.tmp kernel.bin
 	$(TRUNCATE) -s 400000000 hd.img
 	$(MKE2FS) -b 4096 -F -I 128 -q -t ext2 -r 0 -L moocow -g 32768 hd.img

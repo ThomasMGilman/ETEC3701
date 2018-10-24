@@ -164,7 +164,7 @@ int checkDirs(unsigned inodeWanted, unsigned subIndent, unsigned listDirs, unsig
     static char buffer[4096];
     char* p;
     signed pass;
-    unsigned dirNum = 0, offset = 0, atEnd = 1, tmpIndent = subIndent, counter;
+    unsigned dirNum = 0, offset = 0, atEnd = 1, tmpCounter = subIndent;
 
     if((pass = disk_read_inode(inodeWanted, &inode)) < 0)
         return pass;
@@ -196,41 +196,36 @@ int checkDirs(unsigned inodeWanted, unsigned subIndent, unsigned listDirs, unsig
                 {
                     if((pass = disk_read_inode(dir->inode, &dirInode)) < 0)
                         return pass;
+                    if(dir->name_len == fileNameLen && fileNameLen > 0)         //check FileName with fileName passed
+                    {
+                        tmpCounter = 0;
+                        while(tmpCounter < fileNameLen)
+                        {
+                            if(fileName[tmpCounter] != dir->name[tmpCounter])
+                                break;
+                            else if(fileName[tmpCounter] == dir->name[tmpCounter]     //found file
+                                    && tmpCounter == fileNameLen - 1)
+                                return dir->inode;
+
+                            tmpCounter++;
+                        }
+                    }
+                    if(listDirs)
+                    {
+                        tmpCounter = subIndent;
+                        while(tmpCounter--) kprintf("\t");
+                            kprintf("< %u> %.*s\n",dir->inode, dir->name_len, dir->name);//print dir name
+                    }
                     if((dirInode->mode>>12) & 4)    //directory dir
                     {
-                        if(listDirs)
-                        {
-                            while(tmpIndent--) kprintf("\t");
-                                kprintf("< %u> %.*s\n",dir->inode, dir->name_len, dir->name);        //print dir name
-                        }
                         if((pass = checkDirs(dir->inode, subIndent+1, listDirs, fileNameLen, fileName)) < 0)
                             return pass;
                         if((pass = disk_read_block(inode->direct[dirNum-1], buffer)) < 0)   //get directory
                             return pass;
                         p = &buffer[0];
                     }
-                    else                                                                    //file dir
-                    {
-                        if(listDirs)
-                        {
-                            while(tmpIndent--) kprintf("\t");
-                                kprintf("< %u> %.*s\n",dir->inode, dir->name_len, dir->name);//print dir name
-                        }
-                    }
-                    if(dir->name_len == fileNameLen && fileNameLen > 0)         //check FileName with fileName passed
-                    {
-                        counter = 0;
-                        while(counter++ < fileNameLen)
-                        {
-                            if(fileName[counter] != dir->name[counter])
-                                break;
-                            else if(fileName[counter] == dir->name[counter]     //found file
-                                    && counter == fileNameLen - 1)
-                                return dir->inode;
-                        }
-                    }
                     offset += dir->rec_len;                                     //adjust offset count for block size
-                    tmpIndent = subIndent;
+                    tmpCounter = subIndent;
                 }
             }
             offset = 0;
