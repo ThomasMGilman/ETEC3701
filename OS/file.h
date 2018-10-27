@@ -1,8 +1,14 @@
 #include "disk.h"
 #include "util.h"
+#include "errno.h"
+#include "kprintf.h"
 
 #pragma once
 #define MAX_FILES 30
+
+#define SEEK_SET 0
+#define SEEK_CUR 1
+#define SEEK_END 2
 
 struct File{
     int in_use;         //if using file set to 1
