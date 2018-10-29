@@ -1,5 +1,12 @@
+#include "syscalls.h"
+#include "errno.h"
 #include "interrupt.h"
+#include "file.h"
 #include "kprintf.h"
+
+#define INTERRUPT_SIZE 49
+
+void logString(char* myString);
 
 struct GDTEntry gdt[] = {
     { 0,0,0,0,0,0 },            //zeros
@@ -7,12 +14,68 @@ struct GDTEntry gdt[] = {
     { 0xffff, 0,0,0, 0xcf9a, 0} //code
 };
 
-struct IDTEntry idt[32];
+struct IDTEntry idt[INTERRUPT_SIZE];
 
 void haltForever(void)
 {
     while(1){
         asm volatile("hlt" ::: "memory");
+    }
+}
+
+int syscall(int p0, int p1, int p2, int p3)
+{
+    asm volatile(
+        "push edx\n"
+        "push ecx\n"
+        "push ebx\n"
+        "push eax\n"
+        "int 48\n"
+        "pop eax\n"
+        "add esp,12"
+        : "+a"(p0)
+        : "b"(p1), "c"(p2), "d"(p3)
+    );
+    return p0;
+}
+
+void syscall_handler(unsigned* ptr)
+{
+    switch(ptr[0])
+    {
+        case SYSCALL_READ:
+            if( ptr[2] < 0x400000 || ptr[2] > 0x800000 ||
+                ptr[2] + ptr[3] < 0x400000 || ptr[2] + ptr[3] > 0x800000)
+            {
+                ptr [0] = -EFAULT;
+                break;
+            }
+            ///do stuff
+            break;
+        case SYSCALL_WRITE:
+            if( ptr[2] < 0x400000 || ptr[2] > 0x800000)
+            {
+                ptr [0] = -EFAULT;
+                break;
+            }
+            if(ptr[3] < 0 || ptr[2]+ptr[3] >= 0x800000)
+            {
+                ptr[0] = -EINVAL;
+                break;
+            }
+            ptr[0] = file_write(ptr[1],(char*)ptr[2],ptr[3]);
+            break;
+        case SYSCALL_OPEN:
+            ptr[0] = file_open((char*)ptr[1], ptr[2]);
+            break;
+        case SYSCALL_CLOSE:
+            ptr[0] = file_close(ptr[1]);
+            break;
+        case SYSCALL_EXIT:
+            break;
+        default:
+            ptr[0] = -ENOSYS;
+            break;
     }
 }
 
@@ -65,6 +128,21 @@ void pageFaultInterrupt(struct InterruptFrame* fr, unsigned code)
     haltForever();
 }
 
+__attribute__((__interrupt__))
+void int48Interrupt(struct InterruptFrame* fr)
+{
+    if( fr->esp < 0x400000 || fr->esp > 0x800000-(4*4)) //Invalid parameter. Ignore the system call.
+        return;
+
+    unsigned* espCheck = (unsigned*)fr->esp;
+    // unsigned req = espCheck[0];
+    // unsigned param1 = espCheck[1];
+    // unsigned param2 = espCheck[2];
+    // unsigned param3 = espCheck[3];
+    syscall_handler(espCheck);
+}
+
+
 void table(int i, void* func){
     unsigned x = (unsigned)func;
     idt[i].addrLow = x&0xffff;
@@ -81,7 +159,7 @@ void interrupt_init()
     lgdt.addr = &gdt[0];
     asm volatile( "lgdt [eax]" : : "a"(&lgdt) : "memory" );
     unsigned index;
-    for(index = 0; index < 32; index++)
+    for(index = 0; index < INTERRUPT_SIZE; index++)
     {
         if(index == 0)
             table(index, divideByZeroInterrupt);
@@ -96,6 +174,11 @@ void interrupt_init()
             table(index, protectionFaultInterrupt);
         else if(index == 14)
             table(index, pageFaultInterrupt);
+        else if(index == 48)
+        {
+            table(index, int48Interrupt);
+            idt[48].flags = 0xee;
+        }
         else
             table(index, unknownInterrupt);
     }

@@ -45,6 +45,8 @@ struct LIDT{
 
 void haltForever(void);
 
+int syscall(int p0, int p1, int p2, int p3);
+
 void table(int i, void* func);
 
 void interrupt_init();

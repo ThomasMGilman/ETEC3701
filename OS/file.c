@@ -70,9 +70,11 @@ int file_read(int fd, void* buf, int count)
             //update variables
             byteCount += (remaining < count) ? remaining : count;
             fp->offset += (remaining < count) ? remaining : count;
-             ksprintf(debugMsg, "byteCount:%d,count:%d,fileOffset:%d,inodeSize:%d,remaining:%d,bo:%d,bi:%d\ncontents:%.*s\n"
-                ,byteCount,count, fp->offset, fp->ino.size, remaining, bo, bi, (remaining<count)?remaining:count, buffer+bo);
+
+            ksprintf(debugMsg, "byteCount:%d,count:%d,fileOffset:%d,inodeSize:%d,remaining:%d,bo:%d,bi:%d\ncontents:%.*s\n"
+            ,byteCount,count, fp->offset, fp->ino.size, remaining, bo, bi, (remaining<count)?remaining:count, buffer+bo);
             logString(debugMsg);
+
             bo = fp->offset % BLOCK_SIZE;
             bi = fp->offset / BLOCK_SIZE;
             remaining = fp->ino.size - bo;

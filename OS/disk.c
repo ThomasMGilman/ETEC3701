@@ -184,7 +184,7 @@ int checkDirs(unsigned inodeWanted, unsigned subIndent, unsigned listDirs, unsig
     {
         while(dirNum < 12 || atEnd)
         {
-            if((pass = disk_read_block(inode->direct[dirNum++], buffer)) < 0)   //get directory
+            if((pass = disk_read_block(inode->direct[dirNum], buffer)) < 0)   //get directory
                 return pass;
             p = &buffer[0];                                                     //point to start of dir entries
             while(offset < 4096 && atEnd)
@@ -205,8 +205,10 @@ int checkDirs(unsigned inodeWanted, unsigned subIndent, unsigned listDirs, unsig
                                 break;
                             else if(fileName[tmpCounter] == dir->name[tmpCounter]     //found file
                                     && tmpCounter == fileNameLen - 1)
+                            {
+                                kprintf("found dir:%.*s, dirInode:%d dirInodeSize:%d\n",dir->name_len, dir->name, dir->inode, dirInode->size);
                                 return dir->inode;
-
+                            }
                             tmpCounter++;
                         }
                     }
@@ -214,13 +216,13 @@ int checkDirs(unsigned inodeWanted, unsigned subIndent, unsigned listDirs, unsig
                     {
                         tmpCounter = subIndent;
                         while(tmpCounter--) kprintf("\t");
-                            kprintf("< %u> %.*s\n",dir->inode, dir->name_len, dir->name);//print dir name
+                            kprintf("< %u> %.*s size:%d\n",dir->inode, dir->name_len, dir->name, dirInode->size);//print dir name
                     }
                     if((dirInode->mode>>12) & 4)    //directory dir
                     {
                         if((pass = checkDirs(dir->inode, subIndent+1, listDirs, fileNameLen, fileName)) < 0)
                             return pass;
-                        if((pass = disk_read_block(inode->direct[dirNum-1], buffer)) < 0)   //get directory
+                        if((pass = disk_read_block(inode->direct[dirNum], buffer)) < 0)   //get directory
                             return pass;
                         p = &buffer[0];
                     }
@@ -229,6 +231,7 @@ int checkDirs(unsigned inodeWanted, unsigned subIndent, unsigned listDirs, unsig
                 }
             }
             offset = 0;
+            dirNum++;
         }
     }
     if(fileNameLen > 0)
@@ -241,13 +244,13 @@ int listDiskInfo()
 {
     char* emptyBuff[1] = {'\0'};
     signed pass;
-    list_SB_info();
-    if((pass = list_BGDTS_info()) < 0)
-    {
-        logString("ERROR: Bad BGDT Read\n");
-        return pass;
-    }
-    if(checkDirs(1, 0, 1, 0, *emptyBuff))         //list root dirs
+    //list_SB_info();
+    //if((pass = list_BGDTS_info()) < 0)
+    //{
+    //    logString("ERROR: Bad BGDT Read\n");
+    //    return pass;
+    //}
+    if((pass = checkDirs(1, 0, 1, 0, *emptyBuff)) < 0)         //list root dirs
     {
         logString("ERROR: Bad directory Read\n");
         return pass;

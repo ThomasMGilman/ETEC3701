@@ -182,9 +182,9 @@ void sweet(){
     
     //additional tests
     int fd1,fd2,fd3;
-    fd1 = file_open("article4.txt",0);
-    fd2 = file_open("article6.txt",0);
-    fd3 = file_open("article4.txt",0);
+    fd1 = file_open("article6.txt",0);
+    fd2 = file_open("article4.txt",0);
+    fd3 = file_open("article6.txt",0);
     if( fd1 < 0 || fd2 < 0 || fd3 < 0 ){
         kprintf("Could not open correctly!");
         return;
