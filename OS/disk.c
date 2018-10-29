@@ -46,7 +46,7 @@ int disk_read_sector(unsigned sector, void* datablock, unsigned numSec)
             ;//logString("Disk Ready\n\0");
         else
         {
-            logString("Disk Error!!\n\0");
+            logString("HEREDisk Error!!\n\0");
             return -1;
         }
         unsigned index;
@@ -116,14 +116,15 @@ int disk_read_partial(unsigned blockNum, void *bg, unsigned start, unsigned coun
 
 int disk_read_inode(unsigned num, struct Inode** ino)
 {
-    static char buffer[4096];                                                       //1 block is 4KB
-    unsigned inodeFromTableStart;
+    static char buffer[4096];
+    unsigned inodeFromTableStart = num % SB.inodes_per_group;
     unsigned InodeBlock = 4 + (((num-1) / SB.inodes_per_group) * SB.blocks_per_group);  //InodeBlockGroup
+    unsigned blocksFromTableStart = (sizeof(struct Inode) * inodeFromTableStart) / BLOCK_SIZE;
+    unsigned inodesToSkipOver = inodeFromTableStart % (BLOCK_SIZE / sizeof(struct Inode));
     signed pass;
-    if((pass = disk_read_block(InodeBlock, buffer)) < 0)
+    if((pass = disk_read_block(InodeBlock + blocksFromTableStart, buffer)) < 0)
         return pass;
-    inodeFromTableStart = num % SB.inodes_per_group; 
-    *ino = (struct Inode*)(buffer + sizeof(struct Inode) * inodeFromTableStart);
+    *ino = (struct Inode*)(buffer + inodesToSkipOver*sizeof(struct Inode));
     return 0;
 }
 
@@ -168,7 +169,7 @@ int checkDirs(unsigned inodeWanted, unsigned subIndent, unsigned listDirs, unsig
 
     if((pass = disk_read_inode(inodeWanted, &inode)) < 0)
         return pass;
-    if(inode->size == 0 || inode->size > 4096)
+    if(inode->size <= 0)
     {
         if(inode->size == 0)
         {
@@ -186,7 +187,7 @@ int checkDirs(unsigned inodeWanted, unsigned subIndent, unsigned listDirs, unsig
         {
             if((pass = disk_read_block(inode->direct[dirNum], buffer)) < 0)   //get directory
                 return pass;
-            p = &buffer[0];                                                     //point to start of dir entries
+            p = &buffer[0];                                                   //point to start of dir entries
             while(offset < 4096 && atEnd)
             {
                 dir = (struct DirEntry*)(p+offset);
@@ -194,7 +195,7 @@ int checkDirs(unsigned inodeWanted, unsigned subIndent, unsigned listDirs, unsig
                     atEnd = 0;
                 else if(dir->inode > 0)
                 {
-                    if((pass = disk_read_inode(dir->inode, &dirInode)) < 0)
+                    if((pass = disk_read_inode(dir->inode-1, &dirInode)) < 0)
                         return pass;
                     if(dir->name_len == fileNameLen && fileNameLen > 0)         //check FileName with fileName passed
                     {
@@ -218,14 +219,14 @@ int checkDirs(unsigned inodeWanted, unsigned subIndent, unsigned listDirs, unsig
                         while(tmpCounter--) kprintf("\t");
                             kprintf("< %u> %.*s size:%d\n",dir->inode, dir->name_len, dir->name, dirInode->size);//print dir name
                     }
-                    if((dirInode->mode>>12) & 4)    //directory dir
-                    {
-                        if((pass = checkDirs(dir->inode, subIndent+1, listDirs, fileNameLen, fileName)) < 0)
-                            return pass;
-                        if((pass = disk_read_block(inode->direct[dirNum], buffer)) < 0)   //get directory
-                            return pass;
-                        p = &buffer[0];
-                    }
+                    // if((dirInode->mode>>12) & 4)    //directory dir
+                    // {
+                    //     if((pass = checkDirs(dir->inode, subIndent+1, listDirs, fileNameLen, fileName)) < 0)
+                    //         return pass;
+                    //     if((pass = disk_read_block(inode->direct[dirNum], buffer)) < 0)   //get directory
+                    //         return pass;
+                    //     p = &buffer[0];
+                    // }
                     offset += dir->rec_len;                                     //adjust offset count for block size
                     tmpCounter = subIndent;
                 }
@@ -244,12 +245,12 @@ int listDiskInfo()
 {
     char* emptyBuff[1] = {'\0'};
     signed pass;
-    //list_SB_info();
-    //if((pass = list_BGDTS_info()) < 0)
-    //{
-    //    logString("ERROR: Bad BGDT Read\n");
-    //    return pass;
-    //}
+    list_SB_info();
+    if((pass = list_BGDTS_info()) < 0)
+    {
+       logString("ERROR: Bad BGDT Read\n");
+       return pass;
+    }
     if((pass = checkDirs(1, 0, 1, 0, *emptyBuff)) < 0)         //list root dirs
     {
         logString("ERROR: Bad directory Read\n");
