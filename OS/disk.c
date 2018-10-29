@@ -208,7 +208,7 @@ int checkDirs(unsigned inodeWanted, unsigned subIndent, unsigned listDirs, unsig
                                     && tmpCounter == fileNameLen - 1)
                             {
                                 kprintf("found dir:%.*s, dirInode:%d dirInodeSize:%d\n",dir->name_len, dir->name, dir->inode, dirInode->size);
-                                return dir->inode;
+                                return dir->inode-1;
                             }
                             tmpCounter++;
                         }
