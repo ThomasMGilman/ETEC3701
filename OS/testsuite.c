@@ -192,8 +192,8 @@ void sweet(){
     
     int theyAllMatch=1;
     while(1){
-        ksprintf(debugMsg,"here on cycle:%d\n",cycle1++);
-        logString(debugMsg);
+        // ksprintf(debugMsg,"here on cycle:%d\n",cycle1++);
+        // logString(debugMsg);
         int nr1 = readFully(fd1,buf,27);
         if( nr1 < 0 ){
             kprintf("readFully wrong\n");
@@ -323,6 +323,8 @@ void sweet(){
                 }
                 for(j=0;j<rv;++j){
                     if( article2[seekset[i]+j] != buf[j] ){
+                        ksprintf(debugMsg,"\nseekset[%d+%d]:%d, seekset[%d]:%d\n",i,j,seekset[i]+j,j,buf[j]);
+                        logString(debugMsg);
                         kprintf("Read wrong contents on seek set\n");
                         return;
                     }

@@ -82,10 +82,7 @@ int file_read(int fd, void* buf, int count)
         return byteCount;
     }
     else 
-    {
-        kprintf("here2");
         return 0;
-    }
         
 }
 
@@ -103,6 +100,8 @@ int file_seek(int fd, int offset, int whence)
         if(offset < 0) 
             return -EINVAL;
         file_table[fd].offset = offset;
+        ksprintf(debugMsg,"fileSize:%d, newOffset:%d\n",file_table[fd].ino.size, offset);
+        logString(debugMsg);
     }
     else if(whence == SEEK_CUR)
     {
@@ -115,9 +114,9 @@ int file_seek(int fd, int offset, int whence)
     {
         if(offset + sizeof(struct File) < 0)
             return -EINVAL;
-        file_table[fd].offset = sizeof(struct File) + offset;
+        file_table[fd].offset = sizeof(file_table[fd]) + offset;
     }
     else
         return -EINVAL;
-    return SUCCESS;
+    return file_table[fd].offset;
 }

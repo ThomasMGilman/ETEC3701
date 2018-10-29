@@ -99,53 +99,53 @@ Linker script and memory map
                 0x0000000000101a79                checkDirs
                 0x0000000000101d66                listDiskInfo
                 0x0000000000101def                disk_init
- .text          0x0000000000101e34      0x54c file.o
+ .text          0x0000000000101e34      0x58c file.o
                 0x0000000000101e34                file_open
                 0x0000000000101fe3                file_close
                 0x0000000000102029                file_read
-                0x00000000001022ac                file_write
-                0x00000000001022b6                file_seek
- .text          0x0000000000102380      0x528 interrupt.o
-                0x0000000000102380                haltForever
-                0x0000000000102386                syscall
-                0x00000000001023a9                syscall_handler
-                0x0000000000102502                divideByZeroInterrupt
-                0x000000000010253a                debugTrapInterrupt
-                0x0000000000102572                badOpcodeInterrupt
-                0x00000000001025aa                unknownInterrupt
-                0x00000000001025e2                unknownInterruptWithCode
-                0x000000000010262d                protectionFaultInterrupt
-                0x0000000000102678                pageFaultInterrupt
-                0x00000000001026c3                int48Interrupt
-                0x0000000000102715                table
-                0x000000000010276a                interrupt_init
- .text          0x00000000001028a8      0xb1c testsuite.o
-                0x00000000001028a8                readFully
-                0x000000000010290a                sweet
+                0x00000000001022a0                file_write
+                0x00000000001022aa                file_seek
+ .text          0x00000000001023c0      0x528 interrupt.o
+                0x00000000001023c0                haltForever
+                0x00000000001023c6                syscall
+                0x00000000001023e9                syscall_handler
+                0x0000000000102542                divideByZeroInterrupt
+                0x000000000010257a                debugTrapInterrupt
+                0x00000000001025b2                badOpcodeInterrupt
+                0x00000000001025ea                unknownInterrupt
+                0x0000000000102622                unknownInterruptWithCode
+                0x000000000010266d                protectionFaultInterrupt
+                0x00000000001026b8                pageFaultInterrupt
+                0x0000000000102703                int48Interrupt
+                0x0000000000102755                table
+                0x00000000001027aa                interrupt_init
+ .text          0x00000000001028e8      0xb48 testsuite.o
+                0x00000000001028e8                readFully
+                0x000000000010294a                sweet
  *(.rodata)
  *(.rdata)
- *fill*         0x00000000001033c4       0x1c 
- .rdata         0x00000000001033e0     0x2000 kernelmain.o
- .rdata         0x00000000001053e0     0x2000 console.o
- .rdata         0x00000000001073e0     0x21e0 kprintf.o
- .rdata         0x00000000001095c0      0x190 disk.o
- .rdata         0x0000000000109750       0xfc file.o
- .rdata         0x000000000010984c      0x17c interrupt.o
- *fill*         0x00000000001099c8       0x18 
- .rdata         0x00000000001099e0     0x2100 testsuite.o
+ *fill*         0x0000000000103430       0x10 
+ .rdata         0x0000000000103440     0x2000 kernelmain.o
+ .rdata         0x0000000000105440     0x2000 console.o
+ .rdata         0x0000000000107440     0x21e0 kprintf.o
+ .rdata         0x0000000000109620      0x190 disk.o
+ .rdata         0x00000000001097b0      0x110 file.o
+ .rdata         0x00000000001098c0      0x17c interrupt.o
+ *fill*         0x0000000000109a3c        0x4 
+ .rdata         0x0000000000109a40     0x2100 testsuite.o
  *(.rdata$zzz)
- .rdata$zzz     0x000000000010bae0       0x14 kernelmain.o
- .rdata$zzz     0x000000000010baf4       0x14 stdarg.o
- .rdata$zzz     0x000000000010bb08       0x14 console.o
- .rdata$zzz     0x000000000010bb1c       0x14 util.o
- .rdata$zzz     0x000000000010bb30       0x14 kprintf.o
- .rdata$zzz     0x000000000010bb44       0x14 disk.o
- .rdata$zzz     0x000000000010bb58       0x14 file.o
- .rdata$zzz     0x000000000010bb6c       0x14 interrupt.o
- .rdata$zzz     0x000000000010bb80       0x14 testsuite.o
-                0x000000000010bb94                _textEnd = .
+ .rdata$zzz     0x000000000010bb40       0x14 kernelmain.o
+ .rdata$zzz     0x000000000010bb54       0x14 stdarg.o
+ .rdata$zzz     0x000000000010bb68       0x14 console.o
+ .rdata$zzz     0x000000000010bb7c       0x14 util.o
+ .rdata$zzz     0x000000000010bb90       0x14 kprintf.o
+ .rdata$zzz     0x000000000010bba4       0x14 disk.o
+ .rdata$zzz     0x000000000010bbb8       0x14 file.o
+ .rdata$zzz     0x000000000010bbcc       0x14 interrupt.o
+ .rdata$zzz     0x000000000010bbe0       0x14 testsuite.o
+                0x000000000010bbf4                _textEnd = .
                 0x000000000010c000                . = ALIGN (ABSOLUTE (.), 0x1000)
- *fill*         0x000000000010bb94      0x46c 
+ *fill*         0x000000000010bbf4      0x40c 
                 0x000000000010c000                _dataStart = .
  *(.data)
  .data          0x000000000010c000        0x0 kernelmain.o
