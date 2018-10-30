@@ -5,6 +5,11 @@ struct File file_table[MAX_FILES];
 
 char debugMsg[200];
 
+int exec(const char* filename)
+{   
+    unsigned fd = file_open("usertest1.bin",0);
+}
+
 void read_block(unsigned blocknum, void* buffer)
 {
     static int counter=0;

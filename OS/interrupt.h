@@ -1,5 +1,13 @@
 #pragma once
 
+unsigned char kernelStack[500];
+unsigned ring0StackInfo[] =
+{
+    0,
+    (unsigned)(kernelStack+sizeof(kernelStack)),
+    1<<3
+};
+
 #pragma pack(push,1)
 struct IDTEntry{
     unsigned short addrLow;

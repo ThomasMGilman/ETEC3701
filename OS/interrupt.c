@@ -10,8 +10,11 @@ void logString(char* myString);
 
 struct GDTEntry gdt[] = {
     { 0,0,0,0,0,0 },            //zeros
-    { 0xffff, 0,0,0, 0xcf92, 0},//data
-    { 0xffff, 0,0,0, 0xcf9a, 0} //code
+    { 0xffff, 0,0,0, 0xcf92, 0},//data, ring 0
+    { 0xffff, 0,0,0, 0xcf9a, 0},//code, ring 0
+    { 0xffff, 0,0,0, 0xcff2, 0},//data, ring 3
+    { 0xffff, 0,0,0, 0xcffa, 0},//code, ring 3
+    { 0,0,0,0,0,0 }             //task selector
 };
 
 struct IDTEntry idt[INTERRUPT_SIZE];
@@ -133,12 +136,7 @@ void int48Interrupt(struct InterruptFrame* fr)
 {
     if( fr->esp < 0x400000 || fr->esp > 0x800000-(4*4)) //Invalid parameter. Ignore the system call.
         return;
-
     unsigned* espCheck = (unsigned*)fr->esp;
-    // unsigned req = espCheck[0];
-    // unsigned param1 = espCheck[1];
-    // unsigned param2 = espCheck[2];
-    // unsigned param3 = espCheck[3];
     syscall_handler(espCheck);
 }
 
@@ -155,10 +153,21 @@ void table(int i, void* func){
 void interrupt_init()
 {
     struct LGDT lgdt;
+    unsigned index;
+    unsigned tmp = (unsigned)ring0StackInfo;
+    gdt[5].limitLow = sizeof(ring0StackInfo);
+    gdt[5].base0 = tmp & 0xff;
+    gdt[5].base1 = (tmp>>8) & 0xff;
+    gdt[5].base2 = (tmp>>16) & 0xff;
+    gdt[5].flagsAndLimitHigh = 0x00e9;
+    gdt[5].base3 = (tmp>>24) & 0xff;
     lgdt.size = sizeof(gdt);
     lgdt.addr = &gdt[0];
-    asm volatile( "lgdt [eax]" : : "a"(&lgdt) : "memory" );
-    unsigned index;
+    asm volatile( "lgdt [eax]\n"
+        : //no outputs
+        :   "a"(&lgdt),     //put address of gdt in eax
+            "b"((5<<3)|3)   //put task register index in ebx
+        : "memory" );
     for(index = 0; index < INTERRUPT_SIZE; index++)
     {
         if(index == 0)
