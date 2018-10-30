@@ -46,7 +46,7 @@ int disk_read_sector(unsigned sector, void* datablock, unsigned numSec)
             ;//logString("Disk Ready\n\0");
         else
         {
-            logString("HEREDisk Error!!\n\0");
+            logString("READ Disk Error!!\n");
             return -1;
         }
         unsigned index;
@@ -75,7 +75,7 @@ int disk_write_sector(unsigned sector, const void* datablock, unsigned numSec)
             ;//logString("Disk Ready\n\0");
         else
         {
-            logString("Disk Error!!\n\0");
+            logString("WRITE Disk Error!!\n");
             return -1;
         }
         unsigned short* dataToWrite = (void*)datablock;

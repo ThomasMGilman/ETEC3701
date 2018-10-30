@@ -5,6 +5,7 @@
 
 #pragma once
 #define MAX_FILES 30
+#define BUFFERSIZE 100
 
 #define SEEK_SET 0
 #define SEEK_CUR 1
@@ -16,6 +17,14 @@ struct File{
     int offset;         //need to set to 0 when opening a file
     struct Inode ino;
 };
+
+struct BufferEntry{
+    char data[4096];
+    int blocknum;
+    unsigned used;
+};
+
+void read_block(unsigned blocknum, void* buffer);
 
 int file_open(const char* fileName, int flags);
 
