@@ -9,8 +9,9 @@ void kmain(struct MultibootInfo *mbi){
     disk_init();
     interrupt_init();
     // if(listDiskInfo() != 0)
-    //    logString("error listing DiskInfo");
-    sweet();
+    //     logString("error listing DiskInfo");
+    sweet(1);
+    logString("fin\n");
     // int a=5;
     // int b=0;
     // int c = a/b;                                 //Division by zero
