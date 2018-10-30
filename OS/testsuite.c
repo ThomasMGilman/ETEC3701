@@ -5,9 +5,6 @@
 #include "kprintf.h"
 #include "util.h"
 
-char debugMsg[40];
-int cycle1 = 0;
-
 extern int file_open(const char* fname, int flags);
 extern int file_read(int fd, void* buf, int num);
 extern int file_seek(int fd, int offset, int whence);
@@ -192,8 +189,6 @@ void sweet(){
     
     int theyAllMatch=1;
     while(1){
-        // ksprintf(debugMsg,"here on cycle:%d\n",cycle1++);
-        // logString(debugMsg);
         int nr1 = readFully(fd1,buf,27);
         if( nr1 < 0 ){
             kprintf("readFully wrong\n");
@@ -221,7 +216,6 @@ void sweet(){
                 return;
             }
         }
-        logString("\n");
     }
 
     if( theyAllMatch ){
@@ -240,8 +234,6 @@ void sweet(){
         kprintf("Could not open\n");
         return;
     }
-    ksprintf(debugMsg,"fd:%d\n",fd);
-    logString(debugMsg);
     
     const char* p = article6;
     int totalNumRead=0;
@@ -257,8 +249,6 @@ void sweet(){
             if( *p != buf[i] ){
                 kprintf("Error: Did not read correctly: At buf[%d]: Found %c, expected %c\n",
                     i,buf[i],*p);
-                ksprintf(debugMsg,"buff=[%.*s]\n", 23, buf);
-                logString(debugMsg);
                 return;
             }
             p++;
@@ -323,8 +313,6 @@ void sweet(){
                 }
                 for(j=0;j<rv;++j){
                     if( article2[seekset[i]+j] != buf[j] ){
-                        ksprintf(debugMsg,"\nseekset[%d+%d]:%d, seekset[%d]:%d\n",i,j,seekset[i]+j,j,buf[j]);
-                        logString(debugMsg);
                         kprintf("Read wrong contents on seek set\n");
                         return;
                     }
