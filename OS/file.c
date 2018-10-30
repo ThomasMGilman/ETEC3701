@@ -1,8 +1,41 @@
 #include "file.h"
 
+struct BufferEntry blockbuffer[BUFFERSIZE];
 struct File file_table[MAX_FILES];
 
 char debugMsg[200];
+
+void read_block(unsigned blocknum, void* buffer)
+{
+    static int counter=0;
+    int index;
+    counter++;
+    if( counter > 200 )
+    {
+        for(index = 0; index < BUFFERSIZE; ++index)
+            blockbuffer[index].used = 0;
+    }
+    for(int i=0;i<BUFFERSIZE;++i)
+    {
+        if(blockbuffer[i].blocknum == blocknum ){
+            kmemcpy(buffer, blockbuffer[i].data, BLOCK_SIZE);
+            blockbuffer[i].used=1;
+            return;
+        }
+    }
+    int v = 0;
+    for(int i=0;i<BUFFERSIZE;i++)
+    {
+        if( blockbuffer[i].used == 0)
+            v = i;
+    }
+    disk_read_block(blocknum, &blockbuffer[v].data);
+    blockbuffer[v].blocknum = blocknum;
+    blockbuffer[v].used = counter;
+    kmemcpy( buffer, blockbuffer[v].data, BLOCK_SIZE );
+    return;
+}
+
 
 int file_open(const char* fileName, int flags)
 {
@@ -40,34 +73,112 @@ int file_read(int fd, void* buf, int count)
 {
     struct File* fp = &file_table[fd];
     static char buffer[4096];
+    static unsigned U[1024];
     unsigned bi = fp->offset / BLOCK_SIZE;  //Inode Block index
     unsigned bo = fp->offset % BLOCK_SIZE;  //Buffer offset
+    unsigned oi, ii, ro, once = 1;
     unsigned remaining = fp->ino.size - bo, byteCount = 0, numToAdd;
     signed pass;
     
-    
     if(fp->in_use <= 0 || fp->offset >= fp->ino.size) //file is not in use or at end of size
         return 0;
-    if(fp->ino.size < 48000) //small file
+    numToAdd = (remaining < count) ? remaining : count;
+    while(fp->offset < fp->ino.size && byteCount < numToAdd)
     {
-        numToAdd = (remaining < count) ? remaining : count;
-        while((byteCount < numToAdd) && (bi < 12) && (fp->offset < fp->ino.size))
+        if(bi < 1024)   //direct & indirect
         {
-            if((pass = disk_read_block(fp->ino.direct[bi], buffer)) < 0)
-                return pass;
-            kmemcpy((char*)buf+byteCount, buffer + bo, 1);
-            //update variables
-            byteCount += 1;
-            fp->offset += 1;
-            bo = fp->offset % BLOCK_SIZE;
-            bi = fp->offset / BLOCK_SIZE;
-            remaining = fp->ino.size - bo;
+            if(fp->offset%BLOCK_SIZE == 0 || once)
+            {
+                if(bi < 12) //inode direct
+                {
+                    if((pass = disk_read_block(fp->ino.direct[bi], buffer)) < 0)
+                    {
+                        logString("ERROR reading inode direct!!\n");
+                        return pass;
+                    } 
+                }
+                else        //inode indirect
+                {
+                    bi -= 12;
+                    if((pass = disk_read_block(fp->ino.indirect, U)) < 0)
+                    {
+                        logString("ERROR reading inode indirect!!\n");
+                        return pass;
+                    }
+                    if((pass = disk_read_block(U[bi],buffer)) < 0)
+                    {
+                        logString("ERROR reading inode indirect block to buff!!\n");
+                        return pass;
+                    }
+                }
+                if(once)
+                    once--;
+            }
         }
-        return byteCount;
+        else            //double & triple indirect
+        {
+            if(fp->offset%BLOCK_SIZE == 0 || once)
+            {
+                if(bi < 1024*1024) //double indirect
+                {
+                    bi -= 12 + 1024;
+                    oi = bi>>10;    //same as bi / 10
+                    ii = bi & 1023; //same as bi % 1024
+                    if((pass = disk_read_block(fp->ino.doubleindirect, U)) < 0)
+                    {
+                        logString("ERROR reading inode DoubleIndirect!!!\n");
+                        return pass;
+                    }
+                    if((pass = disk_read_block(U[oi], U)) < 0)
+                    {
+                        logString("ERROR reading inode DoubleIndirect indirect block!!!\n");
+                        return pass;
+                    }
+                    if((pass = disk_read_block(U[ii], buffer)) < 0)
+                    {
+                        logString("ERROR reading inode DoubleIndirect indirect block to buff!!!\n");
+                        return pass;
+                    }
+                }
+                else               //triple indirect
+                {
+                    bi -= 12 + 1024*1024;
+                    ro = bi>>20;            //same as bi/1024/1024
+                    oi = (bi>>10)&0x3ff;    //same as (bi/1024)%1024
+                    ii = bi&0x3ff;
+                    if((pass = disk_read_block(fp->ino.tripleindirect, U)) < 0)
+                    {
+                        logString("ERROR reading inode Tripledirect!!!\n");
+                        return pass;
+                    }
+                    if((pass = disk_read_block(U[ro], U)) < 0)
+                    {
+                        logString("ERROR reading inode triple DoubleIndirect!!!\n");
+                        return pass;
+                    }
+                    if((pass = disk_read_block(U[oi], U)) < 0)
+                    {
+                        logString("ERROR reading inode triple DoubleIndirect!!!\n");
+                        return pass;
+                    }
+                    if((pass = disk_read_block(U[ii], buffer)) < 0)
+                    {
+                        logString("ERROR reading inode triple indirect block to buff!!!\n");
+                        return pass;
+                    }
+                }
+                if(once)
+                    once --;
+            }
+        }
+        kmemcpy((char*)buf+byteCount, buffer + bo, 1);
+        byteCount += 1;
+        fp->offset += 1;
+        bo = fp->offset % BLOCK_SIZE;
+        bi = fp->offset / BLOCK_SIZE;
+        remaining = fp->ino.size - bo;
     }
-    else 
-        return 0;
-        
+    return byteCount;
 }
 
 int file_write(int fd, const void* buf, int count)
