@@ -137,10 +137,6 @@ int displayPPM(int fd, void* fbv,
     }
     return 0;
 }
-    
-    
-    
-    
 
 void sweet(int sweetness, void* framebuffer_start,
     int redshift, int redmask, int greenshift, int greenmask,

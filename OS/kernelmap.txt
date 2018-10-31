@@ -20,7 +20,7 @@ Discarded input sections
  .eh_frame      0x0000000000000000      0x178 util.o
  .eh_frame      0x0000000000000000       0xc8 kprintf.o
  .eh_frame      0x0000000000000000      0x1c0 disk.o
- .eh_frame      0x0000000000000000       0xe8 file.o
+ .eh_frame      0x0000000000000000       0xf4 file.o
  .eh_frame      0x0000000000000000      0x218 interrupt.o
  .eh_frame      0x0000000000000000       0xc0 testsuite.o
 
@@ -86,7 +86,7 @@ Linker script and memory map
  .text          0x00000000001009b4      0xc04 kprintf.o
                 0x0000000000100a19                kprintf
                 0x0000000000100a47                ksprintf
- .text          0x00000000001015b8      0x848 disk.o
+ .text          0x00000000001015b8      0x890 disk.o
                 0x00000000001015b8                selectSector
                 0x000000000010164d                isBusy
                 0x0000000000101669                isDiskReady
@@ -98,55 +98,55 @@ Linker script and memory map
                 0x000000000010196a                list_SB_info
                 0x00000000001019b7                list_BGDTS_info
                 0x0000000000101a8d                checkDirs
-                0x0000000000101d34                listDiskInfo
-                0x0000000000101dbd                disk_init
- .text          0x0000000000101e00      0x7bc file.o
-                0x0000000000101e00                read_block
-                0x0000000000101f50                file_open
-                0x000000000010207f                file_close
-                0x00000000001020c5                file_read
-                0x00000000001024ca                file_write
-                0x00000000001024d4                file_seek
- .text          0x00000000001025bc      0x528 interrupt.o
-                0x00000000001025bc                haltForever
-                0x00000000001025c2                syscall
-                0x00000000001025e5                syscall_handler
-                0x000000000010273e                divideByZeroInterrupt
-                0x0000000000102776                debugTrapInterrupt
-                0x00000000001027ae                badOpcodeInterrupt
-                0x00000000001027e6                unknownInterrupt
-                0x000000000010281e                unknownInterruptWithCode
-                0x0000000000102869                protectionFaultInterrupt
-                0x00000000001028b4                pageFaultInterrupt
-                0x00000000001028ff                int48Interrupt
-                0x0000000000102951                table
-                0x00000000001029a6                interrupt_init
- .text          0x0000000000102ae4      0x510 testsuite.o
-                0x0000000000102c27                displayPPM
-                0x0000000000102e9d                sweet
+                0x0000000000101d7a                listDiskInfo
+                0x0000000000101e03                disk_init
+ .text          0x0000000000101e48      0x8e4 file.o
+                0x0000000000101e48                read_block
+                0x0000000000101f98                file_open
+                0x0000000000102107                file_close
+                0x0000000000102163                file_read
+                0x000000000010263d                file_write
+                0x0000000000102647                file_seek
+ .text          0x000000000010272c      0x528 interrupt.o
+                0x000000000010272c                haltForever
+                0x0000000000102732                syscall
+                0x0000000000102755                syscall_handler
+                0x00000000001028ae                divideByZeroInterrupt
+                0x00000000001028e6                debugTrapInterrupt
+                0x000000000010291e                badOpcodeInterrupt
+                0x0000000000102956                unknownInterrupt
+                0x000000000010298e                unknownInterruptWithCode
+                0x00000000001029d9                protectionFaultInterrupt
+                0x0000000000102a24                pageFaultInterrupt
+                0x0000000000102a6f                int48Interrupt
+                0x0000000000102ac1                table
+                0x0000000000102b16                interrupt_init
+ .text          0x0000000000102c54      0x510 testsuite.o
+                0x0000000000102d97                displayPPM
+                0x000000000010300d                sweet
  *(.rodata)
  *(.rdata)
- *fill*         0x0000000000102ff4        0xc 
- .rdata         0x0000000000103000     0x2020 kernelmain.o
- .rdata         0x0000000000105020     0x2000 console.o
- .rdata         0x0000000000107020     0x21e0 kprintf.o
- .rdata         0x0000000000109200      0x168 disk.o
- .rdata         0x0000000000109368      0x1a0 file.o
- .rdata         0x0000000000109508      0x17c interrupt.o
- .rdata         0x0000000000109684       0x94 testsuite.o
+ *fill*         0x0000000000103164       0x1c 
+ .rdata         0x0000000000103180     0x2020 kernelmain.o
+ .rdata         0x00000000001051a0     0x2000 console.o
+ .rdata         0x00000000001071a0     0x21e0 kprintf.o
+ .rdata         0x0000000000109380      0x194 disk.o
+ .rdata         0x0000000000109514      0x278 file.o
+ .rdata         0x000000000010978c      0x17c interrupt.o
+ .rdata         0x0000000000109908       0x94 testsuite.o
  *(.rdata$zzz)
- .rdata$zzz     0x0000000000109718       0x14 kernelmain.o
- .rdata$zzz     0x000000000010972c       0x14 stdarg.o
- .rdata$zzz     0x0000000000109740       0x14 console.o
- .rdata$zzz     0x0000000000109754       0x14 util.o
- .rdata$zzz     0x0000000000109768       0x14 kprintf.o
- .rdata$zzz     0x000000000010977c       0x14 disk.o
- .rdata$zzz     0x0000000000109790       0x14 file.o
- .rdata$zzz     0x00000000001097a4       0x14 interrupt.o
- .rdata$zzz     0x00000000001097b8       0x14 testsuite.o
-                0x00000000001097cc                _textEnd = .
+ .rdata$zzz     0x000000000010999c       0x14 kernelmain.o
+ .rdata$zzz     0x00000000001099b0       0x14 stdarg.o
+ .rdata$zzz     0x00000000001099c4       0x14 console.o
+ .rdata$zzz     0x00000000001099d8       0x14 util.o
+ .rdata$zzz     0x00000000001099ec       0x14 kprintf.o
+ .rdata$zzz     0x0000000000109a00       0x14 disk.o
+ .rdata$zzz     0x0000000000109a14       0x14 file.o
+ .rdata$zzz     0x0000000000109a28       0x14 interrupt.o
+ .rdata$zzz     0x0000000000109a3c       0x14 testsuite.o
+                0x0000000000109a50                _textEnd = .
                 0x000000000010a000                . = ALIGN (ABSOLUTE (.), 0x1000)
- *fill*         0x00000000001097cc      0x834 
+ *fill*         0x0000000000109a50      0x5b0 
                 0x000000000010a000                _dataStart = .
  *(.data)
  .data          0x000000000010a000        0x0 kernelmain.o

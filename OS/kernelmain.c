@@ -10,7 +10,7 @@ void kmain(struct MultibootInfo *mbi){
     interrupt_init();
     // if(listDiskInfo() != 0)
     //     logString("error listing DiskInfo");
-    sweet(1);
+    sweet(0);
     logString("fin\n");
     // int a=5;
     // int b=0;

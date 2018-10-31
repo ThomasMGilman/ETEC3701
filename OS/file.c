@@ -52,6 +52,7 @@ int file_open(const char* fileName, int flags)
         return -ENOENT;
     if((pass = disk_read_inode(pass, &fileIno)) < 0)
         return -DRIERR;
+    kprintf("fd:%d file:%s opened, InodeSize:%d, num bi:%d, inoBlocks:%d\n", fd, fileName, fileIno->size, fileIno->size / BLOCK_SIZE, fileIno->blocks);
     file_table[fd].flags = flags;
     file_table[fd].ino = *fileIno;
     file_table[fd].in_use = 1;
@@ -66,6 +67,7 @@ int file_close(int fd)
     if(file_table[fd].in_use == 0)  //file not open
         return -EINVAL;
     file_table[fd].in_use = 0;      //set file for not in use so close
+    kprintf("file closed:%d\n",fd);
     return SUCCESS;
 }
 
@@ -83,6 +85,8 @@ int file_read(int fd, void* buf, int count)
     if(fp->in_use <= 0 || fp->offset >= fp->ino.size) //file is not in use or at end of size
         return 0;
     numToAdd = (remaining < count) ? remaining : count;
+    ksprintf(debugMsg,"\nreading at bi:%d, bo:%d\n",bi,bo);
+    logString(debugMsg);
     while(fp->offset < fp->ino.size && byteCount < numToAdd)
     {
         if(bi < 1024)   //direct & indirect
@@ -111,6 +115,8 @@ int file_read(int fd, void* buf, int count)
                         return pass;
                     }
                 }
+                ksprintf(debugMsg,"\tchanged bi:%d U[%d]:%d\n",bi,bi,U[bi]);
+                logString(debugMsg);
                 if(once)
                     once--;
             }
@@ -142,7 +148,7 @@ int file_read(int fd, void* buf, int count)
                 }
                 else               //triple indirect
                 {
-                    bi -= 12 + 1024*1024;
+                    bi -= 12 + 1024 + 1024*1024;
                     ro = bi>>20;            //same as bi/1024/1024
                     oi = (bi>>10)&0x3ff;    //same as (bi/1024)%1024
                     ii = bi&0x3ff;
@@ -178,6 +184,9 @@ int file_read(int fd, void* buf, int count)
         bi = fp->offset / BLOCK_SIZE;
         remaining = fp->ino.size - bo;
     }
+    ksprintf(debugMsg,"fpOffset:%d, inodeSize:%d\ninodeDirect:%d inode_indirect:%d current indirect:U[%d]:%d\n"
+        ,fp->offset,fp->ino.size,fp->ino.direct[bi],fp->ino.indirect,bi,U[bi]);
+    logString(debugMsg);
     return byteCount;
 }
 
