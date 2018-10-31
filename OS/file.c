@@ -5,11 +5,6 @@ struct File file_table[MAX_FILES];
 
 char debugMsg[200];
 
-int exec(const char* filename)
-{   
-    unsigned fd = file_open("usertest1.bin",0);
-}
-
 void read_block(unsigned blocknum, void* buffer)
 {
     static int counter=0;
@@ -147,7 +142,7 @@ int file_read(int fd, void* buf, int count)
                 }
                 else               //triple indirect
                 {
-                    bi -= 12 + 1024*1024;
+                    bi -= 12 + 1024 + 1024*1024;
                     ro = bi>>20;            //same as bi/1024/1024
                     oi = (bi>>10)&0x3ff;    //same as (bi/1024)%1024
                     ii = bi&0x3ff;
