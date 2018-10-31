@@ -1,11 +1,12 @@
 #include "syscalls.h"
 #include "errno.h"
+#include "file.h"
 #include "interrupt.h"
 #include "kprintf.h"
 
 #define INTERRUPT_SIZE 49
 
-const char* FileToLoad = "linkerscript2.txt";
+const char* FileToLoad = "usertest1.bin";
 char debugMsg[100];
 volatile unsigned jiffies = 0;
 
@@ -13,10 +14,12 @@ void logString(char* myString);                     //UTIL
 void outb(unsigned short port, unsigned char val);  //DISK WRITE
 unsigned char inb(unsigned short port);             //DISK READ
 
-//FILE STUFF
-int file_open(const char* fileName, int flags);
-int file_close(int fd);
-int file_read(int fd, void* buf, int count);
+unsigned ring0StackInfo[] =
+{
+    0,
+    (unsigned)(kernelStack+sizeof(kernelStack)),
+    1<<3
+};
 
 struct GDTEntry gdt[] = {
     { 0,0,0,0,0,0 },            //zeros
@@ -38,14 +41,29 @@ int exec(const char* filename)
         logString(debugMsg);
         return fd;
     }
-    //put into memory at &0x400000
+    file_read(fd, (void*)0x400000, file_table[fd].ino.size);
     if((fd = file_close(fd)) < 0)
     {
         ksprintf(debugMsg,"FileName:%s failed to close!! failed to execute!!\n",filename);
         logString(debugMsg);
         return fd;
     }
-    return 0;
+    asm volatile(
+        "mov ax,27\n"
+        "mov ds,ax\n"
+        "mov es,ax\n"
+        "mov fs,ax\n"
+        "mov gs,ax\n"
+        "push 27\n"
+        "push 0x800000\n"
+        "pushf\n"       //push eflags register
+        "push 35\n"
+        "push 0x400000\n"
+        "iret"
+        ::: "eax","memory" );
+    kprintf("We should never get here!\n");
+    haltForever();
+    return -1;
 }
 
 int syscall(int p0, int p1, int p2, int p3)
@@ -228,6 +246,15 @@ void RTCint(struct InterruptFrame* fr){
     jiffies++;
 }
 
+void table(int i, void* func){
+    unsigned x = (unsigned)func;
+    idt[i].addrLow = x&0xffff;
+    idt[i].selector = 2 << 3;
+    idt[i].zero = 0;
+    idt[i].flags = 0x8e;
+    idt[i].addrHigh = x>>16;
+}
+
 void setInterruptTable(void)
 {
     unsigned index;
@@ -256,39 +283,34 @@ void setInterruptTable(void)
     }
 }
 
-void table(int i, void* func){
-    unsigned x = (unsigned)func;
-    idt[i].addrLow = x&0xffff;
-    idt[i].selector = 2 << 3;
-    idt[i].zero = 0;
-    idt[i].flags = 0x8e;
-    idt[i].addrHigh = x>>16;
-}
-
-void interrupt_init(void)
+void setupGDT(void)
 {
-    struct LGDT lgdt;
-    unsigned index;
     unsigned tmp = (unsigned)ring0StackInfo;
-    exec(FileToLoad);
-    setupPICS_RTC(6);
     gdt[5].limitLow = sizeof(ring0StackInfo);
     gdt[5].base0 = tmp & 0xff;
     gdt[5].base1 = (tmp>>8) & 0xff;
     gdt[5].base2 = (tmp>>16) & 0xff;
     gdt[5].flagsAndLimitHigh = 0x00e9;
     gdt[5].base3 = (tmp>>24) & 0xff;
+}
+
+void interrupt_init(void)
+{
+    struct LGDT lgdt;
+    setupPICS_RTC(6);
+    setupGDT();
     lgdt.size = sizeof(gdt);
     lgdt.addr = &gdt[0];
     asm volatile( "lgdt [eax]\n"
+            "ltr bx"
         : //no outputs
         :   "a"(&lgdt),     //put address of gdt in eax
             "b"((5<<3)|3)   //put task register index in ebx
         : "memory" );
     setInterruptTable();
-    struct LIDT tmp;
-    tmp.size = sizeof(idt);
-    tmp.addr = &idt[0];
-    asm volatile("lidt [eax]" : : "a"(&tmp) : "memory" );
-    asm volatile("sti" : : : "memory");
+    struct LIDT lidt;
+    lidt.size = sizeof(idt);
+    lidt.addr = &idt[0];
+    asm volatile("lidt [eax]" : : "a"(&lidt) : "memory" );
+    //asm volatile("sti" : : : "memory");
 }

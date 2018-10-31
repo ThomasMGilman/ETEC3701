@@ -1,12 +1,8 @@
 #pragma once
 
-unsigned char kernelStack[500];
-unsigned ring0StackInfo[] =
-{
-    0,
-    (unsigned)(kernelStack+sizeof(kernelStack)),
-    1<<3
-};
+#define kStackSize 500
+
+unsigned char kernelStack[kStackSize];
 
 #pragma pack(push,1)
 struct IDTEntry{
@@ -59,8 +55,10 @@ void haltForever(void);
 
 void haltUntilInterrupt(void);
 
+void table(int i, void* func);
+
 void setupPICS_RTC(unsigned rate);
 
-void table(int i, void* func);
+void setupGDT(void);
 
 void interrupt_init(void);

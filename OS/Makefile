@@ -57,10 +57,10 @@ all:
 		interrupt.o	\
 		testsuite.o
 	$(OBJCOPY) -Obinary kernel.tmp kernel.bin
-	$(NASM)	crtasm.s
+	$(NASM)	crtasm.s -o crtasm.o
 	$(CC)	-c	crtc.c
 	$(CC)	-c	usertest1.c
-	$(LD)	-T	linkerscript2.txt	-o	usertest1.tmp	usertest1.o
+	$(LD)	-T	linkerscript2.txt -o usertest1.tmp usertest1.o
 	$(OBJCOPY)	-Obinary	usertest1.tmp	usertest1.bin
 	$(TRUNCATE) -s 400000000 hd.img
 	$(MKE2FS) -b 4096 -F -I 128 -q -t ext2 -r 0 -L moocow -g 32768 hd.img

@@ -18,6 +18,8 @@ struct File{
     struct Inode ino;
 };
 
+struct File file_table[MAX_FILES];
+
 struct BufferEntry{
     char data[4096];
     int blocknum;

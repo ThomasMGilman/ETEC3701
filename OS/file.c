@@ -1,7 +1,6 @@
 #include "file.h"
 
 struct BufferEntry blockbuffer[BUFFERSIZE];
-struct File file_table[MAX_FILES];
 
 char debugMsg[200];
 
