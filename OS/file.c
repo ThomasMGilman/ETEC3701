@@ -177,6 +177,8 @@ int file_read(int fd, void* buf, int count)
         bi = fp->offset / BLOCK_SIZE;
         remaining = fp->ino.size - bo;
     }
+    ksprintf(debugMsg,"file:byteCount:%d\n",byteCount);
+    logString(debugMsg);
     return byteCount;
 }
 

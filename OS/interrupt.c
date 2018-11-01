@@ -34,20 +34,34 @@ struct IDTEntry idt[INTERRUPT_SIZE];
 
 int exec(const char* filename)
 {   
-    unsigned fd;
+    unsigned fd, bytes, index = 0;
     if((fd = file_open(filename,0)) < 0)
     {
         ksprintf(debugMsg,"FileName:%s failed to open!! failed to execute!!\n",filename);
         logString(debugMsg);
         return fd;
     }
-    file_read(fd, (void*)0x400000, file_table[fd].ino.size);
+    bytes = file_read(fd, (void *)0x400000, file_table[fd].ino.size);
+    index += bytes;
+    while(bytes != 0)
+    {
+        bytes = file_read(fd, (void *)(0x400000+index), file_table[fd].ino.size);
+        index += bytes;
+    }
+    // for(int i = 0; i < 4096; i++)
+    // {
+    //     ksprintf(debugMsg,"%.2X ",((char*)0x400000)[i]&0xff);
+    //     logString(debugMsg);
+    // }
+
     if((fd = file_close(fd)) < 0)
     {
         ksprintf(debugMsg,"FileName:%s failed to close!! failed to execute!!\n",filename);
         logString(debugMsg);
         return fd;
     }
+    //haltForever();
+    logString("here");
     asm volatile(
         "mov ax,27\n"
         "mov ds,ax\n"
@@ -297,7 +311,7 @@ void setupGDT(void)
 void interrupt_init(void)
 {
     struct LGDT lgdt;
-    setupPICS_RTC(6);
+    //setupPICS_RTC(6);
     setupGDT();
     lgdt.size = sizeof(gdt);
     lgdt.addr = &gdt[0];

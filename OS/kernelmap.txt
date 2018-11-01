@@ -101,61 +101,61 @@ Linker script and memory map
                 0x0000000000101a8d                checkDirs
                 0x0000000000101d34                listDiskInfo
                 0x0000000000101dbd                disk_init
- .text          0x0000000000101e00      0x7bc file.o
+ .text          0x0000000000101e00      0x7e0 file.o
                 0x0000000000101e00                read_block
                 0x0000000000101f50                file_open
                 0x000000000010207f                file_close
                 0x00000000001020c5                file_read
-                0x00000000001024ca                file_write
-                0x00000000001024d4                file_seek
- .text          0x00000000001025bc      0x8b0 interrupt.o
-                0x00000000001025bc                exec
-                0x0000000000102643                syscall
-                0x0000000000102666                haltForever
-                0x000000000010266c                haltUntilInterrupt
-                0x0000000000102673                setupPICS_RTC
-                0x000000000010280d                syscall_handler
-                0x0000000000102966                divideByZeroInterrupt
-                0x000000000010299e                debugTrapInterrupt
-                0x00000000001029d6                badOpcodeInterrupt
-                0x0000000000102a0e                unknownInterrupt
-                0x0000000000102a46                unknownInterruptWithCode
-                0x0000000000102a91                protectionFaultInterrupt
-                0x0000000000102adc                pageFaultInterrupt
-                0x0000000000102b27                int48Interrupt
-                0x0000000000102b79                firstPicInterrupt
-                0x0000000000102baa                secondPicInterrupt
-                0x0000000000102bef                RTCint
-                0x0000000000102c61                table
-                0x0000000000102cb6                setInterruptTable
-                0x0000000000102dcb                setupGDT
-                0x0000000000102e16                interrupt_init
- .text          0x0000000000102e6c      0x510 testsuite.o
-                0x0000000000102faf                displayPPM
-                0x0000000000103225                sweet
+                0x00000000001024f1                file_write
+                0x00000000001024fb                file_seek
+ .text          0x00000000001025e0      0x900 interrupt.o
+                0x00000000001025e0                exec
+                0x00000000001026c3                syscall
+                0x00000000001026e6                haltForever
+                0x00000000001026ec                haltUntilInterrupt
+                0x00000000001026f3                setupPICS_RTC
+                0x000000000010288d                syscall_handler
+                0x00000000001029e6                divideByZeroInterrupt
+                0x0000000000102a1e                debugTrapInterrupt
+                0x0000000000102a56                badOpcodeInterrupt
+                0x0000000000102a8e                unknownInterrupt
+                0x0000000000102ac6                unknownInterruptWithCode
+                0x0000000000102b11                protectionFaultInterrupt
+                0x0000000000102b5c                pageFaultInterrupt
+                0x0000000000102ba7                int48Interrupt
+                0x0000000000102bf9                firstPicInterrupt
+                0x0000000000102c2a                secondPicInterrupt
+                0x0000000000102c6f                RTCint
+                0x0000000000102ce1                table
+                0x0000000000102d36                setInterruptTable
+                0x0000000000102e4b                setupGDT
+                0x0000000000102e96                interrupt_init
+ .text          0x0000000000102ee0      0x510 testsuite.o
+                0x0000000000103023                displayPPM
+                0x0000000000103299                sweet
  *(.rodata)
  *(.rdata)
- *fill*         0x000000000010337c        0x4 
- .rdata         0x0000000000103380     0x2020 kernelmain.o
- .rdata         0x00000000001053a0     0x2000 console.o
- .rdata         0x00000000001073a0     0x21e0 kprintf.o
- .rdata         0x0000000000109580      0x168 disk.o
- .rdata         0x00000000001096e8      0x1a0 file.o
- .rdata         0x0000000000109888      0x1a8 interrupt.o
- .rdata         0x0000000000109a30       0x94 testsuite.o
+ *fill*         0x00000000001033f0       0x10 
+ .rdata         0x0000000000103400     0x2020 kernelmain.o
+ .rdata         0x0000000000105420     0x2000 console.o
+ .rdata         0x0000000000107420     0x21e0 kprintf.o
+ .rdata         0x0000000000109600      0x168 disk.o
+ .rdata         0x0000000000109768      0x1b4 file.o
+ .rdata         0x000000000010991c      0x1ac interrupt.o
+ .rdata         0x0000000000109ac8       0x94 testsuite.o
  *(.rdata$zzz)
- .rdata$zzz     0x0000000000109ac4       0x14 kernelmain.o
- .rdata$zzz     0x0000000000109ad8       0x14 stdarg.o
- .rdata$zzz     0x0000000000109aec       0x14 console.o
- .rdata$zzz     0x0000000000109b00       0x14 util.o
- .rdata$zzz     0x0000000000109b14       0x14 kprintf.o
- .rdata$zzz     0x0000000000109b28       0x14 disk.o
- .rdata$zzz     0x0000000000109b3c       0x14 file.o
- .rdata$zzz     0x0000000000109b50       0x14 interrupt.o
- .rdata$zzz     0x0000000000109b64       0x14 testsuite.o
-                0x0000000000109b78                _textEnd = .
+ .rdata$zzz     0x0000000000109b5c       0x14 kernelmain.o
+ .rdata$zzz     0x0000000000109b70       0x14 stdarg.o
+ .rdata$zzz     0x0000000000109b84       0x14 console.o
+ .rdata$zzz     0x0000000000109b98       0x14 util.o
+ .rdata$zzz     0x0000000000109bac       0x14 kprintf.o
+ .rdata$zzz     0x0000000000109bc0       0x14 disk.o
+ .rdata$zzz     0x0000000000109bd4       0x14 file.o
+ .rdata$zzz     0x0000000000109be8       0x14 interrupt.o
+ .rdata$zzz     0x0000000000109bfc       0x14 testsuite.o
+                0x0000000000109c10                _textEnd = .
                 0x000000000010a000                . = ALIGN (ABSOLUTE (.), 0x1000)
- *fill*         0x0000000000109b78      0x488 
+ *fill*         0x0000000000109c10      0x3f0 
                 0x000000000010a000                _dataStart = .
  *(.data)
  .data          0x000000000010a000        0x0 kernelmain.o
