@@ -2,7 +2,9 @@
 
 struct BufferEntry blockbuffer[BUFFERSIZE];
 
-char debugMsg[200];
+void logString(char* myString);                     //UTIL functions
+int kstrln(char *string);
+void kmemcpy(void *dst, const void *src, unsigned num);
 
 void read_block(unsigned blocknum, void* buffer)
 {
@@ -76,7 +78,7 @@ int file_read(int fd, void* buf, int count)
     unsigned bi = fp->offset / BLOCK_SIZE;  //Inode Block index
     unsigned bo = fp->offset % BLOCK_SIZE;  //Buffer offset
     unsigned oi, ii, ro, once = 1;
-    unsigned remaining = fp->ino.size - bo, byteCount = 0, numToAdd;
+    unsigned remaining = fp->ino.size - bo, byteCount = 0, numToAdd, countToAdd;
     signed pass;
     
     if(fp->in_use <= 0 || fp->offset >= fp->ino.size) //file is not in use or at end of size
@@ -86,7 +88,7 @@ int file_read(int fd, void* buf, int count)
     {
         if(bi < 1024)   //direct & indirect
         {
-            if(fp->offset%BLOCK_SIZE == 0 || once)
+            if(bo == 0 || once)
             {
                 if(bi < 12) //inode direct
                 {
@@ -116,7 +118,7 @@ int file_read(int fd, void* buf, int count)
         }
         else            //double & triple indirect
         {
-            if(fp->offset%BLOCK_SIZE == 0 || once)
+            if(bo == 0 || once)
             {
                 if(bi < 1024*1024) //double indirect
                 {
@@ -170,15 +172,16 @@ int file_read(int fd, void* buf, int count)
                     once --;
             }
         }
-        kmemcpy((char*)buf+byteCount, buffer + bo, 1);
-        byteCount += 1;
-        fp->offset += 1;
+        countToAdd = ((BLOCK_SIZE - bo) < numToAdd) ? (BLOCK_SIZE - bo) : numToAdd;
+        kmemcpy((char*)buf+byteCount, buffer + bi, countToAdd);
+        //update variables
+        byteCount += countToAdd;
+        fp->offset += countToAdd;
         bo = fp->offset % BLOCK_SIZE;
         bi = fp->offset / BLOCK_SIZE;
-        remaining = fp->ino.size - bo;
+        remaining = fp->ino.size - bo % BLOCK_SIZE;
+        numToAdd = (remaining < count) ? remaining : count;
     }
-    ksprintf(debugMsg,"file:byteCount:%d\n",byteCount);
-    logString(debugMsg);
     return byteCount;
 }
 
@@ -200,7 +203,7 @@ int file_seek(int fd, int offset, int whence)
     else if(whence == SEEK_CUR)
     {
         if(file_table[fd].offset + offset < 0)
-            return -ERRROR;
+            return -EINVAL;
         else
             file_table[fd].offset += offset;
     }

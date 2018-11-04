@@ -1,26 +1,21 @@
 #include "console.h"
-#include "util.h"
-#include "kprintf.h"
-#include "disk.h"
-
-struct MultibootInfo *mbi;				//my MultiBootInfo
-volatile unsigned char* framebuffer;	//address of FrameBuffer
 
 #define FrameWidth mbi->mbiFramebufferWidth
 #define FrameHeight mbi->mbiFramebufferHeight
 #define FramePitch mbi->mbiFramebufferPitch
 
+struct MultibootInfo *mbi;				//my MultiBootInfo
+volatile unsigned char* framebuffer;	//FrameBuffer
 unsigned int pixCol = 0;				//Screen - X cord
 unsigned int pixRow = 0;				//Screen - Y cord
 char lastCharDrawn;						//save last char in case it is made bold
-char buff[128];							//for strings for debugging
 
 //stuff for transitions of colors
 unsigned int colorChangeIndex = 0;
 unsigned int colorPattern[6][3] = {{255,0,0}, {255,165,0}, {255,255,0}, {0,255,0}, {0,0,255}, {128,0,128}}; //Red,Orange,Yellow,Green,Blue,Purple
-unsigned int red = 255, green = 255, blue = 0; 																//Color Variables (set to Yellow)
+unsigned int red = 255, green = 255, blue = 255; 															//Color Variables (set to White)
 
-void loop()
+void loop(void)
 {
 	for(volatile int i = 0; i < 1000000000; i++);
 }
@@ -33,7 +28,7 @@ void set_pixel(int x, int y, int r, int g, int b)
 	unsigned short colorValue = (b << mbi->mbiFramebufferBluePos) | (g << mbi->mbiFramebufferGreenPos) | (r << mbi->mbiFramebufferRedPos);
 	((unsigned short*)framebuffer)[(x+y*(FramePitch/2))] = colorValue;
 }
-void clearScreen()
+void clearScreen(void)
 {
 	for(pixCol = 0; pixCol < FrameWidth; (pixCol)++)
 	{
@@ -42,7 +37,7 @@ void clearScreen()
 	}
 	pixCol = 0; pixRow = 0;
 }
-void smoothlyTransitionColors()
+void smoothlyTransitionColors(void)
 {
 	if(red != colorPattern[colorChangeIndex][0] || green != colorPattern[colorChangeIndex][1] || blue != colorPattern[colorChangeIndex][2])
 	{
@@ -59,7 +54,7 @@ void smoothlyTransitionColors()
 		else colorChangeIndex++;
 	}
 }
-void backspace()
+void backspace(void)
 {
 	if((pixCol == 0 || pixCol < CHAR_WIDTH) && pixRow > 0)	//backspacing at X index 0
 	{
@@ -71,7 +66,7 @@ void backspace()
 	else
 		pixCol = 0;
 }
-void newLine()
+void newLine(void)
 {
 	if(pixRow + CHAR_HEIGHT > FrameHeight - CHAR_HEIGHT)
 	{
@@ -83,7 +78,7 @@ void newLine()
 		pixRow += CHAR_HEIGHT;
 	}
 }
-void scroll()
+void scroll(void)
 {
 	kmemcpy((void*)(framebuffer), (const void*)(framebuffer+(CHAR_HEIGHT*FramePitch)), 
 		(FrameHeight - CHAR_HEIGHT)*(FramePitch));
@@ -143,9 +138,7 @@ void console_putc(char c)
 	}
 	if(pixCol > FrameWidth - CHAR_WIDTH)
 		newLine();
-	
 	lastCharDrawn = c;
-	//loop();
 }
 void consoleDrawString(char* myString)
 {

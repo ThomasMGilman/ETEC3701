@@ -119,12 +119,12 @@ int disk_read_partial(unsigned blockNum, void*bg, unsigned start, unsigned cout)
 
 int disk_read_inode(unsigned num, struct Inode** ino);
 
-void list_SB_info();
+void list_SB_info(void);
 
-int list_BGDTS_info();
+int list_BGDTS_info(void);
 
 int checkDirs(unsigned inodeWanted, unsigned subIndent, unsigned listDirs, unsigned fileNameLen, const char* fileName);
 
-int listDiskInfo();
+int listDiskInfo(void);
 
-int disk_init();
+int disk_init(void);

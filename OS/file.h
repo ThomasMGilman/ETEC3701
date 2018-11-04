@@ -1,8 +1,5 @@
 #include "disk.h"
-#include "util.h"
 #include "errno.h"
-#include "kprintf.h"
-
 #pragma once
 #define MAX_FILES 30
 #define BUFFERSIZE 100

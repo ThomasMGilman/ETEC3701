@@ -1,7 +1,6 @@
-#include "syscalls.h"
-#include "errno.h"
-#include "file.h"
 #include "interrupt.h"
+#include "file.h"
+#include "syscalls.h"
 #include "kprintf.h"
 
 #define INTERRUPT_SIZE 49
@@ -11,8 +10,8 @@ char debugMsg[100];
 volatile unsigned jiffies = 0;
 
 void logString(char* myString);                     //UTIL 
-void outb(unsigned short port, unsigned char val);  //DISK WRITE
-unsigned char inb(unsigned short port);             //DISK READ
+void outb(unsigned short port, unsigned char value);
+unsigned char inb(unsigned short port);
 
 unsigned ring0StackInfo[] =
 {
@@ -42,13 +41,17 @@ int exec(const char* filename)
         return fd;
     }
     bytes = file_read(fd, (void *)0x400000, file_table[fd].ino.size);
+    ksprintf(debugMsg,"numRead:%d\n",bytes);
+    logString(debugMsg);
     index += bytes;
     while(bytes != 0)
     {
         bytes = file_read(fd, (void *)(0x400000+index), file_table[fd].ino.size);
         index += bytes;
+        ksprintf(debugMsg,"numRead:%d\n",bytes);
+        logString(debugMsg);
     }
-    // for(int i = 0; i < 4096; i++)
+    // for(int i = 0; i < 4096; i++) //Hexdump file to log
     // {
     //     ksprintf(debugMsg,"%.2X ",((char*)0x400000)[i]&0xff);
     //     logString(debugMsg);
@@ -60,8 +63,6 @@ int exec(const char* filename)
         logString(debugMsg);
         return fd;
     }
-    //haltForever();
-    logString("here");
     asm volatile(
         "mov ax,27\n"
         "mov ds,ax\n"

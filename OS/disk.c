@@ -13,15 +13,14 @@ void selectSector(unsigned int sector)
 	outb(0x1f5, sector >> 16);	        //next 8bits
 }
 
-int isBusy()
+int isBusy(void)
 {
     return inb(0x1f7) & 0x80; //return 0: not busy, or 1: busy
 }
 
-int isDiskReady()
+int isDiskReady(void)
 {
-    while(isBusy())                                 //wait while disk is working
-        ;//logString("Waiting for disk_ready!!\n\0");
+    while(isBusy()){;}                              //wait while disk is working
     for(;;)
     {
         if(inb(0x1f7) & 8)                          //ready
@@ -36,15 +35,12 @@ int disk_read_sector(unsigned sector, void* datablock, unsigned numSec)
     unsigned dataOffset = 0;
     while(numSec--)
     {
-        while(isBusy())
-            ;//logString("Waiting before disk_read!!\n\0");
+        while(isBusy()){;}
 
         selectSector(sector);
         outb(0x1f7, 0x20);		 //start a read
 
-        if(isDiskReady() == 1)
-            ;//logString("Disk Ready\n\0");
-        else
+        if(isDiskReady() != 1)
         {
             logString("READ Disk Error!!\n");
             return -1;
@@ -58,22 +54,19 @@ int disk_read_sector(unsigned sector, void* datablock, unsigned numSec)
         sector++;
         dataOffset += 256;
     }
-    return 0;
+    return SUCCESS;
 }
 
 int disk_write_sector(unsigned sector, const void* datablock, unsigned numSec)
 {
     while(numSec--)
     {
-        while(isBusy())
-            ;//logString("Waiting before disk_write!!\n\0");
+        while(isBusy()){;}
 
         selectSector(sector);
         outb(0x1f7, 0x30);		 //start writting
 
-        if(isDiskReady() == 1)
-            ;//logString("Disk Ready\n\0");
-        else
+        if(isDiskReady() != 1)
         {
             logString("WRITE Disk Error!!\n");
             return -1;
@@ -88,7 +81,7 @@ int disk_write_sector(unsigned sector, const void* datablock, unsigned numSec)
         outb(0x1f7, 0xe7);      //flush
         sector++;
     }
-    return 0;
+    return SUCCESS;
 }
 
 int disk_read_block(unsigned blockNum, void *bg)
@@ -99,33 +92,33 @@ int disk_read_block(unsigned blockNum, void *bg)
     if((pass = disk_read_sector(blockSecStart, bg, spb)) < 0)   //read in full block and check for errors
         return pass;
 
-    return 0;
+    return SUCCESS;
 }
 
 int disk_read_partial(unsigned blockNum, void *bg, unsigned start, unsigned count)
 {
-    static char buffer[4096];
+    static char buffer[BLOCK_SIZE];
     int pass;
     if((pass = disk_read_block(blockNum, bg)) < 0 
-     || start+count > 4095)                  //check if reading out of bounds of array
+     || start+count >= BLOCK_SIZE)                  //check if reading out of bounds of array
         return pass;
 
     kmemcpy(bg, buffer+start, count);
-    return 0;
+    return SUCCESS;
 }
 
 int disk_read_inode(unsigned num, struct Inode** ino)
 {
     static char buffer[4096];
-    unsigned inodeFromTableStart = num % SB.inodes_per_group;
-    unsigned InodeBlock = 4 + (((num-1) / SB.inodes_per_group) * SB.blocks_per_group);  //InodeBlockGroup
-    unsigned blocksFromTableStart = (sizeof(struct Inode) * inodeFromTableStart) / BLOCK_SIZE;
-    unsigned inodesToSkipOver = inodeFromTableStart % (BLOCK_SIZE / sizeof(struct Inode));
+    unsigned inodeFromTableStart    = num % SB.inodes_per_group;
+    unsigned InodeBlock             = 4 + (((num-1) / SB.inodes_per_group) * SB.blocks_per_group);
+    unsigned blocksFromTableStart   = (sizeof(struct Inode) * inodeFromTableStart) / BLOCK_SIZE;
+    unsigned inodesToSkipOver       = inodeFromTableStart % (BLOCK_SIZE / sizeof(struct Inode));
     signed pass;
     if((pass = disk_read_block(InodeBlock + blocksFromTableStart, buffer)) < 0)
         return pass;
     *ino = (struct Inode*)(buffer + inodesToSkipOver*sizeof(struct Inode));
-    return 0;
+    return SUCCESS;
 }
 
 void list_SB_info()
@@ -155,7 +148,7 @@ int list_BGDTS_info()
         for(bgd_num = 0; bgd_num <= Groups; bgd_num++)
             kprintf("Group %d: Free Blocks = %d\n", bgd_num, BG.bgd[bgd_num].free_blocks);
     }
-    return 0;
+    return SUCCESS;
 }
 
 int checkDirs(unsigned inodeWanted, unsigned subIndent, unsigned listDirs, unsigned fileNameLen, const char* fileName)
@@ -171,15 +164,11 @@ int checkDirs(unsigned inodeWanted, unsigned subIndent, unsigned listDirs, unsig
         return pass;
     if(inode->size <= 0)
     {
-        if(inode->size == 0)
-        {
-            ksprintf(buffer,"Empty Inode:%d\n",inode->size);
-            logString(buffer);
-            return 0;
-        }
-        ksprintf(buffer,"Bad InodeSize:%d\n",inode->size);
+        ksprintf(buffer,"Inode:%d is empty size:%d\n", inodeWanted, inode->size);
         logString(buffer);
-        return -1;
+        if(inode->size == 0)
+            return SUCCESS;
+        return -ENOENT;
     }
     else
     {
@@ -238,10 +227,10 @@ int checkDirs(unsigned inodeWanted, unsigned subIndent, unsigned listDirs, unsig
     if(fileNameLen > 0)
         return -ENOENT;
     else
-        return 0;
+        return SUCCESS;
 }
 
-int listDiskInfo()
+int listDiskInfo(void)
 {
     char* emptyBuff[1] = {'\0'};
     signed pass;
@@ -257,9 +246,9 @@ int listDiskInfo()
         return pass;
     }
     logString("Done\n");
-    return 0; //all is good
+    return SUCCESS;
 }
-int disk_init()
+int disk_init(void)
 {
     //SUPERBLOCK INFO
     signed pass;
@@ -268,5 +257,5 @@ int disk_init()
         logString("Failed to read SuperBlock");
         return pass;
     }
-    return 0;
+    return SUCCESS;
 }

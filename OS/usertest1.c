@@ -1,9 +1,10 @@
 int main(int argc, char* argv[])
 {
-    asm("hlt");
     register unsigned flag asm("esi");
+    // while(1)
+    // {;}
     flag=0x31337;
-    while(flag){
-    }
+    while(flag)
+    {;}
     return 0;
-}
+} 

@@ -15,7 +15,6 @@ int syscall(int p0, int p1, int p2, int p3){
     return p0;
 }
 
-
 int open(const char* filename){
     return syscall(SYSCALL_OPEN,(unsigned)filename, 0 , 0);
 }
@@ -27,7 +26,6 @@ int read(int fd, char* buf, int size){
 int write(int fd, char* buf, int size){
     return syscall(SYSCALL_WRITE,fd,(unsigned)buf,size);
 }
-    
 
 int main(int argc, char* argv[])
 {

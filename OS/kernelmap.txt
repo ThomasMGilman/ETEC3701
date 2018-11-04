@@ -5,13 +5,12 @@ Common symbol       size              file
 mbi                 0x4               console.o
 framebuffer         0x4               console.o
 idt                 0x188             interrupt.o
-debugMsg            0xc8              file.o
-kernelStack         0x1f4             kernelmain.o
-buff                0x80              console.o
+debugMsg            0x64              interrupt.o
+kernelStack         0x1f4             interrupt.o
 blockbuffer         0x64320           file.o
-file_table          0x1068            kernelmain.o
+file_table          0x1068            file.o
 lastCharDrawn       0x1               console.o
-SB                  0x400             kernelmain.o
+SB                  0x400             disk.o
 
 Discarded input sections
 
@@ -52,7 +51,7 @@ Linker script and memory map
                 0x0000000000000000                __dll_characteristics__ = 0x0
                 0x0000000000100000                . = 0x100000
 
-.text           0x0000000000100000    0x78c00
+.text           0x0000000000100000    0x76c00
                 0x0000000000100000                _textStart = .
  *(.text)
  .text          0x0000000000100000       0x58 kernelasm.o
@@ -87,7 +86,7 @@ Linker script and memory map
  .text          0x00000000001009b4      0xc04 kprintf.o
                 0x0000000000100a19                kprintf
                 0x0000000000100a47                ksprintf
- .text          0x00000000001015b8      0x848 disk.o
+ .text          0x00000000001015b8      0x828 disk.o
                 0x00000000001015b8                selectSector
                 0x000000000010164d                isBusy
                 0x0000000000101669                isDiskReady
@@ -99,124 +98,123 @@ Linker script and memory map
                 0x000000000010196a                list_SB_info
                 0x00000000001019b7                list_BGDTS_info
                 0x0000000000101a8d                checkDirs
-                0x0000000000101d34                listDiskInfo
-                0x0000000000101dbd                disk_init
- .text          0x0000000000101e00      0x7e0 file.o
-                0x0000000000101e00                read_block
-                0x0000000000101f50                file_open
-                0x000000000010207f                file_close
-                0x00000000001020c5                file_read
-                0x00000000001024f1                file_write
-                0x00000000001024fb                file_seek
- .text          0x00000000001025e0      0x900 interrupt.o
-                0x00000000001025e0                exec
-                0x00000000001026c3                syscall
-                0x00000000001026e6                haltForever
-                0x00000000001026ec                haltUntilInterrupt
-                0x00000000001026f3                setupPICS_RTC
-                0x000000000010288d                syscall_handler
-                0x00000000001029e6                divideByZeroInterrupt
-                0x0000000000102a1e                debugTrapInterrupt
-                0x0000000000102a56                badOpcodeInterrupt
-                0x0000000000102a8e                unknownInterrupt
-                0x0000000000102ac6                unknownInterruptWithCode
-                0x0000000000102b11                protectionFaultInterrupt
-                0x0000000000102b5c                pageFaultInterrupt
-                0x0000000000102ba7                int48Interrupt
-                0x0000000000102bf9                firstPicInterrupt
-                0x0000000000102c2a                secondPicInterrupt
-                0x0000000000102c6f                RTCint
-                0x0000000000102ce1                table
-                0x0000000000102d36                setInterruptTable
-                0x0000000000102e4b                setupGDT
-                0x0000000000102e96                interrupt_init
- .text          0x0000000000102ee0      0x510 testsuite.o
-                0x0000000000103023                displayPPM
-                0x0000000000103299                sweet
+                0x0000000000101d11                listDiskInfo
+                0x0000000000101d9a                disk_init
+ .text          0x0000000000101de0      0x7d8 file.o
+                0x0000000000101de0                read_block
+                0x0000000000101f30                file_open
+                0x000000000010205f                file_close
+                0x00000000001020a5                file_read
+                0x00000000001024c6                file_write
+                0x00000000001024d0                file_seek
+ .text          0x00000000001025b8      0x940 interrupt.o
+                0x00000000001025b8                exec
+                0x00000000001026dd                syscall
+                0x0000000000102700                haltForever
+                0x0000000000102706                haltUntilInterrupt
+                0x000000000010270d                setupPICS_RTC
+                0x00000000001028a7                syscall_handler
+                0x0000000000102a00                divideByZeroInterrupt
+                0x0000000000102a38                debugTrapInterrupt
+                0x0000000000102a70                badOpcodeInterrupt
+                0x0000000000102aa8                unknownInterrupt
+                0x0000000000102ae0                unknownInterruptWithCode
+                0x0000000000102b2b                protectionFaultInterrupt
+                0x0000000000102b76                pageFaultInterrupt
+                0x0000000000102bc1                int48Interrupt
+                0x0000000000102c13                firstPicInterrupt
+                0x0000000000102c44                secondPicInterrupt
+                0x0000000000102c89                RTCint
+                0x0000000000102cfb                table
+                0x0000000000102d50                setInterruptTable
+                0x0000000000102e65                setupGDT
+                0x0000000000102eb0                interrupt_init
+ .text          0x0000000000102ef8      0x510 testsuite.o
+                0x000000000010303b                displayPPM
+                0x00000000001032b1                sweet
  *(.rodata)
  *(.rdata)
- *fill*         0x00000000001033f0       0x10 
- .rdata         0x0000000000103400     0x2020 kernelmain.o
- .rdata         0x0000000000105420     0x2000 console.o
- .rdata         0x0000000000107420     0x21e0 kprintf.o
- .rdata         0x0000000000109600      0x168 disk.o
- .rdata         0x0000000000109768      0x1b4 file.o
- .rdata         0x000000000010991c      0x1ac interrupt.o
- .rdata         0x0000000000109ac8       0x94 testsuite.o
+ .rdata         0x0000000000103408       0x18 kernelmain.o
+ .rdata         0x0000000000103420     0x2000 console.o
+ .rdata         0x0000000000105420     0x21e0 kprintf.o
+ .rdata         0x0000000000107600      0x160 disk.o
+ .rdata         0x0000000000107760      0x1a0 file.o
+ .rdata         0x0000000000107900      0x1b4 interrupt.o
+ .rdata         0x0000000000107ab4       0x94 testsuite.o
  *(.rdata$zzz)
- .rdata$zzz     0x0000000000109b5c       0x14 kernelmain.o
- .rdata$zzz     0x0000000000109b70       0x14 stdarg.o
- .rdata$zzz     0x0000000000109b84       0x14 console.o
- .rdata$zzz     0x0000000000109b98       0x14 util.o
- .rdata$zzz     0x0000000000109bac       0x14 kprintf.o
- .rdata$zzz     0x0000000000109bc0       0x14 disk.o
- .rdata$zzz     0x0000000000109bd4       0x14 file.o
- .rdata$zzz     0x0000000000109be8       0x14 interrupt.o
- .rdata$zzz     0x0000000000109bfc       0x14 testsuite.o
-                0x0000000000109c10                _textEnd = .
-                0x000000000010a000                . = ALIGN (ABSOLUTE (.), 0x1000)
- *fill*         0x0000000000109c10      0x3f0 
-                0x000000000010a000                _dataStart = .
+ .rdata$zzz     0x0000000000107b48       0x14 kernelmain.o
+ .rdata$zzz     0x0000000000107b5c       0x14 stdarg.o
+ .rdata$zzz     0x0000000000107b70       0x14 console.o
+ .rdata$zzz     0x0000000000107b84       0x14 util.o
+ .rdata$zzz     0x0000000000107b98       0x14 kprintf.o
+ .rdata$zzz     0x0000000000107bac       0x14 disk.o
+ .rdata$zzz     0x0000000000107bc0       0x14 file.o
+ .rdata$zzz     0x0000000000107bd4       0x14 interrupt.o
+ .rdata$zzz     0x0000000000107be8       0x14 testsuite.o
+                0x0000000000107bfc                _textEnd = .
+                0x0000000000108000                . = ALIGN (ABSOLUTE (.), 0x1000)
+ *fill*         0x0000000000107bfc      0x404 
+                0x0000000000108000                _dataStart = .
  *(.data)
- .data          0x000000000010a000        0x0 kernelmain.o
- .data          0x000000000010a000        0x0 stdarg.o
- .data          0x000000000010a000       0x60 console.o
-                0x000000000010a000                colorPattern
-                0x000000000010a048                red
-                0x000000000010a04c                green
- .data          0x000000000010a060        0x0 util.o
- .data          0x000000000010a060        0x0 kprintf.o
- .data          0x000000000010a060        0x0 disk.o
- .data          0x000000000010a060        0x0 file.o
- .data          0x000000000010a060       0x60 interrupt.o
-                0x000000000010a060                FileToLoad
-                0x000000000010a064                ring0StackInfo
-                0x000000000010a080                gdt
- .data          0x000000000010a0c0        0x0 testsuite.o
-                0x000000000010a0c0                _dataEnd = .
-                0x000000000010a0c0                _bssStart = .
+ .data          0x0000000000108000        0x4 kernelmain.o
+                0x0000000000108000                userFile
+ .data          0x0000000000108004        0x0 stdarg.o
+ *fill*         0x0000000000108004       0x1c 
+ .data          0x0000000000108020       0x60 console.o
+                0x0000000000108020                colorPattern
+                0x0000000000108068                red
+                0x000000000010806c                green
+                0x0000000000108070                blue
+ .data          0x0000000000108080        0x0 util.o
+ .data          0x0000000000108080        0x0 kprintf.o
+ .data          0x0000000000108080        0x0 disk.o
+ .data          0x0000000000108080        0x0 file.o
+ .data          0x0000000000108080       0x60 interrupt.o
+                0x0000000000108080                FileToLoad
+                0x0000000000108084                ring0StackInfo
+                0x00000000001080a0                gdt
+ .data          0x00000000001080e0        0x0 testsuite.o
+                0x00000000001080e0                _dataEnd = .
+                0x00000000001080e0                _bssStart = .
  *(COMMON)
- COMMON         0x000000000010a0c0     0x1680 kernelmain.o
-                0x000000000010a0c0                kernelStack
-                0x000000000010a2c0                file_table
-                0x000000000010b340                SB
- COMMON         0x000000000010b740       0xa1 console.o
-                0x000000000010b740                mbi
-                0x000000000010b744                framebuffer
-                0x000000000010b760                buff
-                0x000000000010b7e0                lastCharDrawn
- *fill*         0x000000000010b7e1       0x1f 
- COMMON         0x000000000010b800    0x64400 file.o
-                0x000000000010b800                debugMsg
-                0x000000000010b8e0                blockbuffer
- COMMON         0x000000000016fc00      0x188 interrupt.o
-                0x000000000016fc00                idt
+ COMMON         0x00000000001080e0        0x9 console.o
+                0x00000000001080e0                mbi
+                0x00000000001080e4                framebuffer
+                0x00000000001080e8                lastCharDrawn
+ *fill*         0x00000000001080e9       0x17 
+ COMMON         0x0000000000108100      0x400 disk.o
+                0x0000000000108100                SB
+ COMMON         0x0000000000108500    0x65388 file.o
+                0x0000000000108500                blockbuffer
+                0x000000000016c820                file_table
+ *fill*         0x000000000016d888       0x18 
+ COMMON         0x000000000016d8a0      0x414 interrupt.o
+                0x000000000016d8a0                idt
+                0x000000000016da40                debugMsg
+                0x000000000016dac0                kernelStack
  *(.bss)
- .bss           0x000000000016fd88     0x1000 kernelasm.o
- .bss           0x0000000000170d88        0x0 kernelmain.o
- .bss           0x0000000000170d88        0x0 stdarg.o
- .bss           0x0000000000170d88       0x10 console.o
-                0x0000000000170d88                pixCol
-                0x0000000000170d8c                pixRow
-                0x0000000000170d90                colorChangeIndex
-                0x0000000000170d94                blue
- .bss           0x0000000000170d98        0x0 util.o
- .bss           0x0000000000170d98        0x0 kprintf.o
- *fill*         0x0000000000170d98        0x8 
- .bss           0x0000000000170da0     0x4000 disk.o
- .bss           0x0000000000174da0     0x2020 file.o
- .bss           0x0000000000176dc0        0x4 interrupt.o
-                0x0000000000176dc0                jiffies
- *fill*         0x0000000000176dc4       0x1c 
- .bss           0x0000000000176de0     0x1e00 testsuite.o
-                0x0000000000178be0                _bssEnd = .
+ .bss           0x000000000016dcb4     0x1000 kernelasm.o
+ .bss           0x000000000016ecb4        0x0 kernelmain.o
+ .bss           0x000000000016ecb4        0x0 stdarg.o
+ .bss           0x000000000016ecb4        0xc console.o
+                0x000000000016ecb4                pixCol
+                0x000000000016ecb8                pixRow
+                0x000000000016ecbc                colorChangeIndex
+ .bss           0x000000000016ecc0        0x0 util.o
+ .bss           0x000000000016ecc0        0x0 kprintf.o
+ .bss           0x000000000016ecc0     0x4000 disk.o
+ .bss           0x0000000000172cc0     0x2020 file.o
+ .bss           0x0000000000174ce0        0x4 interrupt.o
+                0x0000000000174ce0                jiffies
+ *fill*         0x0000000000174ce4       0x1c 
+ .bss           0x0000000000174d00     0x1e00 testsuite.o
+                0x0000000000176b00                _bssEnd = .
 
-.drectve        0x0000000000179000      0x200
- .drectve       0x0000000000179000       0x4c kernelmain.o
- .drectve       0x000000000017904c       0x58 console.o
- .drectve       0x00000000001790a4       0x14 disk.o
- .drectve       0x00000000001790b8       0x64 file.o
- .drectve       0x000000000017911c       0x78 interrupt.o
+.drectve        0x0000000000177000      0x200
+ .drectve       0x0000000000177000       0x30 console.o
+ .drectve       0x0000000000177030       0x14 disk.o
+ .drectve       0x0000000000177044       0x4c file.o
+ .drectve       0x0000000000177090       0x78 interrupt.o
 
 /DISCARD/
  *(.eh_frame)
