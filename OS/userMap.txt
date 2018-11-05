@@ -1,0 +1,76 @@
+
+Discarded input sections
+
+ .eh_frame      0x0000000000000000       0x38 crtc.o
+ .eh_frame      0x0000000000000000       0x3c usertest1.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+LOAD crtasm.o
+                0x0000000000400000                __image_base__ = 0x400000
+                0x0000000000000000                __dll__ = 0x0
+                0x0000000000400000                ___ImageBase = 0x400000
+                0x0000000000001000                __section_alignment__ = 0x1000
+                0x0000000000000200                __file_alignment__ = 0x200
+                0x0000000000000004                __major_os_version__ = 0x4
+                0x0000000000000000                __minor_os_version__ = 0x0
+                0x0000000000000001                __major_image_version__ = 0x1
+                0x0000000000000000                __minor_image_version__ = 0x0
+                0x0000000000000004                __major_subsystem_version__ = 0x4
+                0x0000000000000000                __minor_subsystem_version__ = 0x0
+                0x0000000000000003                __subsystem__ = 0x3
+                0x0000000000200000                __size_of_stack_reserve__ = 0x200000
+                0x0000000000001000                __size_of_stack_commit__ = 0x1000
+                0x0000000000100000                __size_of_heap_reserve__ = 0x100000
+                0x0000000000001000                __size_of_heap_commit__ = 0x1000
+                0x0000000000000000                __loader_flags__ = 0x0
+                0x0000000000000000                __dll_characteristics__ = 0x0
+LOAD crtc.o
+                0x0000000000400000                . = 0x400000
+
+.text           0x0000000000400000     0x1000
+                0x0000000000400000                textStart = .
+                0x0000000000400000                _textStart = .
+ *(.text)
+ .text          0x0000000000400000        0xe crtasm.o
+                0x0000000000400005                __main
+ *fill*         0x000000000040000e        0x2 
+ .text          0x0000000000400010       0x2c crtc.o
+                0x0000000000400010                _start
+ .text          0x000000000040003c       0x24 usertest1.o
+                0x000000000040003c                main
+ *(.rodata)
+ *(.rdata)
+ *(.rdata$zzz)
+ .rdata$zzz     0x0000000000400060       0x14 crtc.o
+ .rdata$zzz     0x0000000000400074       0x14 usertest1.o
+                0x0000000000400088                textEnd = .
+                0x0000000000400088                _textEnd = .
+                0x0000000000401000                . = ALIGN (ABSOLUTE (.), 0x1000)
+ *fill*         0x0000000000400088      0xf78 
+                0x0000000000401000                dataStart = .
+                0x0000000000401000                _dataStart = .
+ *(.data)
+ .data          0x0000000000401000        0x0 crtc.o
+ .data          0x0000000000401000        0x0 usertest1.o
+                0x0000000000401000                dataEnd = .
+                0x0000000000401000                _dataEnd = .
+                0x0000000000401000                bssStart = .
+                0x0000000000401000                _bssStart = .
+ *(COMMON)
+ *(.bss)
+ .bss           0x0000000000401000        0x0 crtc.o
+ .bss           0x0000000000401000        0x0 usertest1.o
+                0x0000000000401000                bssEnd = .
+                0x0000000000401000                _bssEnd = .
+
+/DISCARD/
+ *(.eh_frame)
+ *(.comment)
+LOAD usertest1.o
+OUTPUT(usertest1.tmp pei-i386)

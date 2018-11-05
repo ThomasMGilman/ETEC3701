@@ -6,7 +6,7 @@ NASMPLATFORM?=win32
 LD_EXE?=ld
 #elf_i386 or i386pe
 LDPLATFORM?=i386pe
-QEMU?=/cygdrive/c/program files/qemu/qemu-system-i386
+QEMU?=/cygdrive/c/program files (x86)/qemu/qemu-system-i386
 MKE2FS?=/usr/sbin/mke2fs
 DEBUGFS?=/usr/sbin/debugfs
 OBJCOPY?=objcopy
@@ -44,6 +44,7 @@ all:
 	$(CC)	-c	disk.c
 	$(CC)	-c	file.c
 	$(CC)	-c	interrupt.c
+	$(CC)	-c	sys.c
 	$(CC)	-c	testsuite.c
 	$(LD) -Map kernelmap.txt -T linkerscript.txt -o kernel.tmp \
 		kernelasm.o	\
@@ -55,12 +56,13 @@ all:
 		disk.o	\
 		file.o	\
 		interrupt.o	\
+		sys.o	\
 		testsuite.o
 	$(OBJCOPY) -Obinary kernel.tmp kernel.bin
 	$(NASM)	crtasm.s -o crtasm.o
 	$(CC)	-c	crtc.c
 	$(CC)	-c	usertest1.c
-	$(LD)	-T	linkerscript2.txt -o usertest1.tmp usertest1.o
+	$(LD)	-Map userMap.txt	-T	linkerscript2.txt -o usertest1.tmp usertest1.o
 	$(OBJCOPY)	-Obinary	usertest1.tmp	usertest1.bin
 	$(TRUNCATE) -s 400000000 hd.img
 	$(MKE2FS) -b 4096 -F -I 128 -q -t ext2 -r 0 -L moocow -g 32768 hd.img

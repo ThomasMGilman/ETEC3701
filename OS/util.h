@@ -23,6 +23,10 @@
     };
 #pragma pack(pop)
 
+void haltForever(void);
+
+void haltUntilInterrupt(void);
+
 void outb(unsigned short port, unsigned char value);
 
 void outw(unsigned short port, unsigned short value);
@@ -30,6 +34,8 @@ void outw(unsigned short port, unsigned short value);
 unsigned char inb(unsigned short port);
 
 unsigned short inw(unsigned short port);
+
+int syscall(int p0, int p1, int p2, int p3);
 
 void logString(char* myString);
 

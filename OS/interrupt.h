@@ -47,14 +47,6 @@ struct LIDT{
 };
 #pragma pack(pop)
 
-int syscall(int p0, int p1, int p2, int p3);
-
-int exec(const char* filename);
-
-void haltForever(void);
-
-void haltUntilInterrupt(void);
-
 void table(int i, void* func);
 
 void setupPICS_RTC(unsigned rate);

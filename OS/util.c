@@ -1,5 +1,17 @@
 #include "util.h"
 
+void haltForever(void)
+{
+    while(1){
+        asm volatile("hlt" ::: "memory");
+    }
+}
+
+void haltUntilInterrupt(void)
+{
+    asm volatile("hlt" ::: "memory" );
+}
+
 void outb(unsigned short port, unsigned char value)
 {
     asm volatile("out dx, al" : : "a"(value), "d"(port) : "memory"); //al is 8bit register
@@ -21,6 +33,22 @@ unsigned short inw(unsigned short port)
     unsigned value;
     asm volatile("in ax, dx" : "=a"(value): "d"(port) );
     return (unsigned short) value;
+}
+
+int syscall(int p0, int p1, int p2, int p3)
+{
+    asm volatile(
+        "push edx\n"
+        "push ecx\n"
+        "push ebx\n"
+        "push eax\n"
+        "int 48\n"
+        "pop eax\n"
+        "add esp,12"
+        : "+a"(p0)
+        : "b"(p1), "c"(p2), "d"(p3)
+    );
+    return p0;
 }
 
 void logString(char* myString)

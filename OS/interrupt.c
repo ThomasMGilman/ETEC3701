@@ -5,13 +5,13 @@
 
 #define INTERRUPT_SIZE 49
 
-const char* FileToLoad = "usertest1.bin";
-char debugMsg[100];
-volatile unsigned jiffies = 0;
-
-void logString(char* myString);                     //UTIL 
+//UTIL 
 void outb(unsigned short port, unsigned char value);
 unsigned char inb(unsigned short port);
+void haltForever(void);
+void syscall_handler(unsigned* ptr);
+
+volatile unsigned jiffies = 0;
 
 unsigned ring0StackInfo[] =
 {
@@ -30,84 +30,6 @@ struct GDTEntry gdt[] = {
 };
 
 struct IDTEntry idt[INTERRUPT_SIZE];
-
-int exec(const char* filename)
-{   
-    unsigned fd, bytes, index = 0;
-    if((fd = file_open(filename,0)) < 0)
-    {
-        ksprintf(debugMsg,"FileName:%s failed to open!! failed to execute!!\n",filename);
-        logString(debugMsg);
-        return fd;
-    }
-    bytes = file_read(fd, (void *)0x400000, file_table[fd].ino.size);
-    ksprintf(debugMsg,"numRead:%d\n",bytes);
-    logString(debugMsg);
-    index += bytes;
-    while(bytes != 0)
-    {
-        bytes = file_read(fd, (void *)(0x400000+index), file_table[fd].ino.size);
-        index += bytes;
-        ksprintf(debugMsg,"numRead:%d\n",bytes);
-        logString(debugMsg);
-    }
-    // for(int i = 0; i < 4096; i++) //Hexdump file to log
-    // {
-    //     ksprintf(debugMsg,"%.2X ",((char*)0x400000)[i]&0xff);
-    //     logString(debugMsg);
-    // }
-
-    if((fd = file_close(fd)) < 0)
-    {
-        ksprintf(debugMsg,"FileName:%s failed to close!! failed to execute!!\n",filename);
-        logString(debugMsg);
-        return fd;
-    }
-    asm volatile(
-        "mov ax,27\n"
-        "mov ds,ax\n"
-        "mov es,ax\n"
-        "mov fs,ax\n"
-        "mov gs,ax\n"
-        "push 27\n"
-        "push 0x800000\n"
-        "pushf\n"       //push eflags register
-        "push 35\n"
-        "push 0x400000\n"
-        "iret"
-        ::: "eax","memory" );
-    kprintf("We should never get here!\n");
-    haltForever();
-    return -1;
-}
-
-int syscall(int p0, int p1, int p2, int p3)
-{
-    asm volatile(
-        "push edx\n"
-        "push ecx\n"
-        "push ebx\n"
-        "push eax\n"
-        "int 48\n"
-        "pop eax\n"
-        "add esp,12"
-        : "+a"(p0)
-        : "b"(p1), "c"(p2), "d"(p3)
-    );
-    return p0;
-}
-
-void haltForever(void)
-{
-    while(1){
-        asm volatile("hlt" ::: "memory");
-    }
-}
-
-void haltUntilInterrupt(void)
-{
-    asm volatile("hlt" ::: "memory" );
-}
 
 /*
     RATE_VALUES:
@@ -140,46 +62,6 @@ void setupPICS_RTC(unsigned rate)
     tmp = inb(0x71);    //prev val
     outb(0x70, 11);     //select reg 11
     outb(0x71, tmp|0x40);       //Enable interrupts
-}
-
-void syscall_handler(unsigned* ptr)
-{
-    switch(ptr[0])
-    {
-        case SYSCALL_READ:
-            if( ptr[2] < 0x400000 || ptr[2] > 0x800000 ||
-                ptr[2] + ptr[3] < 0x400000 || ptr[2] + ptr[3] > 0x800000)
-            {
-                ptr [0] = -EFAULT;
-                break;
-            }
-            ///do stuff
-            break;
-        case SYSCALL_WRITE:
-            if( ptr[2] < 0x400000 || ptr[2] > 0x800000)
-            {
-                ptr [0] = -EFAULT;
-                break;
-            }
-            if(ptr[3] < 0 || ptr[2]+ptr[3] >= 0x800000)
-            {
-                ptr[0] = -EINVAL;
-                break;
-            }
-            ptr[0] = file_write(ptr[1],(char*)ptr[2],ptr[3]);
-            break;
-        case SYSCALL_OPEN:
-            ptr[0] = file_open((char*)ptr[1], ptr[2]);
-            break;
-        case SYSCALL_CLOSE:
-            ptr[0] = file_close(ptr[1]);
-            break;
-        case SYSCALL_EXIT:
-            break;
-        default:
-            ptr[0] = -ENOSYS;
-            break;
-    }
 }
 
 __attribute__((interrupt))
