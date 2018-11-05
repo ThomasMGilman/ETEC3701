@@ -1,6 +1,5 @@
 #include "interrupt.h"
 #include "file.h"
-#include "syscalls.h"
 #include "kprintf.h"
 
 #define INTERRUPT_SIZE 49
@@ -9,9 +8,50 @@
 void outb(unsigned short port, unsigned char value);
 unsigned char inb(unsigned short port);
 void haltForever(void);
+void logString(char* myString);
+
+//Syscall
 void syscall_handler(unsigned* ptr);
 
+char debugMsg[100];
 volatile unsigned jiffies = 0;
+
+int exec(const char* filename)
+{   
+    unsigned fd, bytes;
+    if((fd = file_open(filename,0)) < 0)
+    {
+        ksprintf(debugMsg,"FileName:%s failed to open!! failed to execute!!\n",filename);
+        logString(debugMsg);
+        return fd;
+    }
+    bytes = file_read(fd, (void *)0x400000, file_table[fd].ino.size);
+    ksprintf(debugMsg,"numRead:%d\n",bytes);
+    logString(debugMsg);
+
+    if((fd = file_close(fd)) < 0)
+    {
+        ksprintf(debugMsg,"FileName:%s failed to close!! failed to execute!!\n",filename);
+        logString(debugMsg);
+        return fd;
+    }
+    asm volatile(
+        "mov ax,27\n"
+        "mov ds,ax\n"
+        "mov es,ax\n"
+        "mov fs,ax\n"
+        "mov gs,ax\n"
+        "push 27\n"
+        "push 0x800000\n"
+        "pushf\n"       //push eflags register
+        "push 35\n"
+        "push 0x400000\n"
+        "iret"
+        ::: "eax","memory" );
+    kprintf("We should never get here!\n");
+    haltForever();
+    return -1;
+}
 
 unsigned ring0StackInfo[] =
 {
@@ -114,7 +154,7 @@ void pageFaultInterrupt(struct InterruptFrame* fr, unsigned code)
 }
 
 __attribute__((__interrupt__))
-void int48Interrupt(struct InterruptFrame* fr)
+void syscallInterrupt(struct InterruptFrame* fr)
 {
     if( fr->esp < 0x400000 || fr->esp > 0x800000-(4*4)) //Invalid parameter. Ignore the system call.
         return;
@@ -172,8 +212,8 @@ void setInterruptTable(void)
             table(index, pageFaultInterrupt);
         else if(index == 48)
         {
-            table(index, int48Interrupt);
-            idt[48].flags = 0xee;
+            table(index, syscallInterrupt);
+            idt[48].flags = 0xee;           //accessible to ring 3/user
         }
         else
             table(index, unknownInterrupt);

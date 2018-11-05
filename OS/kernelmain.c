@@ -5,6 +5,7 @@ const char* userFile = "usertest1.bin";
 void consol_init(struct MultibootInfo *m);
 int disk_init(void);
 void interrupt_init(void);
+int kprintf(const char* fmt, ... ) __attribute__((format (printf , 1, 2 ) ));
 int exec(const char* filename);
 
 //int listDiskInfo(void);
@@ -18,13 +19,7 @@ void kmain(struct MultibootInfo *mbi){
     //     logString("error listing DiskInfo");
     //sweet(1);
     //logString("fin\n");
-    // int a=5;
-    // int b=0;
-    // int c = a/b;                                  //Division by zero
-    // kprintf("%d\n",c);
-    // asm volatile ("int 3" :::"memory");           //Interrupt3 debug trap
-    // asm volatile( ".byte 15,255" ::: "memory");   //bad opcode
     exec(userFile);
-    logString("ERROR\n");
+    logString("ERROR\n"); //should never get here
     while(1){;}           //loop forever
 }

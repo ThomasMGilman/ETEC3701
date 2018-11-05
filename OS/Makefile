@@ -44,7 +44,7 @@ all:
 	$(CC)	-c	disk.c
 	$(CC)	-c	file.c
 	$(CC)	-c	interrupt.c
-	$(CC)	-c	sys.c
+	$(CC)	-c	syscalls.c
 	$(CC)	-c	testsuite.c
 	$(LD) -Map kernelmap.txt -T linkerscript.txt -o kernel.tmp \
 		kernelasm.o	\
@@ -56,7 +56,7 @@ all:
 		disk.o	\
 		file.o	\
 		interrupt.o	\
-		sys.o	\
+		syscalls.o	\
 		testsuite.o
 	$(OBJCOPY) -Obinary kernel.tmp kernel.bin
 	$(NASM)	crtasm.s -o crtasm.o

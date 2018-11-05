@@ -1,20 +1,5 @@
 #include "syscalls.h"
 
-int syscall(int p0, int p1, int p2, int p3){
-    asm volatile(
-        "push edx\n"
-        "push ecx\n"
-        "push ebx\n"
-        "push eax\n"
-        "int 48\n"
-        "pop eax\n"
-        "add esp,12"
-        : "+a"(p0)
-        : "b"(p1), "c"(p2), "d"(p3)
-    );
-    return p0;
-}
-
 int open(const char* filename){
     return syscall(SYSCALL_OPEN,(unsigned)filename, 0 , 0);
 }
