@@ -25,6 +25,8 @@ struct BufferEntry{
 
 void read_block(unsigned blocknum, void* buffer);
 
+int file_init(void);
+
 int file_open(const char* fileName, int flags);
 
 int file_close(int fd);

@@ -7,3 +7,4 @@
 #define DRIERR 5 //fatal error reading disk inode
 #define ENOSPC 6 //No space on device
 #define EFAULT 8
+#define ENOTTY 9

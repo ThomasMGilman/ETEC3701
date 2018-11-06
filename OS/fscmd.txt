@@ -19,4 +19,4 @@ cd ..
 write article3.txt people
 cd ..
 write article4.txt "of the Untied States"
-write usertest1.bin usertest1.bin
+write user.bin user.bin

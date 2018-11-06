@@ -2,7 +2,7 @@
 Discarded input sections
 
  .eh_frame      0x0000000000000000       0x38 crtc.o
- .eh_frame      0x0000000000000000       0x3c usertest1.o
+ .eh_frame      0x0000000000000000       0xe0 user.o
 
 Memory Configuration
 
@@ -42,22 +42,28 @@ LOAD crtc.o
  *fill*         0x0000000000400006        0x2 
  .text          0x0000000000400008       0x2c crtc.o
                 0x0000000000400008                _start
- .text          0x0000000000400034       0x24 usertest1.o
-                0x0000000000400034                main
+ .text          0x0000000000400034      0x174 user.o
+                0x0000000000400034                syscall
+                0x0000000000400057                open
+                0x0000000000400082                read
+                0x00000000004000ab                write
+                0x00000000004000d4                close
+                0x00000000004000ff                main
  *(.rodata)
  *(.rdata)
+ .rdata         0x00000000004001a8       0x10 user.o
  *(.rdata$zzz)
- .rdata$zzz     0x0000000000400058       0x14 crtc.o
- .rdata$zzz     0x000000000040006c       0x14 usertest1.o
-                0x0000000000400080                textEnd = .
-                0x0000000000400080                _textEnd = .
+ .rdata$zzz     0x00000000004001b8       0x14 crtc.o
+ .rdata$zzz     0x00000000004001cc       0x14 user.o
+                0x00000000004001e0                textEnd = .
+                0x00000000004001e0                _textEnd = .
                 0x0000000000401000                . = ALIGN (ABSOLUTE (.), 0x1000)
- *fill*         0x0000000000400080      0xf80 
+ *fill*         0x00000000004001e0      0xe20 
                 0x0000000000401000                dataStart = .
                 0x0000000000401000                _dataStart = .
  *(.data)
  .data          0x0000000000401000        0x0 crtc.o
- .data          0x0000000000401000        0x0 usertest1.o
+ .data          0x0000000000401000        0x0 user.o
                 0x0000000000401000                dataEnd = .
                 0x0000000000401000                _dataEnd = .
                 0x0000000000401000                bssStart = .
@@ -65,12 +71,12 @@ LOAD crtc.o
  *(COMMON)
  *(.bss)
  .bss           0x0000000000401000        0x0 crtc.o
- .bss           0x0000000000401000        0x0 usertest1.o
+ .bss           0x0000000000401000        0x0 user.o
                 0x0000000000401000                bssEnd = .
                 0x0000000000401000                _bssEnd = .
 
 /DISCARD/
  *(.eh_frame)
  *(.comment)
-LOAD usertest1.o
-OUTPUT(usertest1.tmp pei-i386)
+LOAD user.o
+OUTPUT(user.tmp pei-i386)

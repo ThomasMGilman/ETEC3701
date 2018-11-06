@@ -35,8 +35,6 @@ unsigned char inb(unsigned short port);
 
 unsigned short inw(unsigned short port);
 
-int syscall(int p0, int p1, int p2, int p3);
-
 void logString(char* myString);
 
 void clearBss(char* bssStart, char* bssEnd);

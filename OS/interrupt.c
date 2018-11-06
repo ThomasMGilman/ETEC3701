@@ -1,4 +1,5 @@
 #include "interrupt.h"
+#include "syscalls.h"
 #include "file.h"
 #include "kprintf.h"
 
@@ -10,48 +11,9 @@ unsigned char inb(unsigned short port);
 void haltForever(void);
 void logString(char* myString);
 
-//Syscall
-void syscall_handler(unsigned* ptr);
-
 char debugMsg[100];
 volatile unsigned jiffies = 0;
-
-int exec(const char* filename)
-{   
-    unsigned fd, bytes;
-    if((fd = file_open(filename,0)) < 0)
-    {
-        ksprintf(debugMsg,"FileName:%s failed to open!! failed to execute!!\n",filename);
-        logString(debugMsg);
-        return fd;
-    }
-    bytes = file_read(fd, (void *)0x400000, file_table[fd].ino.size);
-    ksprintf(debugMsg,"numRead:%d\n",bytes);
-    logString(debugMsg);
-
-    if((fd = file_close(fd)) < 0)
-    {
-        ksprintf(debugMsg,"FileName:%s failed to close!! failed to execute!!\n",filename);
-        logString(debugMsg);
-        return fd;
-    }
-    asm volatile(
-        "mov ax,27\n"
-        "mov ds,ax\n"
-        "mov es,ax\n"
-        "mov fs,ax\n"
-        "mov gs,ax\n"
-        "push 27\n"
-        "push 0x800000\n"
-        "pushf\n"       //push eflags register
-        "push 35\n"
-        "push 0x400000\n"
-        "iret"
-        ::: "eax","memory" );
-    kprintf("We should never get here!\n");
-    haltForever();
-    return -1;
-}
+unsigned Frequency = 2;
 
 unsigned ring0StackInfo[] =
 {
@@ -153,6 +115,22 @@ void pageFaultInterrupt(struct InterruptFrame* fr, unsigned code)
     haltForever();
 }
 
+__attribute__((interrupt))
+void hardwareIntHandler(struct InterruptFrame* fr) //interrupts 32->39 41->47
+{
+    outb( 0x20, 32 );   //ack 1st PIC
+    outb( 0xa0, 32 );   //ack 2nd PIC
+}
+
+__attribute__((interrupt))
+void int40trap(struct InterruptFrame* fr)
+{
+    outb(0x70, 0xc);    //ack reading status reg
+    inb(0x71);          //discard val
+    outb( 0x20, 32 );   //ack 1st PIC
+    outb( 0xa0, 32 );   //ack 2nd PIC
+}
+
 __attribute__((__interrupt__))
 void syscallInterrupt(struct InterruptFrame* fr)
 {
@@ -160,6 +138,7 @@ void syscallInterrupt(struct InterruptFrame* fr)
         return;
     unsigned* espCheck = (unsigned*)fr->esp;
     syscall_handler(espCheck);
+    return;
 }
 
 //Framework for interrupt handlers: 0...7
@@ -210,6 +189,10 @@ void setInterruptTable(void)
             table(index, protectionFaultInterrupt);
         else if(index == 14)
             table(index, pageFaultInterrupt);
+        else if((index >= 32 && index <40) || (index >40 && index <= 47))
+            table(index, hardwareIntHandler);
+        else if(index == 40)
+            table(index, int40trap);
         else if(index == 48)
         {
             table(index, syscallInterrupt);
@@ -231,7 +214,141 @@ void setupGDT(void)
     gdt[5].base3 = (tmp>>24) & 0xff;
 }
 
-void interrupt_init(void)
+void syscall_handler(unsigned* ptr)
+{
+    signed pass = 0;
+    int fd = ptr[1];
+    unsigned buf = ptr[2];
+    unsigned count = ptr[3];
+    switch(ptr[0])
+    {
+        case SYSCALL_READ:
+            if( (buf < 0x400000 || buf > 0x800000) ||
+                (buf + count < 0x400000 || buf + count > 0x800000))
+            {
+                ptr[0] = -EFAULT;
+                logString("ERROR: cant read from outside of userspace!!\n");
+                break;
+            }
+            else if(fd == 1 || fd == 2) //illegal to read from screen
+            {
+                ptr[0] = -ENOTTY;
+                logString("ERROR: cant read from screen!!\n");
+                break;
+            }
+            pass = file_read(fd, (char*)ptr[2], count);
+            ptr[0] = pass;
+            if(pass >= 0) logString("successfully read from file!!\n");
+            else
+            {
+                ksprintf(debugMsg,"ERROR: failed to write to fd:%d, code:%d\n!!", fd, ptr[0]);
+                logString(debugMsg);
+            }
+            break;
+        case SYSCALL_WRITE:
+            if( (buf < 0x400000 || buf > 0x800000) ||
+                (count < 0 || buf+count >= 0x800000))
+            {
+                ptr [0] = -EFAULT;
+                logString("ERROR: cant write outside of userspace!!\n");
+                break;
+            }
+            else if(fd == 0)            //illegal to write to keyboard
+            {
+                ptr[0] = -ENOTTY;
+                logString("ERROR: cant write to keyboard!!\n");
+                break;
+            }
+            pass = file_write(fd, (char*)ptr[2], count);
+            ptr[0] = pass;
+            if(pass >= 0) logString("wrote to file\n");
+            else
+            {
+                ksprintf(debugMsg,"ERROR: failed to write to fd:%d, code:%d!!\n", fd, ptr[0]);
+                logString(debugMsg);
+            }
+            break;
+        case SYSCALL_OPEN:
+            ptr[0] = file_open((const char*)ptr[1], ptr[2]);//ptr[1] : filename, prt[2] : flags
+            if(ptr[0] >= 0)
+            {
+                ksprintf(debugMsg,"fd:%d File:%s opened successfully!!\n",ptr[0] ,(const char*)ptr[1]);
+                logString(debugMsg);
+            }
+            break;
+        case SYSCALL_CLOSE:
+            pass = file_close(fd);
+            if(pass == 0) logString("file closed!!\n");
+            else logString("No such file to close!!\n");
+            ptr[0] = pass;
+            break;
+        case SYSCALL_EXIT:
+            break;
+        case SYSCALL_HALT:
+            asm volatile(
+                "sti\n"
+                "hlt":::"memory");
+            break;
+        case SYSCALL_PLAY:
+            unsigned short divisor  = 1193180 / ptr[1];    //ptr[1] : Frequency
+            unsigned short v;
+            outb(0x42, 0xb6);
+            outb(0x42, divisor & 0xff);     //low byte
+            outb(0x42, divisor & 0xff00);   //high byte
+            v = inb(0x61);
+            if(v & 0x0003)
+                outb(0x61, (v|3));
+            break;
+        case SYSCALL_SLEEP:
+            unsigned short v = inb(0x61);
+            unsigned tmp = ptr[1] * (1/Frequency) * 10000;  //wait time
+            outb(0x61, (v & 0xfffc));                       //turn off the lower two bits
+            while(tmp--){;}
+            break;
+        default:
+            ptr[0] = -ENOSYS;
+            break;
+    }
+}
+
+int exec(const char* filename)
+{   
+    unsigned fd, bytes;
+    if((fd = file_open(filename,0)) < 0)
+    {
+        ksprintf(debugMsg,"FileName:%s failed to open!! failed to execute!!\n",filename);
+        logString(debugMsg);
+        return fd;
+    }
+    bytes = file_read(fd, (void *)0x400000, file_table[fd].ino.size);
+    ksprintf(debugMsg,"numRead:%d\n",bytes);
+    logString(debugMsg);
+
+    if((fd = file_close(fd)) < 0)
+    {
+        ksprintf(debugMsg,"FileName:%s failed to close!! failed to execute!!\n",filename);
+        logString(debugMsg);
+        return fd;
+    }
+    asm volatile(
+        "mov ax,27\n"
+        "mov ds,ax\n"
+        "mov es,ax\n"
+        "mov fs,ax\n"
+        "mov gs,ax\n"
+        "push 27\n"
+        "push 0x800000\n"
+        "pushf\n"       //push eflags register
+        "push 35\n"
+        "push 0x400000\n"
+        "iret"
+        ::: "eax","memory" );
+    kprintf("We should never get here!\n");
+    haltForever();
+    return -1;
+}
+
+int interrupt_init(void)
 {
     struct LGDT lgdt;
     //setupPICS_RTC(6);
@@ -240,7 +357,7 @@ void interrupt_init(void)
     lgdt.addr = &gdt[0];
     asm volatile( "lgdt [eax]\n"
             "ltr bx"
-        : //no outputs
+        :                   //no outputs
         :   "a"(&lgdt),     //put address of gdt in eax
             "b"((5<<3)|3)   //put task register index in ebx
         : "memory" );
@@ -249,5 +366,6 @@ void interrupt_init(void)
     lidt.size = sizeof(idt);
     lidt.addr = &idt[0];
     asm volatile("lidt [eax]" : : "a"(&lidt) : "memory" );
-    //asm volatile("sti" : : : "memory");
+    asm volatile("sti" : : : "memory"); //interrupt inhibit
+    return SUCCESS;
 }

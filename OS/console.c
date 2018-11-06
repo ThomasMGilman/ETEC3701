@@ -146,9 +146,10 @@ void consoleDrawString(char* myString)
 	while(myString[indexOfString])									//while not NULL
 		console_putc(myString[indexOfString++]);					//print the char to screen from bottom left
 }
-void consol_init(struct MultibootInfo *m)
+int consol_init(struct MultibootInfo *m)
 {
 	mbi = m;
     framebuffer = (volatile unsigned char*) (unsigned)mbi->mbiFramebufferAddress;
 	clearScreen();
+	return 0;
 }

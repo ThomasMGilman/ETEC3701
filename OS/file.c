@@ -37,6 +37,14 @@ void read_block(unsigned blocknum, void* buffer)
     return;
 }
 
+//mark screen and keyboard in use, not to be written to
+int file_init(void)
+{
+    unsigned index;
+    for(index = 0; index < 3; index++)
+        file_table[index].in_use = 1;
+    return SUCCESS;
+}
 
 int file_open(const char* fileName, int flags)
 {

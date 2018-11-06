@@ -22,4 +22,4 @@ void console_putc(char c);
 
 void consoleDrawString(char* myString);
 
-void consol_init(struct MultibootInfo *m);
+int consol_init(struct MultibootInfo *m);
