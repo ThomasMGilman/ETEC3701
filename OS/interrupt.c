@@ -220,6 +220,8 @@ void syscall_handler(unsigned* ptr)
     int fd = ptr[1];
     unsigned buf = ptr[2];
     unsigned count = ptr[3];
+    unsigned short divisor, v;
+    unsigned tmp;
     switch(ptr[0])
     {
         case SYSCALL_READ:
@@ -290,20 +292,25 @@ void syscall_handler(unsigned* ptr)
                 "hlt":::"memory");
             break;
         case SYSCALL_PLAY:
-            unsigned short divisor  = 1193180 / ptr[1];    //ptr[1] : Frequency
-            unsigned short v;
+            logString("playing\n");
+            divisor  = 1193180 / ptr[1];                    //ptr[1] : Frequency
             outb(0x42, 0xb6);
-            outb(0x42, divisor & 0xff);     //low byte
-            outb(0x42, divisor & 0xff00);   //high byte
+            outb(0x42, (const unsigned)(divisor & 0xff));   //low byte
+            outb(0x42, (const unsigned)(divisor & 0xff00)); //high byte
             v = inb(0x61);
             if(v & 0x0003)
                 outb(0x61, (v|3));
             break;
         case SYSCALL_SLEEP:
-            unsigned short v = inb(0x61);
-            unsigned tmp = ptr[1] * (1/Frequency) * 10000;  //wait time
+            logString("waiting\n");
+            v = inb(0x61);
+            tmp = ptr[1] * (1/Frequency) * 10000;           //wait time
             outb(0x61, (v & 0xfffc));                       //turn off the lower two bits
             while(tmp--){;}
+            break;
+        case SYSCALL_LOG:
+            logString("logging\n");
+            logString((char*)ptr[1]);
             break;
         default:
             ptr[0] = -ENOSYS;

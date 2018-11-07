@@ -8,3 +8,4 @@
 #define SYSCALL_HALT    5
 #define SYSCALL_PLAY    6
 #define SYSCALL_SLEEP   7
+#define SYSCALL_LOG     8

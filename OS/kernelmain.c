@@ -1,6 +1,6 @@
 #include "util.h"
 
-const char* userFile = "user.bin";
+const char* userFile = "squawker.bin"; //"user.bin"
 
 int consol_init(struct MultibootInfo *m);
 int file_init(void);

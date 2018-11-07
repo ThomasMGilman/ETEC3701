@@ -104,8 +104,11 @@ int mystrlen(const char* txt){
 //msec per quarter note
 #define QUARTERNOTE 300
 
+const char* debug = "I AM HERE!!\n";
+
 int main(int argc, char* argv[])
 {
+    //do_syscall(SYSCALL_LOG, *debug,0,0);
     unsigned i=0;
     unsigned li=0;
     while(notes[i]){
