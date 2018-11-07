@@ -67,23 +67,142 @@ void setupPICS_RTC(unsigned rate)
 }
 
 __attribute__((interrupt))
-void divideByZeroInterrupt(struct InterruptFrame* fr)
+void divideByZeroInterrupt(struct InterruptFrame* fr)   //interrupt 0
 {
     kprintf("\nERROR: Division by Zero is undefined!\nFatal exception at eip=%x\n",fr->eip);
     haltForever();
 }
 
 __attribute__((interrupt))
-void debugTrapInterrupt(struct InterruptFrame* fr)
+void debugTrapInterrupt(struct InterruptFrame* fr)      //interrupt 1
 {
     kprintf("\nERROR: Debug Trap!\nFatal exception at eip=%x\n",fr->eip);
     haltForever();
 }
 
 __attribute__((interrupt))
-void badOpcodeInterrupt(struct InterruptFrame* fr)
+void NMIInterrupt(struct InterruptFrame* fr)            //interrupt 2
+{
+    kprintf("\nERROR: NMI!!\nFatal exception at eip=%x\n",fr->eip);
+    haltForever();
+}
+
+__attribute__((interrupt))
+void int3Interrupt(struct InterruptFrame* fr)           //interrupt 3
+{
+    kprintf("\nERROR: int3 Trap!\nFatal exception at eip=%x\n",fr->eip);
+    haltForever();
+}
+
+__attribute__((interrupt))
+void OverflowInterrupt(struct InterruptFrame* fr)       //interrupt 4
+{
+    kprintf("\nERROR: Overflow!!\nFatal exception at eip=%x\n",fr->eip);
+    haltForever();
+}
+
+__attribute__((interrupt))
+void BCInterrupt(struct InterruptFrame* fr)             //interrupt 5
+{
+    kprintf("\nERROR: BoundCheck!!\nFatal exception at eip=%x\n",fr->eip);
+    haltForever();
+}
+
+__attribute__((interrupt))
+void badOpcodeInterrupt(struct InterruptFrame* fr)      //interrupt 6
 {
     kprintf("\nERROR: Bad opcode!\nFatal exception at eip=%x\n",fr->eip);
+    haltForever();
+}
+
+__attribute__((interrupt))
+void NFPUInterrupt(struct InterruptFrame* fr)           //interrupt 7
+{
+    kprintf("\nERROR: NO FPU!\nFatal exception at eip=%x\n",fr->eip);
+    haltForever();
+}
+
+__attribute__((interrupt))
+void DFInterrupt(struct InterruptFrame* fr, unsigned code)              //interrupt 8
+{
+    kprintf("\nERROR: DoubleFault exception: Code=%x eip=%x\n", code, fr->eip);
+    haltForever();
+}
+
+__attribute__((interrupt))
+void FPUOInterrupt(struct InterruptFrame* fr)                           //interrupt 9
+{
+    kprintf("\nERROR: FPU Overrun!\nFatal exception at eip=%x\n",fr->eip);
+    haltForever();
+}
+
+__attribute__((interrupt))
+void BTSSInterrupt(struct InterruptFrame* fr, unsigned code)            //interrupt 10
+{
+    kprintf("\nERROR: Bad TSS exception: Code=%x eip=%x\n", code, fr->eip);
+    haltForever();
+}
+
+__attribute__((interrupt))
+void NoSegInterrupt(struct InterruptFrame* fr, unsigned code)           //interrupt 11
+{
+    kprintf("\nERROR: No Segment exception: Code=%x eip=%x\n", code, fr->eip);
+    haltForever();
+}
+
+__attribute__((interrupt))
+void SFaultInterrupt(struct InterruptFrame* fr, unsigned code)         //interrupt 12
+{
+    kprintf("\nERROR: Stack Fault exception: Code=%x eip=%x\n", code, fr->eip);
+    haltForever();
+}
+
+__attribute__((interrupt))
+void GFaultInterrupt(struct InterruptFrame* fr, unsigned code)         //interrupt 13
+{
+    kprintf("\nERROR: General Fault exception: Code=%x eip=%x\n", code, fr->eip);
+    haltForever();
+}
+
+__attribute__((interrupt))
+void PFaultInterrupt(struct InterruptFrame* fr, unsigned code)         //interrupt 14
+{
+    kprintf("\nERROR: Page Fault exception: Code=%x eip=%x\n", code, fr->eip);
+    haltForever();
+}
+
+__attribute__((interrupt))
+void MFaultInterrupt(struct InterruptFrame* fr)                         //interrupt 16
+{
+    kprintf("\nERROR: Math Fault exception at eip=%x\n",fr->eip);
+    haltForever();
+}
+
+__attribute__((interrupt))
+void MisalignedInterrupt(struct InterruptFrame* fr, unsigned code)      //interrupt 17
+{
+    kprintf("\nERROR: Misaligned exception: Code=%x eip=%x\n", code, fr->eip);
+    haltForever();
+}
+
+__attribute__((interrupt))
+void MCheckInterrupt(struct InterruptFrame* fr)                         //interrupt 18
+{
+    kprintf("\nERROR: Machine Check exception at eip=%x\n",fr->eip);
+    haltForever();
+}
+
+__attribute__((interrupt))
+void SIMDInterrupt(struct InterruptFrame* fr)                           //interrupt 19
+{
+    kprintf("\nERROR: SIMD Fault exception at eip=%x\n",fr->eip);
+    haltForever();
+}
+
+__attribute__((interrupt))
+void VMInterrupt(struct InterruptFrame* fr)                             //interrupt 20
+{
+    kprintf("\nERROR: VM Fault exception at eip=%x\n",fr->eip);
     haltForever();
 }
 
@@ -102,21 +221,7 @@ void unknownInterruptWithCode(struct InterruptFrame* fr, unsigned code)
 }
 
 __attribute__((interrupt))
-void protectionFaultInterrupt(struct InterruptFrame* fr, unsigned code)
-{
-    kprintf("\nERROR: Protection Fault!\nFatal exception: Code=%x eip=%x\n", code, fr->eip);
-    haltForever();
-}
-
-__attribute__((interrupt))
-void pageFaultInterrupt(struct InterruptFrame* fr, unsigned code)
-{
-    kprintf("\nERROR: Page Fault!\nFatal exception: Code=%x eip=%x\n", code, fr->eip);
-    haltForever();
-}
-
-__attribute__((interrupt))
-void hardwareIntHandler(struct InterruptFrame* fr) //interrupts 32->39 41->47
+void hardwareIntHandler(struct InterruptFrame* fr)                  //interrupts 32->39 41->47
 {
     outb( 0x20, 32 );   //ack 1st PIC
     outb( 0xa0, 32 );   //ack 2nd PIC
@@ -178,17 +283,44 @@ void setInterruptTable(void)
     {
         if(index == 0)
             table(index, divideByZeroInterrupt);
-        else if( index == 3)
+        else if(index == 1)
             table(index, debugTrapInterrupt);
+        else if(index == 2)
+            table(index, NMIInterrupt);
+        else if( index == 3)
+            table(index, int3Interrupt);
+        else if( index == 4)
+            table(index, OverflowInterrupt);
+        else if( index == 5)
+            table(index, BCInterrupt);
         else if(index == 6)
             table(index, badOpcodeInterrupt);
-        else if(index == 8 || index == 17 ||
-        (index >= 10 && index < 13))
-            table(index, unknownInterruptWithCode);
-        else if(index == 13)
-            table(index, protectionFaultInterrupt);
-        else if(index == 14)
-            table(index, pageFaultInterrupt);
+        else if( index == 7)
+            table(index, NFPUInterrupt);
+        else if( index == 8)
+            table(index, DFInterrupt);
+        else if( index == 9)
+            table(index, FPUOInterrupt);
+        else if( index == 10)
+            table(index, BTSSInterrupt);
+        else if( index == 11)
+            table(index, NoSegInterrupt);
+        else if( index == 12)
+            table(index, SFaultInterrupt);
+        else if( index == 13)
+            table(index, GFaultInterrupt);
+        else if( index == 14)
+            table(index, PFaultInterrupt);
+        else if( index == 16)
+            table(index, MFaultInterrupt);
+        else if( index == 17)
+            table(index, MisalignedInterrupt);
+        else if( index == 18)
+            table(index, MCheckInterrupt);
+        else if( index == 19)
+            table(index, SIMDInterrupt);
+        else if( index == 20)
+            table(index, VMInterrupt);
         else if((index >= 32 && index <40) || (index >40 && index <= 47))
             table(index, hardwareIntHandler);
         else if(index == 40)
@@ -287,13 +419,17 @@ void syscall_handler(unsigned* ptr)
         case SYSCALL_EXIT:
             break;
         case SYSCALL_HALT:
+            //logString("Halting");
             asm volatile(
                 "sti\n"
                 "hlt":::"memory");
             break;
         case SYSCALL_PLAY:
             logString("playing\n");
-            divisor  = 1193180 / ptr[1];                    //ptr[1] : Frequency
+            if(ptr[1] == 0)
+                divisor = 0;
+            else
+                divisor  = 1193180 / ptr[1];                //ptr[1] : Frequency
             outb(0x42, 0xb6);
             outb(0x42, (const unsigned)(divisor & 0xff));   //low byte
             outb(0x42, (const unsigned)(divisor & 0xff00)); //high byte
@@ -309,8 +445,9 @@ void syscall_handler(unsigned* ptr)
             while(tmp--){;}
             break;
         case SYSCALL_LOG:
-            logString("logging\n");
-            logString((char*)ptr[1]);
+            //logString("logging");
+            //kprintf("%x", ptr[1]);
+            outb(0x3f8, (char)ptr[1]);
             break;
         default:
             ptr[0] = -ENOSYS;
@@ -358,7 +495,7 @@ int exec(const char* filename)
 int interrupt_init(void)
 {
     struct LGDT lgdt;
-    //setupPICS_RTC(6);
+    setupPICS_RTC(6);
     setupGDT();
     lgdt.size = sizeof(gdt);
     lgdt.addr = &gdt[0];

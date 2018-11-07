@@ -33,7 +33,7 @@ LOAD crtasm.o
 LOAD crtc.o
                 0x0000000000400000                . = 0x400000
 
-.text           0x0000000000400000     0x1400
+.text           0x0000000000400000     0x1600
                 0x0000000000400000                textStart = .
                 0x0000000000400000                _textStart = .
  *(.text)
@@ -42,39 +42,37 @@ LOAD crtc.o
  *fill*         0x0000000000400006        0x2 
  .text          0x0000000000400008       0x2c crtc.o
                 0x0000000000400008                _start
- .text          0x0000000000400034      0x414 squawker.o
+ .text          0x0000000000400034      0x438 squawker.o
                 0x0000000000400034                do_syscall
                 0x0000000000400057                mystrlen
                 0x000000000040007f                main
  *(.rodata)
  *(.rdata)
- .rdata         0x0000000000400448      0x228 squawker.o
  *(.rdata$zzz)
- .rdata$zzz     0x0000000000400670       0x14 crtc.o
- .rdata$zzz     0x0000000000400684       0x14 squawker.o
-                0x0000000000400698                textEnd = .
-                0x0000000000400698                _textEnd = .
+ .rdata$zzz     0x000000000040046c       0x14 crtc.o
+ .rdata$zzz     0x0000000000400480       0x14 squawker.o
+                0x0000000000400494                textEnd = .
+                0x0000000000400494                _textEnd = .
                 0x0000000000401000                . = ALIGN (ABSOLUTE (.), 0x1000)
- *fill*         0x0000000000400698      0x968 
+ *fill*         0x0000000000400494      0xb6c 
                 0x0000000000401000                dataStart = .
                 0x0000000000401000                _dataStart = .
  *(.data)
  .data          0x0000000000401000        0x0 crtc.o
- .data          0x0000000000401000      0x280 squawker.o
+ .data          0x0000000000401000      0x460 squawker.o
                 0x0000000000401000                notes
-                0x0000000000401020                lyrics
-                0x0000000000401240                HZ
-                0x0000000000401260                debug
-                0x0000000000401280                dataEnd = .
-                0x0000000000401280                _dataEnd = .
-                0x0000000000401280                bssStart = .
-                0x0000000000401280                _bssStart = .
+                0x0000000000401220                lyrics
+                0x0000000000401440                HZ
+                0x0000000000401460                dataEnd = .
+                0x0000000000401460                _dataEnd = .
+                0x0000000000401460                bssStart = .
+                0x0000000000401460                _bssStart = .
  *(COMMON)
  *(.bss)
- .bss           0x0000000000401280        0x0 crtc.o
- .bss           0x0000000000401280        0x0 squawker.o
-                0x0000000000401280                bssEnd = .
-                0x0000000000401280                _bssEnd = .
+ .bss           0x0000000000401460        0x0 crtc.o
+ .bss           0x0000000000401460        0x0 squawker.o
+                0x0000000000401460                bssEnd = .
+                0x0000000000401460                _bssEnd = .
 
 /DISCARD/
  *(.eh_frame)

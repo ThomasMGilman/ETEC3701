@@ -56,7 +56,7 @@ int do_syscall(int p0, int p1, int p2, int p3){
 
 //https://imslp.org/wiki/100_Songs_of_England_(Bantock%2C_Granville)
 //http://pages.mtu.edu/~suits/notefreqs.html
-char* notes = 
+char notes[] ={ 
   "e'8 a'4 a'8 a'8 g'8 f'8 e'4 d'8 c'4 e'8 a'4 a'8 b'4 g'8 a'1 e'8 "
   "a'4 b'8 c''4 d''8 e''4 c''8 a'4 b'8 c''4 c''8 c''8 b'8 a'8 b'1 e'8 "
   "a'4 b'8 c''4 d''8 e''4 c''8 a'4 b'8 c''4 c''8 c''8 b'8 a'8 b'2 c''4 b'8 "
@@ -65,7 +65,7 @@ char* notes =
   "e'8 a'4 a'8 a'8 g'8 f'8 e'4 d'8 c'4 e'8 a'4 a'8 b'4 g'8 a'1 e'8 "
   "a'4 b'8 c''4 d''8 e''4 c''8 a'4 b'8 c''4 c''8 c''8 b'8 a'8 b'1 e'8 "
   "a'4 b'8 c''4 d''8 e''4 c''8 a'4 b'16 b'16 c''4 c''8 c''8 b'8 a'8 b'2 c''4 b'8 "
-  "a'4 a'8 a'8 g'8 f'8 e'4 d'8 c'4 e'16 e'16 a'4 a'8 b'4 g'8 a'1"  
+  "a'4 a'8 a'8 g'8 f'8 e'4 d'8 c'4 e'16 e'16 a'4 a'8 b'4 g'8 a'1"}  
   ;  
 
 char lyrics[] = {
@@ -104,14 +104,14 @@ int mystrlen(const char* txt){
 //msec per quarter note
 #define QUARTERNOTE 300
 
-const char* debug = "I AM HERE!!\n";
-
 int main(int argc, char* argv[])
 {
-    //do_syscall(SYSCALL_LOG, *debug,0,0);
+    //do_syscall(SYSCALL_LOG, 0, 0, 0);
     unsigned i=0;
     unsigned li=0;
+    i = 0;
     while(notes[i]){
+        do_syscall(SYSCALL_LOG, 0, 0, 0);
         if(!notes[i])
             i=0;
             
@@ -189,13 +189,14 @@ int main(int argc, char* argv[])
             else
                 li = k;
         }
-
         do_syscall(SYSCALL_PLAY,hz,0,0);
         do_syscall(SYSCALL_SLEEP,durationMS,0,0);
         do_syscall(SYSCALL_PLAY,0,0,0);
         
     }
+    //do_syscall(SYSCALL_LOG, 0, 0, 0); //made it here
     do_syscall(SYSCALL_PLAY,0,0,0);
+    //do_syscall(SYSCALL_LOG, 0, 0, 0); //made it here
     while(1){
         do_syscall(SYSCALL_HALT,0,0,0);
     }

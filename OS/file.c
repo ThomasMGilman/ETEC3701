@@ -5,6 +5,7 @@ struct BufferEntry blockbuffer[BUFFERSIZE];
 void logString(char* myString);                     //UTIL functions
 int kstrln(char *string);
 void kmemcpy(void *dst, const void *src, unsigned num);
+int kprintf(const char* fmt, ... ) __attribute__((format (printf , 1, 2 ) ));
 
 void read_block(unsigned blocknum, void* buffer)
 {
@@ -80,6 +81,8 @@ int file_close(int fd)
 
 int file_read(int fd, void* buf, int count)
 {
+    if(fd == stdout || fd == stderr)
+        return -EINVAL;
     struct File* fp = &file_table[fd];
     static char buffer[4096];
     static unsigned U[1024];
@@ -195,7 +198,19 @@ int file_read(int fd, void* buf, int count)
 
 int file_write(int fd, const void* buf, int count)
 {
-    return -ENOSYS; //no such system call
+    unsigned index;
+    if(fd == stdin && (fd != stderr || fd != stdout))
+    {
+        kprintf("fd:%d\n",fd);
+        return -ENOSYS; //no such system call
+    }
+    else
+    {
+        for(index = 0; index < count; index++)
+            kprintf("%c", ((char*)buf)[index]);
+    }
+        
+    return count;
 }
 
 int file_seek(int fd, int offset, int whence)
