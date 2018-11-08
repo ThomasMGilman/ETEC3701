@@ -21,7 +21,7 @@ Discarded input sections
  .eh_frame      0x0000000000000000       0xc8 kprintf.o
  .eh_frame      0x0000000000000000      0x1c0 disk.o
  .eh_frame      0x0000000000000000      0x108 file.o
- .eh_frame      0x0000000000000000      0x5d4 interrupt.o
+ .eh_frame      0x0000000000000000      0x7d8 interrupt.o
  .eh_frame      0x0000000000000000       0xc0 testsuite.o
 
 Memory Configuration
@@ -110,68 +110,80 @@ Linker script and memory map
                 0x00000000001020ed                file_read
                 0x0000000000102524                file_write
                 0x000000000010258e                file_seek
- .text          0x0000000000102674     0x117c interrupt.o
+ .text          0x0000000000102674     0x16a4 interrupt.o
                 0x0000000000102674                setupPICS_RTC
-                0x000000000010280e                divideByZeroInterrupt
-                0x0000000000102846                debugTrapInterrupt
-                0x000000000010287e                NMIInterrupt
-                0x00000000001028b6                int3Interrupt
-                0x00000000001028ee                OverflowInterrupt
-                0x0000000000102926                BCInterrupt
-                0x000000000010295e                badOpcodeInterrupt
-                0x0000000000102996                NFPUInterrupt
-                0x00000000001029ce                DFInterrupt
-                0x0000000000102a19                FPUOInterrupt
-                0x0000000000102a51                BTSSInterrupt
-                0x0000000000102a9c                NoSegInterrupt
-                0x0000000000102ae7                SFaultInterrupt
-                0x0000000000102b32                GFaultInterrupt
-                0x0000000000102b7d                PFaultInterrupt
-                0x0000000000102bc8                MFaultInterrupt
-                0x0000000000102c00                MisalignedInterrupt
-                0x0000000000102c4b                MCheckInterrupt
-                0x0000000000102c83                SIMDInterrupt
-                0x0000000000102cbb                VMInterrupt
-                0x0000000000102cf3                unknownInterrupt
-                0x0000000000102d2b                unknownInterruptWithCode
-                0x0000000000102d76                hardwareIntHandler
-                0x0000000000102dbb                int40trap
-                0x0000000000102e20                syscallInterrupt
-                0x0000000000102e73                firstPicInterrupt
-                0x0000000000102ea4                secondPicInterrupt
-                0x0000000000102ee9                RTCint
-                0x0000000000102f5b                table
-                0x0000000000102fb0                setInterruptTable
-                0x00000000001032a5                setupGDT
-                0x00000000001032f0                syscall_handler
-                0x00000000001036e6                exec
-                0x0000000000103797                interrupt_init
- .text          0x00000000001037f0      0x510 testsuite.o
-                0x0000000000103933                displayPPM
-                0x0000000000103ba9                sweet
+                0x0000000000102874                divideByZeroInterrupt
+                0x00000000001028ac                debugTrapInterrupt
+                0x00000000001028e4                NMIInterrupt
+                0x000000000010291c                int3Interrupt
+                0x0000000000102954                OverflowInterrupt
+                0x000000000010298c                BCInterrupt
+                0x00000000001029c4                badOpcodeInterrupt
+                0x00000000001029fc                NFPUInterrupt
+                0x0000000000102a34                DFInterrupt
+                0x0000000000102a7f                FPUOInterrupt
+                0x0000000000102ab7                BTSSInterrupt
+                0x0000000000102b02                NoSegInterrupt
+                0x0000000000102b4d                SFaultInterrupt
+                0x0000000000102b98                GFaultInterrupt
+                0x0000000000102be3                PFaultInterrupt
+                0x0000000000102c2e                MFaultInterrupt
+                0x0000000000102c66                MisalignedInterrupt
+                0x0000000000102cb1                MCheckInterrupt
+                0x0000000000102ce9                SIMDInterrupt
+                0x0000000000102d21                VMInterrupt
+                0x0000000000102d59                unknownInterrupt
+                0x0000000000102d91                unknownInterruptWithCode
+                0x0000000000102ddc                timerInterrupt
+                0x0000000000102e0d                KeyboardInterrupt
+                0x0000000000102ea1                CascadeInterrupt
+                0x0000000000102ed2                S2Interrupt
+                0x0000000000102f03                S1Interrupt
+                0x0000000000102f34                Av0Interrupt
+                0x0000000000102f65                FloppyInterrupt
+                0x0000000000102f96                ParPortInterrupt
+                0x0000000000102fc7                int40trap
+                0x0000000000103039                VidInterrupt
+                0x000000000010307e                Av1Interrupt
+                0x00000000001030c3                Av2Interrupt
+                0x0000000000103108                MouseInterrupt
+                0x000000000010314d                FPUInterrupt
+                0x0000000000103192                DskC0Interrupt
+                0x00000000001031d7                DskC1Interrupt
+                0x000000000010321c                syscallInterrupt
+                0x000000000010326f                keyHandler
+                0x0000000000103275                table
+                0x00000000001032ca                setInterruptTable
+                0x0000000000103751                setupGDT
+                0x000000000010379c                syscall_handler
+                0x0000000000103c0d                exec
+                0x0000000000103cbe                interrupt_init
+ .text          0x0000000000103d18      0x510 testsuite.o
+                0x0000000000103e5b                displayPPM
+                0x00000000001040d1                sweet
  *(.rodata)
  *(.rdata)
- .rdata         0x0000000000103d00       0x14 kernelmain.o
- *fill*         0x0000000000103d14        0xc 
- .rdata         0x0000000000103d20     0x2000 console.o
- .rdata         0x0000000000105d20     0x21e0 kprintf.o
- .rdata         0x0000000000107f00      0x160 disk.o
- .rdata         0x0000000000108060      0x1a8 file.o
- .rdata         0x0000000000108208      0x5d0 interrupt.o
- .rdata         0x00000000001087d8       0x94 testsuite.o
+ .rdata         0x0000000000104228       0x14 kernelmain.o
+ *fill*         0x000000000010423c        0x4 
+ .rdata         0x0000000000104240     0x2000 console.o
+ .rdata         0x0000000000106240     0x21e0 kprintf.o
+ .rdata         0x0000000000108420      0x160 disk.o
+ .rdata         0x0000000000108580      0x1a8 file.o
+ .rdata         0x0000000000108728      0x61c interrupt.o
+ .rdata         0x0000000000108d44       0x94 testsuite.o
  *(.rdata$zzz)
- .rdata$zzz     0x000000000010886c       0x14 kernelmain.o
- .rdata$zzz     0x0000000000108880       0x14 stdarg.o
- .rdata$zzz     0x0000000000108894       0x14 console.o
- .rdata$zzz     0x00000000001088a8       0x14 util.o
- .rdata$zzz     0x00000000001088bc       0x14 kprintf.o
- .rdata$zzz     0x00000000001088d0       0x14 disk.o
- .rdata$zzz     0x00000000001088e4       0x14 file.o
- .rdata$zzz     0x00000000001088f8       0x14 interrupt.o
- .rdata$zzz     0x000000000010890c       0x14 testsuite.o
-                0x0000000000108920                _textEnd = .
+ .rdata$zzz     0x0000000000108dd8       0x14 kernelmain.o
+ .rdata$zzz     0x0000000000108dec       0x14 stdarg.o
+ .rdata$zzz     0x0000000000108e00       0x14 console.o
+ .rdata$zzz     0x0000000000108e14       0x14 util.o
+ .rdata$zzz     0x0000000000108e28       0x14 kprintf.o
+ .rdata$zzz     0x0000000000108e3c       0x14 disk.o
+ .rdata$zzz     0x0000000000108e50       0x14 file.o
+ .rdata$zzz     0x0000000000108e64       0x14 interrupt.o
+ .rdata$zzz     0x0000000000108e78       0x14 testsuite.o
+                0x0000000000108e8c                _textEnd = .
                 0x0000000000109000                . = ALIGN (ABSOLUTE (.), 0x1000)
- *fill*         0x0000000000108920      0x6e0 
+ *fill*         0x0000000000108e8c      0x174 
                 0x0000000000109000                _dataStart = .
  *(.data)
  .data          0x0000000000109000        0x4 kernelmain.o

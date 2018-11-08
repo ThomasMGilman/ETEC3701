@@ -47,6 +47,8 @@ struct LIDT{
 };
 #pragma pack(pop)
 
+void keyHandler(unsigned keyValIn);
+
 void table(int i, void* func);
 
 void setupPICS_RTC(unsigned rate);

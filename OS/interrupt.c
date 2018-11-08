@@ -38,6 +38,7 @@ struct IDTEntry idt[INTERRUPT_SIZE];
     15=2Hz, 14=4Hz, 13=8Hz, 12=16Hz, 11=32Hz, 10=64Hz, 9=128Hz, 
     8=256Hz, 7=512Hz, 6=1024Hz, 5=2048Hz, 4=4096Hz, 3=8192Hz
 */
+
 void setupPICS_RTC(unsigned rate)
 {
     unsigned tmp;
@@ -64,6 +65,17 @@ void setupPICS_RTC(unsigned rate)
     tmp = inb(0x71);    //prev val
     outb(0x70, 11);     //select reg 11
     outb(0x71, tmp|0x40);       //Enable interrupts
+    unsigned powLoop = 15 - rate;
+    if(powLoop == 0) Frequency = 2;
+    else
+    {
+        while(powLoop--)
+        {
+            Frequency *= 2;
+        }
+    }
+    ksprintf(debugMsg,"rate:%d Freq:%d\n", rate, Frequency);
+    logString(debugMsg);
 }
 
 __attribute__((interrupt))
@@ -221,17 +233,115 @@ void unknownInterruptWithCode(struct InterruptFrame* fr, unsigned code)
 }
 
 __attribute__((interrupt))
-void hardwareIntHandler(struct InterruptFrame* fr)                  //interrupts 32->39 41->47
+void timerInterrupt(struct InterruptFrame* fr)      //interrupt 32
+{
+    outb( 0x20, 32 );   //ack 1st PIC
+    //logString("Timer Interrupt\n");
+}
+
+__attribute__((interrupt))
+void KeyboardInterrupt(struct InterruptFrame* fr)   //interrupt 33
+{
+    outb(0x64,0x20);            //command: Read config bits
+    unsigned oldv = inb(0x60);  //get current config
+    oldv &= ~0x40;              //mask bit 6: Turn off translation
+    outb(0x64,0x60);            //command: Write config bits
+    outb(0x60,oldv);            //The new value
+    outb( 0x20, 32 );           //ack 1st PIC
+    keyHandler(oldv);
+}
+
+__attribute__((interrupt))
+void CascadeInterrupt(struct InterruptFrame* fr)    //interrupt 34
+{
+    outb( 0x20, 32 );   //ack 1st PIC
+}
+
+__attribute__((interrupt))
+void S2Interrupt(struct InterruptFrame* fr)      //interrupt 35
+{
+    outb( 0x20, 32 );   //ack 1st PIC
+}
+
+__attribute__((interrupt))
+void S1Interrupt(struct InterruptFrame* fr)      //interrupt 36
+{
+    outb( 0x20, 32 );   //ack 1st PIC
+}
+
+__attribute__((interrupt))
+void Av0Interrupt(struct InterruptFrame* fr)    //interrupt 37
+{
+    outb( 0x20, 32 );   //ack 1st PIC
+}
+
+__attribute__((interrupt))
+void FloppyInterrupt(struct InterruptFrame* fr)     //interrupt 38
+{
+    outb( 0x20, 32 );   //ack 1st PIC
+}
+
+__attribute__((interrupt))
+void ParPortInterrupt(struct InterruptFrame* fr)    //interrupt 39
+{
+    outb( 0x20, 32 );   //ack 1st PIC
+}
+
+__attribute__((interrupt))
+void int40trap(struct InterruptFrame* fr)           //interrupt 40 RTC
+{
+    outb(0x70, 0xc);    //ack reading status reg
+    inb(0x71);          //discard val
+    outb( 0x20, 32 );   //ack 1st PIC
+    outb( 0xa0, 32 );   //ack 2nd PIC
+    jiffies++;
+}
+
+__attribute__((interrupt))
+void VidInterrupt(struct InterruptFrame* fr)  //interrupt 41
 {
     outb( 0x20, 32 );   //ack 1st PIC
     outb( 0xa0, 32 );   //ack 2nd PIC
 }
 
 __attribute__((interrupt))
-void int40trap(struct InterruptFrame* fr)
+void Av1Interrupt(struct InterruptFrame* fr)  //interrupt 42
 {
-    outb(0x70, 0xc);    //ack reading status reg
-    inb(0x71);          //discard val
+    outb( 0x20, 32 );   //ack 1st PIC
+    outb( 0xa0, 32 );   //ack 2nd PIC
+}
+
+__attribute__((interrupt))
+void Av2Interrupt(struct InterruptFrame* fr)  //interrupt 43
+{
+    outb( 0x20, 32 );   //ack 1st PIC
+    outb( 0xa0, 32 );   //ack 2nd PIC
+}
+
+__attribute__((interrupt))
+void MouseInterrupt(struct InterruptFrame* fr) //interrupt 44
+{
+    outb( 0x20, 32 );   //ack 1st PIC
+    outb( 0xa0, 32 );   //ack 2nd PIC
+}
+
+__attribute__((interrupt))
+void FPUInterrupt(struct InterruptFrame* fr) //interrupt 45
+{
+    outb( 0x20, 32 );   //ack 1st PIC
+    outb( 0xa0, 32 );   //ack 2nd PIC
+}
+
+__attribute__((interrupt))
+void DskC0Interrupt(struct InterruptFrame* fr) //interrupt 46
+{
+    outb( 0x20, 32 );   //ack 1st PIC
+    outb( 0xa0, 32 );   //ack 2nd PIC
+}
+
+__attribute__((interrupt))
+void DskC1Interrupt(struct InterruptFrame* fr) //interrupt 47
+{
     outb( 0x20, 32 );   //ack 1st PIC
     outb( 0xa0, 32 );   //ack 2nd PIC
 }
@@ -246,25 +356,9 @@ void syscallInterrupt(struct InterruptFrame* fr)
     return;
 }
 
-//Framework for interrupt handlers: 0...7
-__attribute__((__interrupt__))
-void firstPicInterrupt(struct InterruptFrame* fr){
-outb( 0x20, 32 );
-}
-//Framework for interrupt handlers: 8...15
-__attribute__((__interrupt__))
-void secondPicInterrupt(struct InterruptFrame* fr){
-outb( 0x20, 32 );
-outb( 0xa0, 32 );
-}
-//table(40,RTCint);
-__attribute__((__interrupt__))
-void RTCint(struct InterruptFrame* fr){
-    outb(0x70, 0xc);
-    inb(0x71);
-    outb(0x20, 30);
-    outb(0xa0, 32);
-    jiffies++;
+void keyHandler(unsigned keyValIn)
+{
+    ;
 }
 
 void table(int i, void* func){
@@ -321,10 +415,38 @@ void setInterruptTable(void)
             table(index, SIMDInterrupt);
         else if( index == 20)
             table(index, VMInterrupt);
-        else if((index >= 32 && index <40) || (index >40 && index <= 47))
-            table(index, hardwareIntHandler);
-        else if(index == 40)
+        else if( index == 32)
+            table(index, timerInterrupt);
+        else if( index == 33)
+            table(index, KeyboardInterrupt);
+        else if( index == 34)
+            table(index, CascadeInterrupt);
+        else if( index == 35)
+            table(index, S1Interrupt);
+        else if( index == 36)
+            table(index, S2Interrupt);
+        else if( index == 37)
+            table(index, Av0Interrupt);
+        else if( index == 38)
+            table(index, FloppyInterrupt);
+        else if( index == 39)
+            table(index, ParPortInterrupt);
+        else if( index == 40)
             table(index, int40trap);
+        else if( index == 41)
+            table(index, VidInterrupt);
+        else if( index == 42)
+            table(index, Av1Interrupt);
+        else if( index == 43)
+            table(index, Av2Interrupt);
+        else if( index == 44)
+            table(index, MouseInterrupt);
+        else if ( index == 45)
+            table(index, FPUInterrupt);
+        else if( index == 46)
+            table(index, DskC0Interrupt);
+        else if( index == 47)
+            table(index, DskC1Interrupt);
         else if(index == 48)
         {
             table(index, syscallInterrupt);
@@ -352,8 +474,9 @@ void syscall_handler(unsigned* ptr)
     int fd = ptr[1];
     unsigned buf = ptr[2];
     unsigned count = ptr[3];
-    unsigned short divisor, v;
-    unsigned tmp;
+    int divisor;
+    short v;
+    unsigned timeToWait;
     switch(ptr[0])
     {
         case SYSCALL_READ:
@@ -395,12 +518,12 @@ void syscall_handler(unsigned* ptr)
             }
             pass = file_write(fd, (char*)ptr[2], count);
             ptr[0] = pass;
-            if(pass >= 0) logString("wrote to file\n");
-            else
+            if(pass < 0)
             {
                 ksprintf(debugMsg,"ERROR: failed to write to fd:%d, code:%d!!\n", fd, ptr[0]);
                 logString(debugMsg);
             }
+            else logString("wrote to file\n");
             break;
         case SYSCALL_OPEN:
             ptr[0] = file_open((const char*)ptr[1], ptr[2]);//ptr[1] : filename, prt[2] : flags
@@ -425,28 +548,40 @@ void syscall_handler(unsigned* ptr)
                 "hlt":::"memory");
             break;
         case SYSCALL_PLAY:
-            logString("playing\n");
-            if(ptr[1] == 0)
-                divisor = 0;
-            else
+            //logString("playing\n");
+            if(ptr[1] != 0)
+            {
                 divisor  = 1193180 / ptr[1];                //ptr[1] : Frequency
+                ksprintf(debugMsg,"div:%d, numPass:%d\n", divisor, ptr[1]);
+                logString(debugMsg);
+            }
+            else
+            {
+                logString("div 0\n");
+                divisor = 0;
+            }
             outb(0x42, 0xb6);
             outb(0x42, (const unsigned)(divisor & 0xff));   //low byte
             outb(0x42, (const unsigned)(divisor & 0xff00)); //high byte
             v = inb(0x61);
+            ksprintf(debugMsg,"CurDiv:%d, Freq:%d, v:%d\n",divisor, ptr[1], v);
+            logString(debugMsg);
             if(v & 0x0003)
                 outb(0x61, (v|3));
+            logString("\n");
             break;
         case SYSCALL_SLEEP:
-            logString("waiting\n");
-            v = inb(0x61);
-            tmp = ptr[1] * (1/Frequency) * 10000;           //wait time
-            outb(0x61, (v & 0xfffc));                       //turn off the lower two bits
-            while(tmp--){;}
+            //logString("waiting\n");
+            timeToWait = ptr[1] * (1/Frequency) * 10000;        //wait time
+            if(jiffies == timeToWait)
+            {
+                logString("done waiting\n");
+                v = inb(0x61);
+                outb(0x61, (v & 0xfffc));                       //turn off the lower two bits
+                jiffies = 0;
+            }
             break;
         case SYSCALL_LOG:
-            //logString("logging");
-            //kprintf("%x", ptr[1]);
             outb(0x3f8, (char)ptr[1]);
             break;
         default:
