@@ -552,34 +552,31 @@ void syscall_handler(unsigned* ptr)
             if(ptr[1] != 0)
             {
                 divisor  = 1193180 / ptr[1];                //ptr[1] : Frequency
-                ksprintf(debugMsg,"div:%d, numPass:%d\n", divisor, ptr[1]);
-                logString(debugMsg);
+                // ksprintf(debugMsg,"div:%d, numPass:%d\n", divisor, ptr[1]);
+                // logString(debugMsg);
             }
             else
             {
-                logString("div 0\n");
+                // logString("div 0\n");
                 divisor = 0;
             }
             outb(0x42, 0xb6);
             outb(0x42, (const unsigned)(divisor & 0xff));   //low byte
             outb(0x42, (const unsigned)(divisor & 0xff00)); //high byte
             v = inb(0x61);
-            ksprintf(debugMsg,"CurDiv:%d, Freq:%d, v:%d\n",divisor, ptr[1], v);
-            logString(debugMsg);
+            // ksprintf(debugMsg,"CurDiv:%d, Freq:%d, v:%d\n",divisor, ptr[1], v);
+            // logString(debugMsg);
             if(v & 0x0003)
                 outb(0x61, (v|3));
             logString("\n");
             break;
-        case SYSCALL_SLEEP:
+        case SYSCALL_SLEEP: ///FIX HERE
             //logString("waiting\n");
             timeToWait = ptr[1] * (1/Frequency) * 10000;        //wait time
-            if(jiffies == timeToWait)
-            {
-                logString("done waiting\n");
-                v = inb(0x61);
-                outb(0x61, (v & 0xfffc));                       //turn off the lower two bits
-                jiffies = 0;
-            }
+            while(timeToWait--){;}
+            logString("done waiting\n");
+            v = inb(0x61);
+            outb(0x61, (v & 0xfffc));                           //turn off the lower two bits
             break;
         case SYSCALL_LOG:
             outb(0x3f8, (char)ptr[1]);

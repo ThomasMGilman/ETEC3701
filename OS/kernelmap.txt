@@ -110,7 +110,7 @@ Linker script and memory map
                 0x00000000001020ed                file_read
                 0x0000000000102524                file_write
                 0x000000000010258e                file_seek
- .text          0x0000000000102674     0x16a4 interrupt.o
+ .text          0x0000000000102674     0x1620 interrupt.o
                 0x0000000000102674                setupPICS_RTC
                 0x0000000000102874                divideByZeroInterrupt
                 0x00000000001028ac                debugTrapInterrupt
@@ -156,34 +156,34 @@ Linker script and memory map
                 0x00000000001032ca                setInterruptTable
                 0x0000000000103751                setupGDT
                 0x000000000010379c                syscall_handler
-                0x0000000000103c0d                exec
-                0x0000000000103cbe                interrupt_init
- .text          0x0000000000103d18      0x510 testsuite.o
-                0x0000000000103e5b                displayPPM
-                0x00000000001040d1                sweet
+                0x0000000000103b8a                exec
+                0x0000000000103c3b                interrupt_init
+ .text          0x0000000000103c94      0x510 testsuite.o
+                0x0000000000103dd7                displayPPM
+                0x000000000010404d                sweet
  *(.rodata)
  *(.rdata)
- .rdata         0x0000000000104228       0x14 kernelmain.o
- *fill*         0x000000000010423c        0x4 
- .rdata         0x0000000000104240     0x2000 console.o
- .rdata         0x0000000000106240     0x21e0 kprintf.o
- .rdata         0x0000000000108420      0x160 disk.o
- .rdata         0x0000000000108580      0x1a8 file.o
- .rdata         0x0000000000108728      0x61c interrupt.o
- .rdata         0x0000000000108d44       0x94 testsuite.o
+ .rdata         0x00000000001041a4       0x14 kernelmain.o
+ *fill*         0x00000000001041b8        0x8 
+ .rdata         0x00000000001041c0     0x2000 console.o
+ .rdata         0x00000000001061c0     0x21e0 kprintf.o
+ .rdata         0x00000000001083a0      0x160 disk.o
+ .rdata         0x0000000000108500      0x1a8 file.o
+ .rdata         0x00000000001086a8      0x5e8 interrupt.o
+ .rdata         0x0000000000108c90       0x94 testsuite.o
  *(.rdata$zzz)
- .rdata$zzz     0x0000000000108dd8       0x14 kernelmain.o
- .rdata$zzz     0x0000000000108dec       0x14 stdarg.o
- .rdata$zzz     0x0000000000108e00       0x14 console.o
- .rdata$zzz     0x0000000000108e14       0x14 util.o
- .rdata$zzz     0x0000000000108e28       0x14 kprintf.o
- .rdata$zzz     0x0000000000108e3c       0x14 disk.o
- .rdata$zzz     0x0000000000108e50       0x14 file.o
- .rdata$zzz     0x0000000000108e64       0x14 interrupt.o
- .rdata$zzz     0x0000000000108e78       0x14 testsuite.o
-                0x0000000000108e8c                _textEnd = .
+ .rdata$zzz     0x0000000000108d24       0x14 kernelmain.o
+ .rdata$zzz     0x0000000000108d38       0x14 stdarg.o
+ .rdata$zzz     0x0000000000108d4c       0x14 console.o
+ .rdata$zzz     0x0000000000108d60       0x14 util.o
+ .rdata$zzz     0x0000000000108d74       0x14 kprintf.o
+ .rdata$zzz     0x0000000000108d88       0x14 disk.o
+ .rdata$zzz     0x0000000000108d9c       0x14 file.o
+ .rdata$zzz     0x0000000000108db0       0x14 interrupt.o
+ .rdata$zzz     0x0000000000108dc4       0x14 testsuite.o
+                0x0000000000108dd8                _textEnd = .
                 0x0000000000109000                . = ALIGN (ABSOLUTE (.), 0x1000)
- *fill*         0x0000000000108e8c      0x174 
+ *fill*         0x0000000000108dd8      0x228 
                 0x0000000000109000                _dataStart = .
  *(.data)
  .data          0x0000000000109000        0x4 kernelmain.o

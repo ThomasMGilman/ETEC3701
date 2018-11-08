@@ -33,7 +33,7 @@ LOAD crtasm.o
 LOAD crtc.o
                 0x0000000000400000                . = 0x400000
 
-.text           0x0000000000400000     0x1200
+.text           0x0000000000400000     0x1000
                 0x0000000000400000                textStart = .
                 0x0000000000400000                _textStart = .
  *(.text)
@@ -49,32 +49,32 @@ LOAD crtc.o
  *(.rodata)
  *(.rdata)
  *fill*         0x00000000004003fc        0x4 
- .rdata         0x0000000000400400      0x440 squawker.o
+ .rdata         0x0000000000400400      0x460 squawker.o
                 0x0000000000400400                notes
                 0x0000000000400620                lyrics
+                0x0000000000400840                HZ
  *(.rdata$zzz)
- .rdata$zzz     0x0000000000400840       0x14 crtc.o
- .rdata$zzz     0x0000000000400854       0x14 squawker.o
-                0x0000000000400868                textEnd = .
-                0x0000000000400868                _textEnd = .
+ .rdata$zzz     0x0000000000400860       0x14 crtc.o
+ .rdata$zzz     0x0000000000400874       0x14 squawker.o
+                0x0000000000400888                textEnd = .
+                0x0000000000400888                _textEnd = .
                 0x0000000000401000                . = ALIGN (ABSOLUTE (.), 0x1000)
- *fill*         0x0000000000400868      0x798 
+ *fill*         0x0000000000400888      0x778 
                 0x0000000000401000                dataStart = .
                 0x0000000000401000                _dataStart = .
  *(.data)
  .data          0x0000000000401000        0x0 crtc.o
- .data          0x0000000000401000       0x20 squawker.o
-                0x0000000000401000                HZ
-                0x0000000000401020                dataEnd = .
-                0x0000000000401020                _dataEnd = .
-                0x0000000000401020                bssStart = .
-                0x0000000000401020                _bssStart = .
+ .data          0x0000000000401000        0x0 squawker.o
+                0x0000000000401000                dataEnd = .
+                0x0000000000401000                _dataEnd = .
+                0x0000000000401000                bssStart = .
+                0x0000000000401000                _bssStart = .
  *(COMMON)
  *(.bss)
- .bss           0x0000000000401020        0x0 crtc.o
- .bss           0x0000000000401020        0x0 squawker.o
-                0x0000000000401020                bssEnd = .
-                0x0000000000401020                _bssEnd = .
+ .bss           0x0000000000401000        0x0 crtc.o
+ .bss           0x0000000000401000        0x0 squawker.o
+                0x0000000000401000                bssEnd = .
+                0x0000000000401000                _bssEnd = .
 
 /DISCARD/
  *(.eh_frame)

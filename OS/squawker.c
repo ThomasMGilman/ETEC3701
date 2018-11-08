@@ -83,7 +83,7 @@ const char lyrics[] =
 //A major: C#, F#, G#
 //    440,494,277,294,330,370,415,     //a4,b4,...g4
 
-unsigned HZ[] = {
+const unsigned HZ[] = {
     440,494,277,294,330,370,415,0
 };
 
@@ -132,7 +132,6 @@ int main(int argc, char* argv[])
             octave++;
             hz/=2;
         }
-
         union timeU time;
         time.c[0]=time.c[1]=time.c[2]=time.c[3]=0;
         int j=0;
