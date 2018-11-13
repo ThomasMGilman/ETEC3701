@@ -1,6 +1,6 @@
 #include "util.h"
 
-const char* userFile = "squawker.bin"; //"user.bin"
+const char* userFile = "keytest.bin"; //"user.bin"
 
 int consol_init(struct MultibootInfo *m);
 int file_init(void);
@@ -19,7 +19,7 @@ void kmain(struct MultibootInfo *mbi){
     file_init();
     // if(listDiskInfo() != 0)
     //     logString("error listing DiskInfo");
-    //sweet(1);
+    sweet();
     //logString("fin\n");
     exec(userFile);
     logString("ERROR\n"); //should never get here

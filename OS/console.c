@@ -10,10 +10,14 @@ unsigned int pixCol = 0;				//Screen - X cord
 unsigned int pixRow = 0;				//Screen - Y cord
 char lastCharDrawn;						//save last char in case it is made bold
 
+char debugMsg[50];
+
 //stuff for transitions of colors
 unsigned int colorChangeIndex = 0;
 unsigned int colorPattern[6][3] = {{255,0,0}, {255,165,0}, {255,255,0}, {0,255,0}, {0,0,255}, {128,0,128}}; //Red,Orange,Yellow,Green,Blue,Purple
 unsigned int red = 255, green = 255, blue = 255; 															//Color Variables (set to White)
+
+int ksprintf(char* s, const char* fmt, ... ) __attribute__((format (printf , 2, 3 ) )); //kprintf func
 
 void loop(void)
 {
@@ -104,6 +108,7 @@ void consoleDrawChar(char ch, int bold)
 void console_putc(char c)
 {
 	unsigned int asciiVal = (unsigned int)c;
+	unsigned tabVal = 0;
 	switch(asciiVal)
 	{
 		case(8)://\b bold
@@ -117,11 +122,14 @@ void console_putc(char c)
 			consoleDrawChar((char)32,0);
 			backspace();
 			break;
-		case(9)://\t tab move 8 chars over, move to next line and tab if run off screen
-			if(pixCol+(8*CHAR_WIDTH) > FrameWidth)
-				newLine();
+		case(9)://\t move to next pos divisable by 8
+			tabVal = ((FrameWidth - pixCol)/CHAR_WIDTH) % 8;
+			if(tabVal == 0)
+				pixCol += CHAR_WIDTH*8;
 			else
-				pixCol += (8*CHAR_WIDTH);
+				pixCol += (tabVal * CHAR_WIDTH);
+			if(pixCol > FrameWidth - CHAR_WIDTH)
+				newLine();
 			break;
 		case(10)://\n newline
 			newLine();

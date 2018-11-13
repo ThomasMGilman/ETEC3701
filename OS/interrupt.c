@@ -1,19 +1,39 @@
 #include "interrupt.h"
 #include "syscalls.h"
 #include "file.h"
+#include "util.h"
 #include "kprintf.h"
 
 #define INTERRUPT_SIZE 49
+#define LINEBUF_SIZE 20
 
-//UTIL 
-void outb(unsigned short port, unsigned char value);
-unsigned char inb(unsigned short port);
-void haltForever(void);
-void logString(char* myString);
+void console_putc(char c);
 
+static char linebuf[LINEBUF_SIZE];
+static int linebuf_chars = 0;
+static volatile int linebuf_ready=0;
+//nbsp;
 char debugMsg[100];
 volatile unsigned jiffies = 0;
 unsigned Frequency = 2;
+
+unsigned numSuffering = 0;
+
+struct ScanCode keyTable[13][10] = { 
+    {{0,0}, {0,0}, {0,0}, {0,0}, {0,0},{0,0}, {0,0}, {0,0}, {0,0}, {0,0}},
+    {{0,0}, {0,0}, {0,0}, {9,1}, {39,1},{0,0}, {0,0}, {0,0}, {0,0}, {0,0}},
+    {{0,0}, {113,1}, {49,1}, {0,0}, {0,0},{0,0}, {122,1}, {115,1}, {97,1}, {119,1}},
+    {{50,1}, {0,0}, {0,0}, {99,1}, {120,1},{100,1}, {101,1}, {52,1}, {51,1}, {0,0}},
+    {{0,0}, {32,1}, {118,1}, {102,1}, {116,1},{114,1}, {53,1}, {0,0}, {0,0}, {110,1}},
+    {{98,1}, {104,1}, {103,1}, {121,1}, {54,1},{0,0}, {0,0}, {0,0}, {109,1}, {106,1}},
+    {{117,1}, {55,1}, {56,1}, {0,0}, {0,0},{44,1}, {107,1}, {105,1}, {111,1}, {48,1}},
+    {{57,1}, {0,0}, {0,0}, {46,1}, {47,1},{108,1}, {59,1}, {112,1}, {45,1}, {0,0}},
+    {{0,0}, {0,0}, {96,1}, {0,0}, {91,1},{61,1}, {0,0}, {0,0}, {0,0}, {0,0}},
+    {{10,1}, {93,1}, {0,0}, {92,1}, {0,0},{0,0}, {0,0}, {0,0}, {0,0}, {0,0}},
+    {{0,0}, {0,0}, {127,1}, {0,0}, {0,0},{49,1}, {0,0}, {52,1}, {55,1}, {0,0}},
+    {{0,0}, {0,0}, {48,1}, {46,1}, {50,1},{53,1}, {54,1}, {56,1}, {0,0}, {0,0}},
+    {{0,0}, {43,1}, {51,1}, {45,1}, {0,0},{57,1}, {0,0}, {0,0}, {0,0}, {0,0}}
+};
 
 unsigned ring0StackInfo[] =
 {
@@ -79,56 +99,56 @@ void setupPICS_RTC(unsigned rate)
 }
 
 __attribute__((interrupt))
-void divideByZeroInterrupt(struct InterruptFrame* fr)   //interrupt 0
+void divideByZeroInterrupt(struct InterruptFrame* fr)                   //interrupt 0
 {
     kprintf("\nERROR: Division by Zero is undefined!\nFatal exception at eip=%x\n",fr->eip);
     haltForever();
 }
 
 __attribute__((interrupt))
-void debugTrapInterrupt(struct InterruptFrame* fr)      //interrupt 1
+void debugTrapInterrupt(struct InterruptFrame* fr)                      //interrupt 1
 {
     kprintf("\nERROR: Debug Trap!\nFatal exception at eip=%x\n",fr->eip);
     haltForever();
 }
 
 __attribute__((interrupt))
-void NMIInterrupt(struct InterruptFrame* fr)            //interrupt 2
+void NMIInterrupt(struct InterruptFrame* fr)                            //interrupt 2
 {
     kprintf("\nERROR: NMI!!\nFatal exception at eip=%x\n",fr->eip);
     haltForever();
 }
 
 __attribute__((interrupt))
-void int3Interrupt(struct InterruptFrame* fr)           //interrupt 3
+void int3Interrupt(struct InterruptFrame* fr)                           //interrupt 3
 {
     kprintf("\nERROR: int3 Trap!\nFatal exception at eip=%x\n",fr->eip);
     haltForever();
 }
 
 __attribute__((interrupt))
-void OverflowInterrupt(struct InterruptFrame* fr)       //interrupt 4
+void OverflowInterrupt(struct InterruptFrame* fr)                       //interrupt 4
 {
     kprintf("\nERROR: Overflow!!\nFatal exception at eip=%x\n",fr->eip);
     haltForever();
 }
 
 __attribute__((interrupt))
-void BCInterrupt(struct InterruptFrame* fr)             //interrupt 5
+void BCInterrupt(struct InterruptFrame* fr)                             //interrupt 5
 {
     kprintf("\nERROR: BoundCheck!!\nFatal exception at eip=%x\n",fr->eip);
     haltForever();
 }
 
 __attribute__((interrupt))
-void badOpcodeInterrupt(struct InterruptFrame* fr)      //interrupt 6
+void badOpcodeInterrupt(struct InterruptFrame* fr)                      //interrupt 6
 {
     kprintf("\nERROR: Bad opcode!\nFatal exception at eip=%x\n",fr->eip);
     haltForever();
 }
 
 __attribute__((interrupt))
-void NFPUInterrupt(struct InterruptFrame* fr)           //interrupt 7
+void NFPUInterrupt(struct InterruptFrame* fr)                           //interrupt 7
 {
     kprintf("\nERROR: NO FPU!\nFatal exception at eip=%x\n",fr->eip);
     haltForever();
@@ -258,19 +278,19 @@ void CascadeInterrupt(struct InterruptFrame* fr)    //interrupt 34
 }
 
 __attribute__((interrupt))
-void S2Interrupt(struct InterruptFrame* fr)      //interrupt 35
+void S2Interrupt(struct InterruptFrame* fr)         //interrupt 35
 {
     outb( 0x20, 32 );   //ack 1st PIC
 }
 
 __attribute__((interrupt))
-void S1Interrupt(struct InterruptFrame* fr)      //interrupt 36
+void S1Interrupt(struct InterruptFrame* fr)         //interrupt 36
 {
     outb( 0x20, 32 );   //ack 1st PIC
 }
 
 __attribute__((interrupt))
-void Av0Interrupt(struct InterruptFrame* fr)    //interrupt 37
+void Av0Interrupt(struct InterruptFrame* fr)        //interrupt 37
 {
     outb( 0x20, 32 );   //ack 1st PIC
 }
@@ -298,49 +318,49 @@ void int40trap(struct InterruptFrame* fr)           //interrupt 40 RTC
 }
 
 __attribute__((interrupt))
-void VidInterrupt(struct InterruptFrame* fr)  //interrupt 41
+void VidInterrupt(struct InterruptFrame* fr)        //interrupt 41
 {
     outb( 0x20, 32 );   //ack 1st PIC
     outb( 0xa0, 32 );   //ack 2nd PIC
 }
 
 __attribute__((interrupt))
-void Av1Interrupt(struct InterruptFrame* fr)  //interrupt 42
+void Av1Interrupt(struct InterruptFrame* fr)        //interrupt 42
 {
     outb( 0x20, 32 );   //ack 1st PIC
     outb( 0xa0, 32 );   //ack 2nd PIC
 }
 
 __attribute__((interrupt))
-void Av2Interrupt(struct InterruptFrame* fr)  //interrupt 43
+void Av2Interrupt(struct InterruptFrame* fr)        //interrupt 43
 {
     outb( 0x20, 32 );   //ack 1st PIC
     outb( 0xa0, 32 );   //ack 2nd PIC
 }
 
 __attribute__((interrupt))
-void MouseInterrupt(struct InterruptFrame* fr) //interrupt 44
+void MouseInterrupt(struct InterruptFrame* fr)      //interrupt 44
 {
     outb( 0x20, 32 );   //ack 1st PIC
     outb( 0xa0, 32 );   //ack 2nd PIC
 }
 
 __attribute__((interrupt))
-void FPUInterrupt(struct InterruptFrame* fr) //interrupt 45
+void FPUInterrupt(struct InterruptFrame* fr)        //interrupt 45
 {
     outb( 0x20, 32 );   //ack 1st PIC
     outb( 0xa0, 32 );   //ack 2nd PIC
 }
 
 __attribute__((interrupt))
-void DskC0Interrupt(struct InterruptFrame* fr) //interrupt 46
+void DskC0Interrupt(struct InterruptFrame* fr)      //interrupt 46
 {
     outb( 0x20, 32 );   //ack 1st PIC
     outb( 0xa0, 32 );   //ack 2nd PIC
 }
 
 __attribute__((interrupt))
-void DskC1Interrupt(struct InterruptFrame* fr) //interrupt 47
+void DskC1Interrupt(struct InterruptFrame* fr)      //interrupt 47
 {
     outb( 0x20, 32 );   //ack 1st PIC
     outb( 0xa0, 32 );   //ack 2nd PIC
@@ -356,12 +376,55 @@ void syscallInterrupt(struct InterruptFrame* fr)
     return;
 }
 
-void keyHandler(unsigned keyValIn)
+int keyboard_getline(char* buffer, unsigned num)
 {
-    ;
+    unsigned numCpy = (num < (LINEBUF_SIZE - linebuf_chars)) ? num : (LINEBUF_SIZE - linebuf_chars);
+    while(!linebuf_ready)
+    {
+        sti();                  //enable interrupts
+        haltUntilInterrupt();
+    }
+    if((*buffer) >= 0x400000 && ((*buffer)+num) < 0x800000)
+    {
+        kmemcpy(linebuf + linebuf_chars, buffer, numCpy);
+        linebuf_chars += numCpy;
+        linebuf_ready = 0;
+        return numCpy;
+    }
+    return 0;
 }
 
-void table(int i, void* func){
+void keyHandler(unsigned keyValIn)
+{
+    unsigned col = keyValIn % 10;
+    unsigned row = (keyValIn - col) / 10;
+    struct ScanCode k = keyTable[row][col];
+    
+    if(k.printable)
+    {
+        if(k.keyVal == 127 && linebuf_chars > 0)
+        {
+            linebuf[linebuf_chars] = 0;
+            --linebuf_chars;
+            console_putc(k.keyVal);
+        }
+        else if(k.keyVal == '\n')
+        {
+            linebuf_ready = 1;
+            console_putc(k.keyVal);
+        }
+        else if(linebuf_chars < LINEBUF_SIZE)
+        {
+            ksprintf(debugMsg,"SUFFERING:%d keyIn:%d charIn:%c\n",numSuffering++, k.keyVal, k.keyVal);
+            logString(debugMsg);
+            linebuf[linebuf_chars++] = k.keyVal;
+            console_putc(k.keyVal);
+        }
+    }
+}
+
+void table(int i, void* func)
+{
     unsigned x = (unsigned)func;
     idt[i].addrLow = x&0xffff;
     idt[i].selector = 2 << 3;
@@ -487,7 +550,11 @@ void syscall_handler(unsigned* ptr)
                 logString("ERROR: cant read from outside of userspace!!\n");
                 break;
             }
-            else if(fd == 1 || fd == 2) //illegal to read from screen
+            else if(fd == 0)
+            {
+                ptr[0] = keyboard_getline((char*)ptr[2], ptr[3]);
+            }
+            else if(fd < 3) //illegal to read from screen
             {
                 ptr[0] = -ENOTTY;
                 logString("ERROR: cant read from screen!!\n");

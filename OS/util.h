@@ -27,6 +27,8 @@ void haltForever(void);
 
 void haltUntilInterrupt(void);
 
+void sti(void);
+
 void outb(unsigned short port, unsigned char value);
 
 void outw(unsigned short port, unsigned short value);

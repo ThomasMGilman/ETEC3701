@@ -12,6 +12,11 @@ void haltUntilInterrupt(void)
     asm volatile("hlt" ::: "memory" );
 }
 
+void sti(void)
+{
+    asm volatile("sti":::"memory");
+}
+
 void outb(unsigned short port, unsigned char value)
 {
     asm volatile("out dx, al" : : "a"(value), "d"(port) : "memory"); //al is 8bit register

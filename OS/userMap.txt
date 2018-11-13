@@ -2,7 +2,7 @@
 Discarded input sections
 
  .eh_frame      0x0000000000000000       0x38 crtc.o
- .eh_frame      0x0000000000000000       0x78 squawker.o
+ .eh_frame      0x0000000000000000       0xd8 keytest.o
 
 Memory Configuration
 
@@ -42,29 +42,28 @@ LOAD crtc.o
  *fill*         0x0000000000400006        0x2 
  .text          0x0000000000400008       0x2c crtc.o
                 0x0000000000400008                _start
- .text          0x0000000000400034      0x3c8 squawker.o
-                0x0000000000400034                do_syscall
-                0x0000000000400057                mystrlen
-                0x000000000040007f                main
+ .text          0x0000000000400034      0x254 keytest.o
+                0x0000000000400034                syscall
+                0x0000000000400057                open
+                0x0000000000400082                read
+                0x00000000004000ab                write
+                0x00000000004000d4                itoc
+                0x0000000000400183                main
  *(.rodata)
  *(.rdata)
- *fill*         0x00000000004003fc        0x4 
- .rdata         0x0000000000400400      0x460 squawker.o
-                0x0000000000400400                notes
-                0x0000000000400620                lyrics
-                0x0000000000400840                HZ
+ .rdata         0x0000000000400288       0x20 keytest.o
  *(.rdata$zzz)
- .rdata$zzz     0x0000000000400860       0x14 crtc.o
- .rdata$zzz     0x0000000000400874       0x14 squawker.o
-                0x0000000000400888                textEnd = .
-                0x0000000000400888                _textEnd = .
+ .rdata$zzz     0x00000000004002a8       0x14 crtc.o
+ .rdata$zzz     0x00000000004002bc       0x14 keytest.o
+                0x00000000004002d0                textEnd = .
+                0x00000000004002d0                _textEnd = .
                 0x0000000000401000                . = ALIGN (ABSOLUTE (.), 0x1000)
- *fill*         0x0000000000400888      0x778 
+ *fill*         0x00000000004002d0      0xd30 
                 0x0000000000401000                dataStart = .
                 0x0000000000401000                _dataStart = .
  *(.data)
  .data          0x0000000000401000        0x0 crtc.o
- .data          0x0000000000401000        0x0 squawker.o
+ .data          0x0000000000401000        0x0 keytest.o
                 0x0000000000401000                dataEnd = .
                 0x0000000000401000                _dataEnd = .
                 0x0000000000401000                bssStart = .
@@ -72,12 +71,12 @@ LOAD crtc.o
  *(COMMON)
  *(.bss)
  .bss           0x0000000000401000        0x0 crtc.o
- .bss           0x0000000000401000        0x0 squawker.o
+ .bss           0x0000000000401000        0x0 keytest.o
                 0x0000000000401000                bssEnd = .
                 0x0000000000401000                _bssEnd = .
 
 /DISCARD/
  *(.eh_frame)
  *(.comment)
-LOAD squawker.o
-OUTPUT(squawker.tmp pei-i386)
+LOAD keytest.o
+OUTPUT(keytest.tmp pei-i386)
