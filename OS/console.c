@@ -17,8 +17,6 @@ unsigned int colorChangeIndex = 0;
 unsigned int colorPattern[6][3] = {{255,0,0}, {255,165,0}, {255,255,0}, {0,255,0}, {0,0,255}, {128,0,128}}; //Red,Orange,Yellow,Green,Blue,Purple
 unsigned int red = 255, green = 255, blue = 255; 															//Color Variables (set to White)
 
-int ksprintf(char* s, const char* fmt, ... ) __attribute__((format (printf , 2, 3 ) )); //kprintf func
-
 void loop(void)
 {
 	for(volatile int i = 0; i < 1000000000; i++);

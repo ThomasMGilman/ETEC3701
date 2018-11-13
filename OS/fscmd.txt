@@ -19,4 +19,6 @@ cd ..
 write article3.txt people
 cd ..
 write article4.txt "of the Untied States"
+write flower1.ppm flower1.ppm
+write ripple.ppm ripple.ppm
 write keytest.bin keytest.bin

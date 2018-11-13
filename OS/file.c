@@ -6,6 +6,9 @@ void logString(char* myString);                     //UTIL functions
 int kstrln(char *string);
 void kmemcpy(void *dst, const void *src, unsigned num);
 int kprintf(const char* fmt, ... ) __attribute__((format (printf , 1, 2 ) ));
+int ksprintf(char* s, const char* fmt, ... ) __attribute__((format (printf , 2, 3 ) )); 
+
+char msg[125];
 
 void read_block(unsigned blocknum, void* buffer)
 {
@@ -66,6 +69,8 @@ int file_open(const char* fileName, int flags)
     file_table[fd].ino = *fileIno;
     file_table[fd].in_use = 1;
     file_table[fd].offset = 0;
+    ksprintf(msg,"file:%s, opened fd:%d\n",fileName, fd);
+    logString(msg);
     return fd;
 }
 
@@ -89,7 +94,8 @@ int file_read(int fd, void* buf, int count)
     unsigned bi = fp->offset / BLOCK_SIZE;  //Inode Block index
     unsigned bo = fp->offset % BLOCK_SIZE;  //Buffer offset
     unsigned oi, ii, ro, once = 1;
-    unsigned remaining = fp->ino.size - bo, byteCount = 0, numToAdd, countToAdd;
+    unsigned remaining = fp->ino.size - fp->offset;
+    unsigned byteCount = 0, numToAdd, countToAdd;
     signed pass;
     
     if(fp->in_use <= 0 || fp->offset >= fp->ino.size) //file is not in use or at end of size
@@ -184,13 +190,14 @@ int file_read(int fd, void* buf, int count)
             }
         }
         countToAdd = ((BLOCK_SIZE - bo) < numToAdd) ? (BLOCK_SIZE - bo) : numToAdd;
-        kmemcpy((char*)buf+byteCount, buffer + bi, countToAdd);
+        kmemcpy(((char*)buf)+byteCount, (buffer + bo), countToAdd);
         //update variables
         byteCount += countToAdd;
+        count -= countToAdd;
         fp->offset += countToAdd;
         bo = fp->offset % BLOCK_SIZE;
         bi = fp->offset / BLOCK_SIZE;
-        remaining = fp->ino.size - bo % BLOCK_SIZE;
+        remaining = fp->ino.size - fp->offset;
         numToAdd = (remaining < count) ? remaining : count;
     }
     return byteCount;
