@@ -21,7 +21,7 @@ Discarded input sections
  .eh_frame      0x0000000000000000       0xc8 kprintf.o
  .eh_frame      0x0000000000000000      0x1c0 disk.o
  .eh_frame      0x0000000000000000      0x108 file.o
- .eh_frame      0x0000000000000000      0x7f0 interrupt.o
+ .eh_frame      0x0000000000000000      0x7f8 interrupt.o
  .eh_frame      0x0000000000000000       0xc0 testsuite.o
 
 Memory Configuration
@@ -111,7 +111,7 @@ Linker script and memory map
                 0x0000000000102155                file_read
                 0x000000000010259b                file_write
                 0x0000000000102605                file_seek
- .text          0x00000000001026ec     0x1854 interrupt.o
+ .text          0x00000000001026ec     0x1878 interrupt.o
                 0x00000000001026ec                setupPICS_RTC
                 0x00000000001028ec                divideByZeroInterrupt
                 0x0000000000102924                debugTrapInterrupt
@@ -144,48 +144,48 @@ Linker script and memory map
                 0x0000000000102fdd                FloppyInterrupt
                 0x000000000010300e                ParPortInterrupt
                 0x000000000010303f                int40trap
-                0x00000000001030c3                VidInterrupt
-                0x0000000000103108                Av1Interrupt
-                0x000000000010314d                Av2Interrupt
-                0x0000000000103192                MouseInterrupt
-                0x00000000001031d7                FPUInterrupt
-                0x000000000010321c                DskC0Interrupt
-                0x0000000000103261                DskC1Interrupt
-                0x00000000001032a6                syscallInterrupt
-                0x00000000001032f9                keyboard_getline
-                0x0000000000103333                keyHandler
-                0x000000000010348c                table
-                0x00000000001034e1                setInterruptTable
-                0x0000000000103968                setupGDT
-                0x00000000001039b3                syscall_handler
-                0x0000000000103e34                exec
-                0x0000000000103ee5                interrupt_init
- .text          0x0000000000103f40      0x510 testsuite.o
-                0x0000000000104083                displayPPM
-                0x00000000001042f9                sweet
+                0x00000000001030c6                VidInterrupt
+                0x000000000010310b                Av1Interrupt
+                0x0000000000103150                Av2Interrupt
+                0x0000000000103195                MouseInterrupt
+                0x00000000001031da                FPUInterrupt
+                0x000000000010321f                DskC0Interrupt
+                0x0000000000103264                DskC1Interrupt
+                0x00000000001032a9                syscallInterrupt
+                0x00000000001032fc                keyboard_getline
+                0x0000000000103336                keyHandler
+                0x000000000010348f                table
+                0x00000000001034e4                setInterruptTable
+                0x000000000010396b                setupGDT
+                0x00000000001039b6                syscall_handler
+                0x0000000000103e5a                exec
+                0x0000000000103f0b                interrupt_init
+ .text          0x0000000000103f64      0x510 testsuite.o
+                0x00000000001040a7                displayPPM
+                0x000000000010431d                sweet
  *(.rodata)
  *(.rdata)
- .rdata         0x0000000000104450       0x28 kernelmain.o
- *fill*         0x0000000000104478        0x8 
- .rdata         0x0000000000104480     0x2000 console.o
- .rdata         0x0000000000106480     0x21e0 kprintf.o
- .rdata         0x0000000000108660      0x160 disk.o
- .rdata         0x00000000001087c0      0x1a8 file.o
- .rdata         0x0000000000108968      0x650 interrupt.o
- .rdata         0x0000000000108fb8       0x94 testsuite.o
+ .rdata         0x0000000000104474       0x28 kernelmain.o
+ *fill*         0x000000000010449c        0x4 
+ .rdata         0x00000000001044a0     0x2000 console.o
+ .rdata         0x00000000001064a0     0x21e0 kprintf.o
+ .rdata         0x0000000000108680      0x160 disk.o
+ .rdata         0x00000000001087e0      0x1a8 file.o
+ .rdata         0x0000000000108988      0x664 interrupt.o
+ .rdata         0x0000000000108fec       0x94 testsuite.o
  *(.rdata$zzz)
- .rdata$zzz     0x000000000010904c       0x14 kernelmain.o
- .rdata$zzz     0x0000000000109060       0x14 stdarg.o
- .rdata$zzz     0x0000000000109074       0x14 console.o
- .rdata$zzz     0x0000000000109088       0x14 util.o
- .rdata$zzz     0x000000000010909c       0x14 kprintf.o
- .rdata$zzz     0x00000000001090b0       0x14 disk.o
- .rdata$zzz     0x00000000001090c4       0x14 file.o
- .rdata$zzz     0x00000000001090d8       0x14 interrupt.o
- .rdata$zzz     0x00000000001090ec       0x14 testsuite.o
-                0x0000000000109100                _textEnd = .
+ .rdata$zzz     0x0000000000109080       0x14 kernelmain.o
+ .rdata$zzz     0x0000000000109094       0x14 stdarg.o
+ .rdata$zzz     0x00000000001090a8       0x14 console.o
+ .rdata$zzz     0x00000000001090bc       0x14 util.o
+ .rdata$zzz     0x00000000001090d0       0x14 kprintf.o
+ .rdata$zzz     0x00000000001090e4       0x14 disk.o
+ .rdata$zzz     0x00000000001090f8       0x14 file.o
+ .rdata$zzz     0x000000000010910c       0x14 interrupt.o
+ .rdata$zzz     0x0000000000109120       0x14 testsuite.o
+                0x0000000000109134                _textEnd = .
                 0x000000000010a000                . = ALIGN (ABSOLUTE (.), 0x1000)
- *fill*         0x0000000000109100      0xf00 
+ *fill*         0x0000000000109134      0xecc 
                 0x000000000010a000                _dataStart = .
  *(.data)
  .data          0x000000000010a000        0x8 kernelmain.o

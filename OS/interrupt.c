@@ -635,15 +635,15 @@ void syscall_handler(unsigned* ptr)
             outb(0x42, (const unsigned)(divisor & 0xff));   //low byte
             outb(0x42, (const unsigned)(divisor & 0xff00)); //high byte
             v = inb(0x61);
-            ksprintf(debugMsg,"CurDiv:%d, Freq:%d, v:%d\n",divisor, ptr[1], v);
+            ksprintf(debugMsg,"CurDiv:%d, low:%d, high:%d, Freq:%d, v:%d\n",divisor, divisor&0xff, divisor&0xff00, ptr[1], v);
             logString(debugMsg);
             if(v & 0x0003)
-                outb(0x61, (v|3));
+                outb(0x61, (v|0x3));
             logString("\n");
             break;
         case SYSCALL_SLEEP: ///FIX HERE
             //logString("waiting\n");
-            timeToWait = ptr[1] * (Frequency);                   //wait time
+            timeToWait = ptr[1] * (Frequency);                  //wait time
             while(timeToWait--){;}
             logString("done waiting\n");
             v = inb(0x61);
