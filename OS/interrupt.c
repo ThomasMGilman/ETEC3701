@@ -310,11 +310,12 @@ void ParPortInterrupt(struct InterruptFrame* fr)    //interrupt 39
 __attribute__((interrupt))
 void int40trap(struct InterruptFrame* fr)           //interrupt 40 RTC
 {
-    outb(0x70, 0xc);    //ack reading status reg
-    inb(0x71);          //discard val
     outb( 0x20, 32 );   //ack 1st PIC
     outb( 0xa0, 32 );   //ack 2nd PIC
-    jiffies++;
+    outb(0x70, 0xc);    //ack reading status reg
+    inb(0x71);          //discard val
+    if(jiffies++ >= Frequency)
+        jiffies = 0;
 }
 
 __attribute__((interrupt))
@@ -415,12 +416,15 @@ void keyHandler(unsigned keyValIn)
         }
         else if(linebuf_chars < LINEBUF_SIZE)
         {
-            ksprintf(debugMsg,"SUFFERING:%d keyIn:%d charIn:%c\n",numSuffering++, k.keyVal, k.keyVal);
+            
+            ksprintf(debugMsg,"keyIN:%d, charDec:%d\n charIn:%c\n",keyValIn, k.keyVal, k.keyVal);
             logString(debugMsg);
             linebuf[linebuf_chars++] = k.keyVal;
             console_putc(k.keyVal);
         }
     }
+    ksprintf(debugMsg,"keyIN:%d\n", keyValIn);
+    logString(debugMsg);
 }
 
 void table(int i, void* func)
@@ -615,31 +619,31 @@ void syscall_handler(unsigned* ptr)
                 "hlt":::"memory");
             break;
         case SYSCALL_PLAY:
-            //logString("playing\n");
+            logString("playing\n");
             if(ptr[1] != 0)
             {
                 divisor  = 1193180 / ptr[1];                //ptr[1] : Frequency
-                // ksprintf(debugMsg,"div:%d, numPass:%d\n", divisor, ptr[1]);
-                // logString(debugMsg);
+                ksprintf(debugMsg,"div:%d, numPass:%d\n", divisor, ptr[1]);
+                logString(debugMsg);
             }
             else
             {
-                // logString("div 0\n");
+                logString("div 0\n");
                 divisor = 0;
             }
             outb(0x42, 0xb6);
             outb(0x42, (const unsigned)(divisor & 0xff));   //low byte
             outb(0x42, (const unsigned)(divisor & 0xff00)); //high byte
             v = inb(0x61);
-            // ksprintf(debugMsg,"CurDiv:%d, Freq:%d, v:%d\n",divisor, ptr[1], v);
-            // logString(debugMsg);
+            ksprintf(debugMsg,"CurDiv:%d, Freq:%d, v:%d\n",divisor, ptr[1], v);
+            logString(debugMsg);
             if(v & 0x0003)
                 outb(0x61, (v|3));
             logString("\n");
             break;
         case SYSCALL_SLEEP: ///FIX HERE
             //logString("waiting\n");
-            timeToWait = ptr[1] * (1/Frequency) * 10000;        //wait time
+            timeToWait = ptr[1] * (Frequency);                   //wait time
             while(timeToWait--){;}
             logString("done waiting\n");
             v = inb(0x61);

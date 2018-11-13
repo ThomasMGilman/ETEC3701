@@ -6,9 +6,6 @@ void logString(char* myString);                     //UTIL functions
 int kstrln(char *string);
 void kmemcpy(void *dst, const void *src, unsigned num);
 int kprintf(const char* fmt, ... ) __attribute__((format (printf , 1, 2 ) ));
-int ksprintf(char* s, const char* fmt, ... ) __attribute__((format (printf , 2, 3 ) )); 
-
-char msg[125];
 
 void read_block(unsigned blocknum, void* buffer)
 {
@@ -69,8 +66,6 @@ int file_open(const char* fileName, int flags)
     file_table[fd].ino = *fileIno;
     file_table[fd].in_use = 1;
     file_table[fd].offset = 0;
-    ksprintf(msg,"file:%s, opened fd:%d\n",fileName, fd);
-    logString(msg);
     return fd;
 }
 

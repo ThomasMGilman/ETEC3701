@@ -21,4 +21,5 @@ cd ..
 write article4.txt "of the Untied States"
 write flower1.ppm flower1.ppm
 write ripple.ppm ripple.ppm
+write squawker.bin  squawker.bin
 write keytest.bin keytest.bin
