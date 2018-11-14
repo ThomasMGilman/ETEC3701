@@ -2,6 +2,9 @@
 
 #define QEMUPORT 0x3f8
 
+extern volatile unsigned jiffies;
+extern unsigned Frequency;
+
 #pragma pack(push,1)
     struct MultibootInfo
     {
@@ -48,5 +51,9 @@ int kmemcmp(void *p, void *q, int n);
 void kmemcpy(void *dst, const void *src, unsigned num);
 
 void kmemset(void *dstV, unsigned num);
+
+void playSound(int freq);
+
+void sleep(int waitTime);
 
 int Factorial(int num);

@@ -1,6 +1,6 @@
 #pragma once
 
-#define kStackSize 500
+#define kStackSize 4096
 
 unsigned char kernelStack[kStackSize];
 
@@ -27,16 +27,6 @@ struct GDTEntry{
 struct LGDT{
     unsigned short size;
     struct GDTEntry* addr;
-};
-#pragma pack(pop)
-
-#pragma pack(push,1)
-struct InterruptFrame{
-    unsigned eip;
-    unsigned cs;
-    unsigned eflags;
-    unsigned esp;   //only used when undergoing
-    unsigned ss;    //a ring transition
 };
 #pragma pack(pop)
 

@@ -5,8 +5,8 @@ Common symbol       size              file
 mbi                 0x4               console.o
 framebuffer         0x4               console.o
 idt                 0x188             interrupt.o
-debugMsg            0x64              interrupt.o
-kernelStack         0x1f4             interrupt.o
+debugMsg            0x64              util.o
+kernelStack         0x1000            interrupt.o
 blockbuffer         0x64320           file.o
 file_table          0x1068            file.o
 lastCharDrawn       0x1               console.o
@@ -17,11 +17,12 @@ Discarded input sections
  .eh_frame      0x0000000000000000       0x34 kernelmain.o
  .eh_frame      0x0000000000000000       0x38 stdarg.o
  .eh_frame      0x0000000000000000      0x190 console.o
- .eh_frame      0x0000000000000000      0x1d4 util.o
+ .eh_frame      0x0000000000000000      0x214 util.o
  .eh_frame      0x0000000000000000       0xc8 kprintf.o
  .eh_frame      0x0000000000000000      0x1c0 disk.o
  .eh_frame      0x0000000000000000      0x108 file.o
- .eh_frame      0x0000000000000000      0x7f8 interrupt.o
+ .eh_frame      0x0000000000000000      0x6cc intertable.o
+ .eh_frame      0x0000000000000000      0x13c interrupt.o
  .eh_frame      0x0000000000000000       0xc0 testsuite.o
 
 Memory Configuration
@@ -51,7 +52,7 @@ Linker script and memory map
                 0x0000000000000000                __dll_characteristics__ = 0x0
                 0x0000000000100000                . = 0x100000
 
-.text           0x0000000000100000    0x79000
+.text           0x0000000000100000    0x79e00
                 0x0000000000100000                _textStart = .
  *(.text)
  .text          0x0000000000100000       0x58 kernelasm.o
@@ -71,7 +72,7 @@ Linker script and memory map
                 0x0000000000100640                console_putc
                 0x00000000001007be                consoleDrawString
                 0x00000000001007fd                consol_init
- .text          0x0000000000100824      0x20c util.o
+ .text          0x0000000000100824      0x398 util.o
                 0x0000000000100824                haltForever
                 0x000000000010082a                haltUntilInterrupt
                 0x0000000000100831                sti
@@ -85,107 +86,114 @@ Linker script and memory map
                 0x000000000010093c                kmemcmp
                 0x0000000000100997                kmemcpy
                 0x00000000001009d2                kmemset
-                0x00000000001009fc                Factorial
- .text          0x0000000000100a30      0xc04 kprintf.o
-                0x0000000000100a95                kprintf
-                0x0000000000100ac3                ksprintf
- .text          0x0000000000101634      0x828 disk.o
-                0x0000000000101634                selectSector
-                0x00000000001016c9                isBusy
-                0x00000000001016e5                isDiskReady
-                0x0000000000101745                disk_read_sector
-                0x00000000001017fd                disk_write_sector
-                0x00000000001018b7                disk_read_block
-                0x00000000001018fc                disk_read_partial
-                0x0000000000101957                disk_read_inode
-                0x00000000001019e6                list_SB_info
-                0x0000000000101a33                list_BGDTS_info
-                0x0000000000101b09                checkDirs
-                0x0000000000101d8d                listDiskInfo
-                0x0000000000101e16                disk_init
- .text          0x0000000000101e5c      0x890 file.o
-                0x0000000000101e5c                read_block
-                0x0000000000101fac                file_init
-                0x0000000000101fe0                file_open
-                0x000000000010210f                file_close
-                0x0000000000102155                file_read
-                0x000000000010259b                file_write
-                0x0000000000102605                file_seek
- .text          0x00000000001026ec     0x1878 interrupt.o
-                0x00000000001026ec                setupPICS_RTC
-                0x00000000001028ec                divideByZeroInterrupt
-                0x0000000000102924                debugTrapInterrupt
-                0x000000000010295c                NMIInterrupt
-                0x0000000000102994                int3Interrupt
-                0x00000000001029cc                OverflowInterrupt
-                0x0000000000102a04                BCInterrupt
-                0x0000000000102a3c                badOpcodeInterrupt
-                0x0000000000102a74                NFPUInterrupt
-                0x0000000000102aac                DFInterrupt
-                0x0000000000102af7                FPUOInterrupt
-                0x0000000000102b2f                BTSSInterrupt
-                0x0000000000102b7a                NoSegInterrupt
-                0x0000000000102bc5                SFaultInterrupt
-                0x0000000000102c10                GFaultInterrupt
-                0x0000000000102c5b                PFaultInterrupt
-                0x0000000000102ca6                MFaultInterrupt
-                0x0000000000102cde                MisalignedInterrupt
-                0x0000000000102d29                MCheckInterrupt
-                0x0000000000102d61                SIMDInterrupt
-                0x0000000000102d99                VMInterrupt
-                0x0000000000102dd1                unknownInterrupt
-                0x0000000000102e09                unknownInterruptWithCode
-                0x0000000000102e54                timerInterrupt
-                0x0000000000102e85                KeyboardInterrupt
-                0x0000000000102f19                CascadeInterrupt
-                0x0000000000102f4a                S2Interrupt
-                0x0000000000102f7b                S1Interrupt
-                0x0000000000102fac                Av0Interrupt
-                0x0000000000102fdd                FloppyInterrupt
-                0x000000000010300e                ParPortInterrupt
-                0x000000000010303f                int40trap
-                0x00000000001030c6                VidInterrupt
-                0x000000000010310b                Av1Interrupt
-                0x0000000000103150                Av2Interrupt
-                0x0000000000103195                MouseInterrupt
-                0x00000000001031da                FPUInterrupt
-                0x000000000010321f                DskC0Interrupt
-                0x0000000000103264                DskC1Interrupt
-                0x00000000001032a9                syscallInterrupt
-                0x00000000001032fc                keyboard_getline
-                0x0000000000103336                keyHandler
-                0x000000000010348f                table
-                0x00000000001034e4                setInterruptTable
-                0x000000000010396b                setupGDT
-                0x00000000001039b6                syscall_handler
-                0x0000000000103e5a                exec
-                0x0000000000103f0b                interrupt_init
- .text          0x0000000000103f64      0x510 testsuite.o
-                0x00000000001040a7                displayPPM
-                0x000000000010431d                sweet
+                0x00000000001009fc                playSound
+                0x0000000000100b2a                sleep
+                0x0000000000100b8b                Factorial
+ .text          0x0000000000100bbc      0xc04 kprintf.o
+                0x0000000000100c21                kprintf
+                0x0000000000100c4f                ksprintf
+ .text          0x00000000001017c0      0x828 disk.o
+                0x00000000001017c0                selectSector
+                0x0000000000101855                isBusy
+                0x0000000000101871                isDiskReady
+                0x00000000001018d1                disk_read_sector
+                0x0000000000101989                disk_write_sector
+                0x0000000000101a43                disk_read_block
+                0x0000000000101a88                disk_read_partial
+                0x0000000000101ae3                disk_read_inode
+                0x0000000000101b72                list_SB_info
+                0x0000000000101bbf                list_BGDTS_info
+                0x0000000000101c95                checkDirs
+                0x0000000000101f19                listDiskInfo
+                0x0000000000101fa2                disk_init
+ .text          0x0000000000101fe8      0x86c file.o
+                0x0000000000101fe8                read_block
+                0x0000000000102138                file_init
+                0x000000000010216c                file_open
+                0x000000000010229b                file_close
+                0x00000000001022e1                file_read
+                0x0000000000102727                file_write
+                0x000000000010276c                file_seek
+ .text          0x0000000000102854      0xa10 intertable.o
+                0x0000000000102854                divideByZeroInterrupt
+                0x000000000010288c                debugTrapInterrupt
+                0x00000000001028c4                NMIInterrupt
+                0x00000000001028fc                int3Interrupt
+                0x0000000000102934                OverflowInterrupt
+                0x000000000010296c                BCInterrupt
+                0x00000000001029a4                badOpcodeInterrupt
+                0x00000000001029dc                NFPUInterrupt
+                0x0000000000102a14                DFInterrupt
+                0x0000000000102a5f                FPUOInterrupt
+                0x0000000000102a97                BTSSInterrupt
+                0x0000000000102ae2                NoSegInterrupt
+                0x0000000000102b2d                SFaultInterrupt
+                0x0000000000102b78                GFaultInterrupt
+                0x0000000000102bc3                PFaultInterrupt
+                0x0000000000102c0e                MFaultInterrupt
+                0x0000000000102c46                MisalignedInterrupt
+                0x0000000000102c91                MCheckInterrupt
+                0x0000000000102cc9                SIMDInterrupt
+                0x0000000000102d01                VMInterrupt
+                0x0000000000102d39                unknownInterrupt
+                0x0000000000102d71                unknownInterruptWithCode
+                0x0000000000102dbc                timerInterrupt
+                0x0000000000102ded                KeyboardInterrupt
+                0x0000000000102e81                CascadeInterrupt
+                0x0000000000102eb2                S2Interrupt
+                0x0000000000102ee3                S1Interrupt
+                0x0000000000102f14                Av0Interrupt
+                0x0000000000102f45                FloppyInterrupt
+                0x0000000000102f76                ParPortInterrupt
+                0x0000000000102fa7                int40trap
+                0x000000000010302e                VidInterrupt
+                0x0000000000103073                Av1Interrupt
+                0x00000000001030b8                Av2Interrupt
+                0x00000000001030fd                MouseInterrupt
+                0x0000000000103142                FPUInterrupt
+                0x0000000000103187                DskC0Interrupt
+                0x00000000001031cc                DskC1Interrupt
+                0x0000000000103211                syscallInterrupt
+ .text          0x0000000000103264      0xcf0 interrupt.o
+                0x0000000000103264                setupPICS_RTC
+                0x0000000000103464                keyboard_getline
+                0x000000000010349e                keyHandler
+                0x00000000001035f7                table
+                0x000000000010364c                setInterruptTable
+                0x0000000000103ad3                setupGDT
+                0x0000000000103b1e                syscall_handler
+                0x0000000000103e4a                exec
+                0x0000000000103efb                interrupt_init
+ .text          0x0000000000103f54      0x510 testsuite.o
+                0x0000000000104097                displayPPM
+                0x000000000010430d                sweet
  *(.rodata)
  *(.rdata)
- .rdata         0x0000000000104474       0x28 kernelmain.o
- *fill*         0x000000000010449c        0x4 
+ .rdata         0x0000000000104464       0x2c kernelmain.o
+ *fill*         0x0000000000104490       0x10 
  .rdata         0x00000000001044a0     0x2000 console.o
- .rdata         0x00000000001064a0     0x21e0 kprintf.o
- .rdata         0x0000000000108680      0x160 disk.o
- .rdata         0x00000000001087e0      0x1a8 file.o
- .rdata         0x0000000000108988      0x664 interrupt.o
- .rdata         0x0000000000108fec       0x94 testsuite.o
+ .rdata         0x00000000001064a0       0x5c util.o
+ *fill*         0x00000000001064fc        0x4 
+ .rdata         0x0000000000106500     0x21e0 kprintf.o
+ .rdata         0x00000000001086e0      0x160 disk.o
+ .rdata         0x0000000000108840      0x1ac file.o
+ .rdata         0x00000000001089ec      0x400 intertable.o
+ .rdata         0x0000000000108dec      0x214 interrupt.o
+ .rdata         0x0000000000109000       0x94 testsuite.o
  *(.rdata$zzz)
- .rdata$zzz     0x0000000000109080       0x14 kernelmain.o
- .rdata$zzz     0x0000000000109094       0x14 stdarg.o
- .rdata$zzz     0x00000000001090a8       0x14 console.o
- .rdata$zzz     0x00000000001090bc       0x14 util.o
- .rdata$zzz     0x00000000001090d0       0x14 kprintf.o
- .rdata$zzz     0x00000000001090e4       0x14 disk.o
- .rdata$zzz     0x00000000001090f8       0x14 file.o
- .rdata$zzz     0x000000000010910c       0x14 interrupt.o
- .rdata$zzz     0x0000000000109120       0x14 testsuite.o
-                0x0000000000109134                _textEnd = .
+ .rdata$zzz     0x0000000000109094       0x14 kernelmain.o
+ .rdata$zzz     0x00000000001090a8       0x14 stdarg.o
+ .rdata$zzz     0x00000000001090bc       0x14 console.o
+ .rdata$zzz     0x00000000001090d0       0x14 util.o
+ .rdata$zzz     0x00000000001090e4       0x14 kprintf.o
+ .rdata$zzz     0x00000000001090f8       0x14 disk.o
+ .rdata$zzz     0x000000000010910c       0x14 file.o
+ .rdata$zzz     0x0000000000109120       0x14 intertable.o
+ .rdata$zzz     0x0000000000109134       0x14 interrupt.o
+ .rdata$zzz     0x0000000000109148       0x14 testsuite.o
+                0x000000000010915c                _textEnd = .
                 0x000000000010a000                . = ALIGN (ABSOLUTE (.), 0x1000)
- *fill*         0x0000000000109134      0xecc 
+ *fill*         0x000000000010915c      0xea4 
                 0x000000000010a000                _dataStart = .
  *(.data)
  .data          0x000000000010a000        0x8 kernelmain.o
@@ -202,6 +210,7 @@ Linker script and memory map
  .data          0x000000000010a080        0x0 kprintf.o
  .data          0x000000000010a080        0x0 disk.o
  .data          0x000000000010a080        0x0 file.o
+ .data          0x000000000010a080        0x0 intertable.o
  .data          0x000000000010a080      0x480 interrupt.o
                 0x000000000010a080                Frequency
                 0x000000000010a0a0                keyTable
@@ -216,40 +225,45 @@ Linker script and memory map
                 0x000000000010a504                framebuffer
                 0x000000000010a508                lastCharDrawn
  *fill*         0x000000000010a509       0x17 
- COMMON         0x000000000010a520      0x400 disk.o
-                0x000000000010a520                SB
- COMMON         0x000000000010a920    0x65388 file.o
-                0x000000000010a920                blockbuffer
-                0x000000000016ec40                file_table
- *fill*         0x000000000016fca8       0x18 
- COMMON         0x000000000016fcc0      0x414 interrupt.o
-                0x000000000016fcc0                idt
-                0x000000000016fe60                debugMsg
+ COMMON         0x000000000010a520       0x64 util.o
+                0x000000000010a520                debugMsg
+ *fill*         0x000000000010a584       0x1c 
+ COMMON         0x000000000010a5a0      0x400 disk.o
+                0x000000000010a5a0                SB
+ COMMON         0x000000000010a9a0    0x65388 file.o
+                0x000000000010a9a0                blockbuffer
+                0x000000000016ecc0                file_table
+ *fill*         0x000000000016fd28       0x18 
+ COMMON         0x000000000016fd40     0x11a0 interrupt.o
+                0x000000000016fd40                idt
                 0x000000000016fee0                kernelStack
  *(.bss)
- .bss           0x00000000001700d4     0x1000 kernelasm.o
- .bss           0x00000000001710d4        0x0 kernelmain.o
- .bss           0x00000000001710d4        0x0 stdarg.o
- .bss           0x00000000001710d4        0xc console.o
-                0x00000000001710d4                pixCol
-                0x00000000001710d8                pixRow
-                0x00000000001710dc                colorChangeIndex
- .bss           0x00000000001710e0        0x0 util.o
- .bss           0x00000000001710e0        0x0 kprintf.o
- .bss           0x00000000001710e0     0x4000 disk.o
- .bss           0x00000000001750e0     0x2020 file.o
- .bss           0x0000000000177100       0x24 interrupt.o
-                0x0000000000177100                jiffies
-                0x0000000000177104                numSuffering
- *fill*         0x0000000000177124       0x1c 
- .bss           0x0000000000177140     0x1e00 testsuite.o
-                0x0000000000178f40                _bssEnd = .
+ .bss           0x0000000000170ee0     0x1000 kernelasm.o
+ .bss           0x0000000000171ee0        0x0 kernelmain.o
+ .bss           0x0000000000171ee0        0x0 stdarg.o
+ .bss           0x0000000000171ee0        0xc console.o
+                0x0000000000171ee0                pixCol
+                0x0000000000171ee4                pixRow
+                0x0000000000171ee8                colorChangeIndex
+ .bss           0x0000000000171eec        0x0 util.o
+ .bss           0x0000000000171eec        0x0 kprintf.o
+ *fill*         0x0000000000171eec       0x14 
+ .bss           0x0000000000171f00     0x4000 disk.o
+ .bss           0x0000000000175f00     0x2020 file.o
+ .bss           0x0000000000177f20        0x0 intertable.o
+ .bss           0x0000000000177f20       0x24 interrupt.o
+                0x0000000000177f20                jiffies
+                0x0000000000177f24                numSuffering
+ *fill*         0x0000000000177f44       0x1c 
+ .bss           0x0000000000177f60     0x1e00 testsuite.o
+                0x0000000000179d60                _bssEnd = .
 
-.drectve        0x0000000000179000      0x200
- .drectve       0x0000000000179000       0x4c console.o
- .drectve       0x000000000017904c       0x14 disk.o
- .drectve       0x0000000000179060       0x4c file.o
- .drectve       0x00000000001790ac       0x78 interrupt.o
+.drectve        0x000000000017a000      0x200
+ .drectve       0x000000000017a000       0x4c console.o
+ .drectve       0x000000000017a04c       0x1c util.o
+ .drectve       0x000000000017a068       0x14 disk.o
+ .drectve       0x000000000017a07c       0x4c file.o
+ .drectve       0x000000000017a0c8       0x78 interrupt.o
 
 /DISCARD/
  *(.eh_frame)
@@ -262,6 +276,7 @@ LOAD util.o
 LOAD kprintf.o
 LOAD disk.o
 LOAD file.o
+LOAD intertable.o
 LOAD interrupt.o
 LOAD testsuite.o
 OUTPUT(kernel.tmp pei-i386)

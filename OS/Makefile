@@ -43,6 +43,7 @@ all:
 	$(CC)	-c	kprintf.c
 	$(CC)	-c	disk.c
 	$(CC)	-c	file.c
+	$(CC)	-c	intertable.c
 	$(CC)	-c	interrupt.c
 	$(CC)	-c	testsuite.c
 	$(LD) -Map kernelmap.txt -T linkerscript.txt -o kernel.tmp \
@@ -54,6 +55,7 @@ all:
 		kprintf.o	\
 		disk.o	\
 		file.o	\
+		intertable.o	\
 		interrupt.o	\
 		testsuite.o
 	$(OBJCOPY) -Obinary kernel.tmp kernel.bin

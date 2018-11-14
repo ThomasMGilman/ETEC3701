@@ -200,16 +200,14 @@ int file_read(int fd, void* buf, int count)
 
 int file_write(int fd, const void* buf, int count)
 {
-    unsigned index;
-    if(fd == stdin && (fd != stderr || fd != stdout))
+    if(fd == stdin)
     {
         kprintf("fd:%d\n",fd);
         return -ENOSYS; //no such system call
     }
     else
     {
-        for(index = 0; index < count; index++)
-            kprintf("%c", ((char*)buf)[index]);
+        kprintf("%.*s",count, (char*)buf);
     }
         
     return count;

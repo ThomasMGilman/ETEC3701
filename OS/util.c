@@ -1,5 +1,8 @@
 #include "util.h"
 
+int ksprintf(char* s, const char* fmt, ... ) __attribute__((format (printf , 2, 3 ) ));
+char debugMsg[100];
+
 void haltForever(void)
 {
     while(1){
@@ -88,6 +91,35 @@ void kmemset(void *dstV, unsigned num)
     char* dst = (char*)dstV;
     while(num--)
         *dst++ = 0x0;
+}
+
+void playSound(int freq)
+{
+    int divisor;
+    unsigned v;
+    logString("playing\n");
+    divisor = (freq > 0) ? (1193180 / freq) : 0;
+    ksprintf(debugMsg,"div:%d, numPass:%d\n", divisor, freq);
+    logString(debugMsg);
+    outb(0x43, 0xb6);
+    outb(0x42, (const unsigned)(divisor & 0xff));   //low byte
+    outb(0x42, (const unsigned)(divisor >> 8)); //high byte
+    v = inb(0x61);
+    ksprintf(debugMsg,"CurDiv:%d, low:%d, high:%d, Freq:%d, v:%d\n",divisor, divisor&0xff, divisor&0xff00, freq, v);
+    logString(debugMsg);
+    if((v & 3) != 3)
+        outb(0x61, (v|3));
+    logString("\n");
+}
+
+void sleep(int waitTime)
+{
+    unsigned v, timeToWait;
+    timeToWait = waitTime * (Frequency) * 100;          //wait time
+    while(timeToWait--){;}
+    logString("done waiting\n");
+    v = inb(0x61);
+    outb(0x61, (v & 0xfffc));                           //turn off the lower two bits
 }
 
 int Factorial(int num)

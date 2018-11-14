@@ -21,7 +21,7 @@ void kmain(struct MultibootInfo *mbi){
     // if(listDiskInfo() != 0)
     //     logString("error listing DiskInfo");
     //sweet(0);
-    logString("fin\n");
+    logString("fin setup\n");
     exec(userFile2);
     logString("ERROR\n"); //should never get here
     while(1){;}           //loop forever

@@ -49,17 +49,18 @@ LOAD crtc.o
  *(.rodata)
  *(.rdata)
  *fill*         0x00000000004003fc        0x4 
- .rdata         0x0000000000400400      0x460 squawker.o
+ .rdata         0x0000000000400400      0x480 squawker.o
                 0x0000000000400400                notes
                 0x0000000000400620                lyrics
                 0x0000000000400840                HZ
+                0x0000000000400860                userMsg
  *(.rdata$zzz)
- .rdata$zzz     0x0000000000400860       0x14 crtc.o
- .rdata$zzz     0x0000000000400874       0x14 squawker.o
-                0x0000000000400888                textEnd = .
-                0x0000000000400888                _textEnd = .
+ .rdata$zzz     0x0000000000400880       0x14 crtc.o
+ .rdata$zzz     0x0000000000400894       0x14 squawker.o
+                0x00000000004008a8                textEnd = .
+                0x00000000004008a8                _textEnd = .
                 0x0000000000401000                . = ALIGN (ABSOLUTE (.), 0x1000)
- *fill*         0x0000000000400888      0x778 
+ *fill*         0x00000000004008a8      0x758 
                 0x0000000000401000                dataStart = .
                 0x0000000000401000                _dataStart = .
  *(.data)

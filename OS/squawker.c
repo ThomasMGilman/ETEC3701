@@ -102,9 +102,10 @@ int mystrlen(const char* txt){
 //msec per quarter note
 #define QUARTERNOTE 300
 
+const char userMsg = 'H';
+
 int main(int argc, char* argv[])
 {
-    //do_syscall(SYSCALL_LOG, 0, 0, 0);
     unsigned i=0;
     unsigned li=0;
     while(notes[i]){
@@ -182,6 +183,7 @@ int main(int argc, char* argv[])
             else
                 li = k;
         }
+        
         do_syscall(SYSCALL_PLAY,hz,0,0);
         do_syscall(SYSCALL_SLEEP,durationMS,0,0);
         do_syscall(SYSCALL_PLAY,0,0,0);
