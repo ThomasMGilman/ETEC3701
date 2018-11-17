@@ -5,8 +5,12 @@ void haltUntilInterrupt(void);
 void outb(unsigned short port, unsigned char value);
 unsigned char inb(unsigned short port);
 int kprintf(const char* fmt, ... ) __attribute__((format (printf , 1, 2 ) ));
+int ksprintf(char* s, const char* fmt, ... ) __attribute__((format (printf , 2, 3 ) )); 
 void keyHandler(unsigned keyValIn);
 void syscall_handler(unsigned* ptr);
+void logString(char* myString);
+
+char debugMsg[50];
 
 __attribute__((interrupt))
 void divideByZeroInterrupt(struct InterruptFrame* fr)                   //interrupt 0
@@ -172,6 +176,7 @@ void timerInterrupt(struct InterruptFrame* fr)      //interrupt 32
 __attribute__((interrupt))
 void KeyboardInterrupt(struct InterruptFrame* fr)   //interrupt 33
 {
+    logString("im getting keypress\n");
     outb(0x64,0x20);            //command: Read config bits
     unsigned oldv = inb(0x60);  //get current config
     oldv &= ~0x40;              //mask bit 6: Turn off translation
@@ -179,6 +184,8 @@ void KeyboardInterrupt(struct InterruptFrame* fr)   //interrupt 33
     outb(0x60,oldv);            //The new value
     outb( 0x20, 32 );           //ack 1st PIC
     keyHandler(oldv);
+    ksprintf(debugMsg,"oldv:%d, logging keypress\n\n",oldv);
+    logString(debugMsg);
 }
 
 __attribute__((interrupt))

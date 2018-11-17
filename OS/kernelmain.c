@@ -22,7 +22,7 @@ void kmain(struct MultibootInfo *mbi){
     //     logString("error listing DiskInfo");
     //sweet(0);
     logString("fin setup\n");
-    exec(userFile2);
+    exec(userFile);
     logString("ERROR\n"); //should never get here
     while(1){;}           //loop forever
 }

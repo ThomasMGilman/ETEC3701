@@ -15,10 +15,10 @@ static int linebuf_chars = 0;
 static volatile int linebuf_ready=0;
 volatile unsigned jiffies = 0;
 unsigned Frequency = 2;
-//nbsp;
+
 char debugMsg[100];
 
-unsigned numSuffering = 0;
+unsigned throwAway = 1;
 
 struct ScanCode keyTable[13][10] = { 
     {{0,0}, {0,0}, {0,0}, {0,0}, {0,0},{0,0}, {0,0}, {0,0}, {0,0}, {0,0}},
@@ -93,6 +93,7 @@ void setupPICS_RTC(unsigned rate)
     logString(debugMsg);
 }
 
+//&nbsp
 int keyboard_getline(char* buffer, unsigned num)
 {
     unsigned numCpy = (num < (LINEBUF_SIZE - linebuf_chars)) ? num : (LINEBUF_SIZE - linebuf_chars);
@@ -103,6 +104,7 @@ int keyboard_getline(char* buffer, unsigned num)
     }
     if((*buffer) >= 0x400000 && ((*buffer)+num) < 0x800000)
     {
+        logString("here\n");
         kmemcpy(linebuf + linebuf_chars, buffer, numCpy);
         linebuf_chars += numCpy;
         linebuf_ready = 0;
@@ -116,31 +118,54 @@ void keyHandler(unsigned keyValIn)
     unsigned col = keyValIn % 10;
     unsigned row = (keyValIn - col) / 10;
     struct ScanCode k = keyTable[row][col];
-    
-    if(k.printable)
+
+    if(throwAway != 0)
     {
-        if(k.keyVal == 127 && linebuf_chars > 0)
+        throwAway--;
+    }    
+    else
+    {
+        if(k.printable)
         {
-            linebuf[linebuf_chars] = 0;
-            --linebuf_chars;
-            console_putc(k.keyVal);
+            if(k.keyVal == 127 && linebuf_chars > 0)
+            {
+                linebuf[linebuf_chars] = 0;
+                --linebuf_chars;
+                console_putc(k.keyVal);
+            }
+            else if(k.keyVal == '\n')
+            {
+                linebuf_ready = 1;
+                console_putc(k.keyVal);
+            }
+            else if(linebuf_chars < LINEBUF_SIZE)
+            {
+                
+                ksprintf(debugMsg,"keyIN:%d, charDec:%d\n charIn:%c\n",keyValIn, k.keyVal, k.keyVal);
+                logString(debugMsg);
+                linebuf[linebuf_chars++] = k.keyVal;
+                console_putc(k.keyVal);
+            }
         }
-        else if(k.keyVal == '\n')
-        {
-            linebuf_ready = 1;
-            console_putc(k.keyVal);
-        }
-        else if(linebuf_chars < LINEBUF_SIZE)
-        {
-            
-            ksprintf(debugMsg,"keyIN:%d, charDec:%d\n charIn:%c\n",keyValIn, k.keyVal, k.keyVal);
-            logString(debugMsg);
-            linebuf[linebuf_chars++] = k.keyVal;
-            console_putc(k.keyVal);
-        }
+        ksprintf(debugMsg,"keyIN:%d\n", keyValIn);
+        logString(debugMsg);
+        sleep(100);
+        throwAway++;
     }
     ksprintf(debugMsg,"keyIN:%d\n", keyValIn);
     logString(debugMsg);
+}
+
+static void send(unsigned short port, unsigned char val)
+{
+    while(inb(0x64) & 2){;}
+    outb(port, val);
+}
+
+static unsigned char recv()
+{
+    while(!(inb(0x64) & 1)){;}
+    return inb(0x60);
 }
 
 void table(int i, void* func)

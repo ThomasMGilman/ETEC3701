@@ -50,6 +50,10 @@ void keyboard_interrupt();
 
 void keyHandler(unsigned keyValIn);
 
+static void send(unsigned short port, unsigned char val);
+
+static unsigned char recv();
+
 void table(int i, void* func);
 
 void setupPICS_RTC(unsigned rate);

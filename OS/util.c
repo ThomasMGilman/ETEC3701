@@ -107,19 +107,29 @@ void playSound(int freq)
     v = inb(0x61);
     ksprintf(debugMsg,"CurDiv:%d, low:%d, high:%d, Freq:%d, v:%d\n",divisor, divisor&0xff, divisor&0xff00, freq, v);
     logString(debugMsg);
-    if((v & 3) != 3)
+    if((v & 3) != 3 && freq > 0)
         outb(0x61, (v|3));
+    else
+        outb(0x61, v & 0xfff8);
     logString("\n");
 }
 
 void sleep(int waitTime)
 {
     unsigned v, timeToWait;
-    timeToWait = waitTime * (Frequency) * 100;          //wait time
+    timeToWait = waitTime * (Frequency)*180;          //wait time 18 jiffies per second, so convert time to jiffie time
+    ksprintf(debugMsg,"cur Jif:%d, modJif:%d, waitTime:%d\n",jiffies, jiffies%18, timeToWait);
+    logString(debugMsg);
     while(timeToWait--){;}
     logString("done waiting\n");
     v = inb(0x61);
     outb(0x61, (v & 0xfffc));                           //turn off the lower two bits
+}
+
+void silence()
+{
+    unsigned v = inb(0x61);
+    outb(0x61, (v & 0xfff8));
 }
 
 int Factorial(int num)
