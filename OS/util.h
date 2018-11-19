@@ -56,4 +56,6 @@ void playSound(int freq);
 
 void sleep(int waitTime);
 
+void silence(void);
+
 int Factorial(int num);

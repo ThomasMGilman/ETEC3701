@@ -95,41 +95,38 @@ void kmemset(void *dstV, unsigned num)
 
 void playSound(int freq)
 {
-    int divisor;
-    unsigned v;
     logString("playing\n");
-    divisor = (freq > 0) ? (1193180 / freq) : 0;
-    ksprintf(debugMsg,"div:%d, numPass:%d\n", divisor, freq);
-    logString(debugMsg);
+    unsigned v;
+    int divisor = (freq > 0) ? (1193180 / freq) : 0;
     outb(0x43, 0xb6);
     outb(0x42, (const unsigned)(divisor & 0xff));   //low byte
-    outb(0x42, (const unsigned)(divisor >> 8)); //high byte
+    outb(0x42, (const unsigned)(divisor >> 8));     //high byte
     v = inb(0x61);
-    ksprintf(debugMsg,"CurDiv:%d, low:%d, high:%d, Freq:%d, v:%d\n",divisor, divisor&0xff, divisor&0xff00, freq, v);
-    logString(debugMsg);
-    if((v & 3) != 3 && freq > 0)
+    if(freq == 0)
+        outb(0x61, v & ~3);
+    else if((v & 3) != 3)
+    {
         outb(0x61, (v|3));
-    else
-        outb(0x61, v & 0xfff8);
-    logString("\n");
+    }
+    ksprintf(debugMsg,"CurDiv:%d, low:%d, high:%d, Freq:%d, v:%d\n\n"
+        ,divisor, divisor&0xff, divisor&0xff00, freq, v);
+    logString(debugMsg);
 }
 
 void sleep(int waitTime)
 {
-    unsigned v, timeToWait;
-    timeToWait = waitTime * (Frequency)*180;          //wait time 18 jiffies per second, so convert time to jiffie time
-    ksprintf(debugMsg,"cur Jif:%d, modJif:%d, waitTime:%d\n",jiffies, jiffies%18, timeToWait);
+    unsigned timeToWait = waitTime * (Frequency)*180; //wait time 18 jiffies per second, so convert time to jiffie time
+    ksprintf(debugMsg,"waitTime:%d\n", timeToWait);
     logString(debugMsg);
     while(timeToWait--){;}
     logString("done waiting\n");
-    v = inb(0x61);
-    outb(0x61, (v & 0xfffc));                           //turn off the lower two bits
 }
 
-void silence()
+void silence(void)
 {
-    unsigned v = inb(0x61);
-    outb(0x61, (v & 0xfff8));
+    unsigned v = inb(0x61) & 0xFC;
+    outb(0x61, v);
+    logString("Silenced\n");
 }
 
 int Factorial(int num)

@@ -177,14 +177,10 @@ __attribute__((interrupt))
 void KeyboardInterrupt(struct InterruptFrame* fr)   //interrupt 33
 {
     logString("im getting keypress\n");
-    outb(0x64,0x20);            //command: Read config bits
-    unsigned oldv = inb(0x60);  //get current config
-    oldv &= ~0x40;              //mask bit 6: Turn off translation
-    outb(0x64,0x60);            //command: Write config bits
-    outb(0x60,oldv);            //The new value
-    outb( 0x20, 32 );           //ack 1st PIC
-    keyHandler(oldv);
-    ksprintf(debugMsg,"oldv:%d, logging keypress\n\n",oldv);
+    unsigned keyCode = inb(0x60);   //get scancode
+    outb( 0x20, 32 );               //ack 1st PIC
+    keyHandler(keyCode);
+    ksprintf(debugMsg,"ScanCode:%d, logging keypress\n\n",keyCode);
     logString(debugMsg);
 }
 

@@ -118,7 +118,7 @@ void keyHandler(unsigned keyValIn)
     unsigned col = keyValIn % 10;
     unsigned row = (keyValIn - col) / 10;
     struct ScanCode k = keyTable[row][col];
-
+    
     if(throwAway != 0)
     {
         throwAway--;
@@ -154,19 +154,20 @@ void keyHandler(unsigned keyValIn)
     }
     ksprintf(debugMsg,"keyIN:%d\n", keyValIn);
     logString(debugMsg);
+    sti();
 }
 
-static void send(unsigned short port, unsigned char val)
-{
-    while(inb(0x64) & 2){;}
-    outb(port, val);
-}
+// static void send(unsigned short port, unsigned char val)
+// {
+//     while(inb(0x64) & 2){;}
+//     outb(port, val);
+// }
 
-static unsigned char recv()
-{
-    while(!(inb(0x64) & 1)){;}
-    return inb(0x60);
-}
+// static unsigned char recv()
+// {
+//     while(!(inb(0x64) & 1)){;}
+//     return inb(0x60);
+// }
 
 void table(int i, void* func)
 {
@@ -263,6 +264,15 @@ void setInterruptTable(void)
         else
             table(index, unknownInterrupt);
     }
+}
+
+void setupKeyBoard(void)
+{
+    outb(0x64,0x20);            //command: Read config bits
+    unsigned oldv = inb(0x60);  //get current config
+    oldv &= ~0x40;              //mask bit 6: Turn off translation
+    outb(0x64,0x60);            //command: Write config bits
+    outb(0x60,oldv);            //The new value
 }
 
 void setupGDT(void)
@@ -430,6 +440,7 @@ int interrupt_init(void)
             "b"((5<<3)|3)   //put task register index in ebx
         : "memory" );
     setInterruptTable();
+    setupKeyBoard();
     struct LIDT lidt;
     lidt.size = sizeof(idt);
     lidt.addr = &idt[0];
