@@ -117,20 +117,23 @@ void keyHandler(unsigned keyValIn)
 {
     unsigned col = keyValIn % 10;
     unsigned row = (keyValIn - col) / 10;
+    unsigned keyReleased = 0;
     struct ScanCode k = keyTable[row][col];
     
-    if(throwAway != 0)
+    ksprintf(debugMsg,"keyIN:%d\n", keyValIn);
+    logString(debugMsg);
+    if(keyValIn != 0xf0 && keyReleased < 1)
     {
-        throwAway--;
-    }    
-    else
-    {
+        keyReleased = 1;
         if(k.printable)
         {
             if(k.keyVal == 127 && linebuf_chars > 0)
             {
                 linebuf[linebuf_chars] = 0;
-                --linebuf_chars;
+                if(linebuf > 0)
+                {
+                    --linebuf_chars;
+                }
                 console_putc(k.keyVal);
             }
             else if(k.keyVal == '\n')
@@ -147,14 +150,13 @@ void keyHandler(unsigned keyValIn)
                 console_putc(k.keyVal);
             }
         }
-        ksprintf(debugMsg,"keyIN:%d\n", keyValIn);
-        logString(debugMsg);
         sleep(100);
         throwAway++;
     }
-    ksprintf(debugMsg,"keyIN:%d\n", keyValIn);
-    logString(debugMsg);
-    sti();
+    else if(keyValIn != 0xf0)
+    {
+        keyReleased = 0;
+    }
 }
 
 // static void send(unsigned short port, unsigned char val)

@@ -1,0 +1,119 @@
+
+Allocating common symbols
+Common symbol       size              file
+
+mbi                 0x4               console.o
+framebuffer         0x4               console.o
+lastCharDrawn       0x1               console.o
+
+Discarded input sections
+
+ .eh_frame      0x0000000000000000       0x34 kernelc.o
+ .eh_frame      0x0000000000000000      0x14c console.o
+ .eh_frame      0x0000000000000000       0x58 util.o
+ .eh_frame      0x0000000000000000       0x38 testsuite.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+                0x0000000000400000                __image_base__ = 0x400000
+                0x0000000000000000                __dll__ = 0x0
+                0x0000000000400000                ___ImageBase = 0x400000
+                0x0000000000001000                __section_alignment__ = 0x1000
+                0x0000000000000200                __file_alignment__ = 0x200
+                0x0000000000000004                __major_os_version__ = 0x4
+                0x0000000000000000                __minor_os_version__ = 0x0
+                0x0000000000000001                __major_image_version__ = 0x1
+                0x0000000000000000                __minor_image_version__ = 0x0
+                0x0000000000000004                __major_subsystem_version__ = 0x4
+                0x0000000000000000                __minor_subsystem_version__ = 0x0
+                0x0000000000000003                __subsystem__ = 0x3
+                0x0000000000200000                __size_of_stack_reserve__ = 0x200000
+                0x0000000000001000                __size_of_stack_commit__ = 0x1000
+                0x0000000000100000                __size_of_heap_reserve__ = 0x100000
+                0x0000000000001000                __size_of_heap_commit__ = 0x1000
+                0x0000000000000000                __loader_flags__ = 0x0
+                0x0000000000000000                __dll_characteristics__ = 0x0
+                0x0000000000100000                . = 0x100000
+
+.text           0x0000000000100000     0x8200
+                0x0000000000100000                _textStart = .
+ *(.text)
+ .text          0x0000000000100000       0x58 kernelasm.o
+ .text          0x0000000000100058       0x18 kernelc.o
+                0x0000000000100058                kmain
+ .text          0x0000000000100070      0x66c console.o
+                0x0000000000100070                set_pixel
+                0x000000000010013b                clearScreen
+                0x00000000001001df                smoothlyTransitionColors
+                0x000000000010037c                backspace
+                0x00000000001003c4                newline
+                0x00000000001003f2                consoleDrawChar
+                0x0000000000100506                console_putc
+                0x0000000000100678                consoleDrawString
+                0x00000000001006b7                consol_init
+ .text          0x00000000001006dc       0x50 util.o
+                0x00000000001006dc                clearBss
+                0x00000000001006f8                Factorial
+ .text          0x000000000010072c      0x14c testsuite.o
+                0x000000000010072c                sweet
+ *(.rodata)
+ *(.rdata)
+ *fill*         0x0000000000100878        0x8 
+ .rdata         0x0000000000100880     0x2000 kernelc.o
+ .rdata         0x0000000000102880     0x2000 console.o
+ .rdata         0x0000000000104880     0x22a0 testsuite.o
+ *(.rdata$zzz)
+ .rdata$zzz     0x0000000000106b20       0x14 kernelc.o
+ .rdata$zzz     0x0000000000106b34       0x14 console.o
+ .rdata$zzz     0x0000000000106b48       0x14 util.o
+ .rdata$zzz     0x0000000000106b5c       0x14 testsuite.o
+                0x0000000000106b70                _textEnd = .
+                0x0000000000107000                . = ALIGN (ABSOLUTE (.), 0x1000)
+ *fill*         0x0000000000106b70      0x490 
+                0x0000000000107000                _dataStart = .
+ *(.data)
+ .data          0x0000000000107000        0x0 kernelc.o
+ .data          0x0000000000107000       0x60 console.o
+                0x0000000000107000                colorPattern
+                0x0000000000107048                red
+                0x000000000010704c                green
+ .data          0x0000000000107060        0x0 util.o
+ .data          0x0000000000107060        0x4 testsuite.o
+                0x0000000000107060                bigstring
+                0x0000000000107064                _dataEnd = .
+                0x0000000000107064                _bssStart = .
+ *(COMMON)
+ COMMON         0x0000000000107064        0x9 console.o
+                0x0000000000107064                mbi
+                0x0000000000107068                framebuffer
+                0x000000000010706c                lastCharDrawn
+ *(.bss)
+ *fill*         0x000000000010706d        0x3 
+ .bss           0x0000000000107070     0x1000 kernelasm.o
+ .bss           0x0000000000108070        0x0 kernelc.o
+ .bss           0x0000000000108070       0x10 console.o
+                0x0000000000108070                pixCol
+                0x0000000000108074                pixRow
+                0x0000000000108078                colorChangeIndex
+                0x000000000010807c                blue
+ .bss           0x0000000000108080        0x0 util.o
+ .bss           0x0000000000108080        0x0 testsuite.o
+                0x0000000000108080                _bssEnd = .
+
+.drectve        0x0000000000109000      0x200
+ .drectve       0x0000000000109000       0x30 console.o
+
+/DISCARD/
+ *(.eh_frame)
+ *(.comment)
+LOAD kernelasm.o
+LOAD kernelc.o
+LOAD console.o
+LOAD util.o
+LOAD testsuite.o
+OUTPUT(kernel.tmp pei-i386)

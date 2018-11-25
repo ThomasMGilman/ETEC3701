@@ -178,8 +178,8 @@ void KeyboardInterrupt(struct InterruptFrame* fr)   //interrupt 33
 {
     logString("im getting keypress\n");
     unsigned keyCode = inb(0x60);   //get scancode
-    outb( 0x20, 32 );               //ack 1st PIC
     keyHandler(keyCode);
+    outb( 0x20, 32 );               //ack 1st PIC
     ksprintf(debugMsg,"ScanCode:%d, logging keypress\n\n",keyCode);
     logString(debugMsg);
 }
@@ -223,12 +223,12 @@ void ParPortInterrupt(struct InterruptFrame* fr)    //interrupt 39
 __attribute__((interrupt))
 void int40trap(struct InterruptFrame* fr)           //interrupt 40 RTC
 {
-    outb( 0x20, 32 );   //ack 1st PIC
-    outb( 0xa0, 32 );   //ack 2nd PIC
     outb(0x70, 0xc);    //ack reading status reg
     inb(0x71);          //discard val
     if(jiffies++ >= Frequency)
         jiffies = 0;
+    outb( 0x20, 32 );   //ack 1st PIC
+    outb( 0xa0, 32 );   //ack 2nd PIC
 }
 
 __attribute__((interrupt))
