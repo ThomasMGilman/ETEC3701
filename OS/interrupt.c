@@ -131,9 +131,8 @@ void keyHandler(unsigned keyValIn)
             {
                 linebuf[linebuf_chars] = 0;
                 if(linebuf > 0)
-                {
                     --linebuf_chars;
-                }
+                
                 console_putc(k.keyVal);
             }
             else if(k.keyVal == '\n')

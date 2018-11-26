@@ -111,9 +111,19 @@ void console_putc(char c)
 	{
 		case(8)://\b bold
 			backspace();
-			--pixCol;
-			consoleDrawChar(lastCharDrawn,1);
-			++pixCol;
+			
+			if(c == lastCharDrawn)
+			{
+				--pixCol;
+				consoleDrawChar(lastCharDrawn,1);
+				++pixCol;
+			}
+			else
+			{
+				consoleDrawChar((char)32,0);
+				backspace();
+				consoleDrawChar(c,0);
+			}
 			break;
 		case(127)://delete
 			backspace();
