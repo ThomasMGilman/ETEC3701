@@ -9,6 +9,7 @@ volatile unsigned char* framebuffer;	//FrameBuffer
 unsigned int pixCol = 0;				//Screen - X cord
 unsigned int pixRow = 0;				//Screen - Y cord
 char lastCharDrawn;						//save last char in case it is made bold
+unsigned brB = 0;						//backspace and delete or boldface char
 
 char debugMsg[50];
 
@@ -68,6 +69,23 @@ void backspace(void)
 	else
 		pixCol = 0;
 }
+void boldOrBackspace(char c)
+{
+	backspace();
+	if(c == lastCharDrawn)
+	{
+		--pixCol;
+		consoleDrawChar(lastCharDrawn,1);
+		++pixCol;
+	}
+	else
+	{
+		consoleDrawChar((char)32,0);
+		backspace();
+		consoleDrawChar(c,0);
+	}
+	brB = 0;
+}
 void newLine(void)
 {
 	if(pixRow + CHAR_HEIGHT > FrameHeight - CHAR_HEIGHT)
@@ -105,56 +123,48 @@ void consoleDrawChar(char ch, int bold)
 }
 void console_putc(char c)
 {
-	unsigned int asciiVal = (unsigned int)c;
 	unsigned tabVal = 0;
-	switch(asciiVal)
+	if(brB == 1)
+		boldOrBackspace(c);
+	else
 	{
-		case(8)://\b bold
-			backspace();
-			
-			if(c == lastCharDrawn)
-			{
-				--pixCol;
-				consoleDrawChar(lastCharDrawn,1);
-				++pixCol;
-			}
-			else
-			{
+		switch(c)
+		{
+			case(8)://\b bold
+				brB = 1;
+				break;
+			case(127)://delete
+				backspace();
 				consoleDrawChar((char)32,0);
 				backspace();
-				consoleDrawChar(c,0);
-			}
-			break;
-		case(127)://delete
-			backspace();
-			consoleDrawChar((char)32,0);
-			backspace();
-			break;
-		case(9)://\t move to next pos divisable by 8
-			tabVal = ((FrameWidth - pixCol)/CHAR_WIDTH) % 8;
-			if(tabVal == 0)
-				pixCol += CHAR_WIDTH*8;
-			else
-				pixCol += (tabVal * CHAR_WIDTH);
-			if(pixCol > FrameWidth - CHAR_WIDTH)
+				break;
+			case(9)://\t move to next pos divisable by 8
+				tabVal = ((FrameWidth - pixCol)/CHAR_WIDTH) % 8;
+				if(tabVal == 0)
+					pixCol += CHAR_WIDTH*8;
+				else
+					pixCol += (tabVal * CHAR_WIDTH);
+				if(pixCol > FrameWidth - CHAR_WIDTH)
+					newLine();
+				break;
+			case(10)://\n newline
 				newLine();
-			break;
-		case(10)://\n newline
-			newLine();
-			break;
-		case(12)://\f formfeed
-			clearScreen();
-			break;
-		case(13)://\r return
-			pixCol = 0;
-			break;
-		default:
-			consoleDrawChar(c,0);
-			break;
+				break;
+			case(12)://\f formfeed
+				clearScreen();
+				break;
+			case(13)://\r return
+				pixCol = 0;
+				break;
+			default:
+				consoleDrawChar(c,0);
+				break;
+		}
 	}
 	if(pixCol > FrameWidth - CHAR_WIDTH)
 		newLine();
-	lastCharDrawn = c;
+	if(c > 31 && c < 127)
+		lastCharDrawn = c;
 }
 void consoleDrawString(char* myString)
 {

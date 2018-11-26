@@ -10,6 +10,8 @@ void clearScreen(void);
 
 void backspace(void);
 
+void boldOrBackspace(char c);
+
 void newLine(void);
 
 void scroll(void);
