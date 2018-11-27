@@ -21,19 +21,19 @@ char debugMsg[100];
 unsigned throwAway = 1;
 
 struct ScanCode keyTable[13][10] = { 
-    {{0,0}, {0,0}, {0,0}, {0,0}, {0,0},{0,0}, {0,0}, {0,0}, {0,0}, {0,0}},
-    {{0,0}, {0,0}, {0,0}, {9,1}, {39,1},{0,0}, {0,0}, {0,0}, {0,0}, {0,0}},
-    {{0,0}, {113,1}, {49,1}, {0,0}, {0,0},{0,0}, {122,1}, {115,1}, {97,1}, {119,1}},
-    {{50,1}, {0,0}, {0,0}, {99,1}, {120,1},{100,1}, {101,1}, {52,1}, {51,1}, {0,0}},
-    {{0,0}, {32,1}, {118,1}, {102,1}, {116,1},{114,1}, {53,1}, {0,0}, {0,0}, {110,1}},
-    {{98,1}, {104,1}, {103,1}, {121,1}, {54,1},{0,0}, {0,0}, {0,0}, {109,1}, {106,1}},
-    {{117,1}, {55,1}, {56,1}, {0,0}, {0,0},{44,1}, {107,1}, {105,1}, {111,1}, {48,1}},
-    {{57,1}, {0,0}, {0,0}, {46,1}, {47,1},{108,1}, {59,1}, {112,1}, {45,1}, {0,0}},
-    {{0,0}, {0,0}, {96,1}, {0,0}, {91,1},{61,1}, {0,0}, {0,0}, {0,0}, {0,0}},
-    {{10,1}, {93,1}, {0,0}, {92,1}, {0,0},{0,0}, {0,0}, {0,0}, {0,0}, {0,0}},
-    {{0,0}, {0,0}, {127,1}, {0,0}, {0,0},{49,1}, {0,0}, {52,1}, {55,1}, {0,0}},
-    {{0,0}, {0,0}, {48,1}, {46,1}, {50,1},{53,1}, {54,1}, {56,1}, {0,0}, {0,0}},
-    {{0,0}, {43,1}, {51,1}, {45,1}, {0,0},{57,1}, {0,0}, {0,0}, {0,0}, {0,0}}
+    {{0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0},{0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}},
+    {{0,0,0}, {0,0,0}, {0,0,0}, {9,1,0}, {39,1,0},{0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}},
+    {{0,0,0}, {113,1,0}, {49,1,0}, {0,0,0}, {0,0,0},{0,0,0}, {122,1,0}, {115,1,0}, {97,1,0}, {119,1,0}},
+    {{50,1,0}, {0,0,0}, {0,0,0}, {99,1,0}, {120,1,0},{100,1,0}, {101,1,0}, {52,1,0}, {51,1,0}, {0,0,0}},
+    {{0,0,0}, {32,1,0}, {118,1,0}, {102,1,0}, {116,1,0},{114,1,0}, {53,1,0}, {0,0,0}, {0,0,0}, {110,1,0}},
+    {{98,1,0}, {104,1,0}, {103,1,0}, {121,1,0}, {54,1,0},{0,0,0}, {0,0,0}, {0,0,0}, {109,1,0}, {106,1,0}},
+    {{117,1,0}, {55,1,0}, {56,1,0}, {0,0,0}, {0,0,0},{44,1,0}, {107,1,0}, {105,1,0}, {111,1,0}, {48,1,0}},
+    {{57,1,0}, {0,0,0}, {0,0,0}, {46,1,0}, {47,1,0},{108,1,0}, {59,1,0}, {112,1,0}, {45,1,0}, {0,0,0}},
+    {{0,0,0}, {0,0,0}, {96,1,0}, {0,0,0}, {91,1,0},{61,1,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}},
+    {{10,1,0}, {93,1,0}, {0,0,0}, {92,1,0}, {0,0,0},{0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}},
+    {{0,0,0}, {0,0,0}, {127,1,0}, {0,0,0}, {0,0,0},{49,1,0}, {0,0,0}, {52,1,0}, {55,1,0}, {0,0,0}},
+    {{0,0,0}, {0,0,0}, {48,1,0}, {46,1,0}, {50,1,0},{53,1,0}, {54,1,0}, {56,1,0}, {0,0,0}, {0,0,0}},
+    {{0,0,0}, {43,1,0}, {51,1,0}, {45,1,0}, {0,0,0},{57,1,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}}
 };
 
 unsigned ring0StackInfo[] =
@@ -105,8 +105,10 @@ int keyboard_getline(char* buffer, unsigned num)
     if((*buffer) >= 0x400000 && ((*buffer)+num) < 0x800000)
     {
         logString("here\n");
-        kmemcpy(linebuf + linebuf_chars, buffer, numCpy);
+        kmemcpy(linebuf, buffer, numCpy);
+        kmemset(linebuf, numCpy);
         linebuf_chars += numCpy;
+        linebuf_chars = 0;
         linebuf_ready = 0;
         return numCpy;
     }
@@ -118,42 +120,55 @@ void keyHandler(unsigned keyValIn)
     unsigned col = keyValIn % 10;
     unsigned row = (keyValIn - col) / 10;
     unsigned keyReleased = 0;
-    struct ScanCode k = keyTable[row][col];
+    struct ScanCode *k = &keyTable[row][col];
     
     ksprintf(debugMsg,"keyIN:%d\n", keyValIn);
     logString(debugMsg);
-    if(keyValIn != 0xf0 && keyReleased < 1)
+    if(keyValIn != 0xf0)
     {
-        keyReleased = 1;
-        if(k.printable)
+        if(k->keyPressed == 0)
         {
-            if(k.keyVal == 127 && linebuf_chars > 0)
+            if(k->printable)
             {
-                linebuf[linebuf_chars] = 0;
-                if(linebuf > 0)
-                    --linebuf_chars;
-                
-                console_putc(k.keyVal);
+                if(k->keyVal == 127 && linebuf_chars > 0)
+                {
+                    logString("here\n");
+                    linebuf[linebuf_chars] = 0;
+                    if(linebuf > 0)
+                    {
+                        --linebuf_chars;
+                        console_putc(k->keyVal);
+                    }
+                }
+                else if(k->keyVal == '\n')
+                {
+                    logString("here1\n");
+                    linebuf_ready = 1;
+                    console_putc(k->keyVal);
+                }
+                else if(linebuf_chars < LINEBUF_SIZE && k->keyVal != 127)
+                {
+                    logString("here2\n");
+                    linebuf[linebuf_chars++] = k->keyVal;
+                    console_putc(k->keyVal);
+                }
             }
-            else if(k.keyVal == '\n')
-            {
-                linebuf_ready = 1;
-                console_putc(k.keyVal);
-            }
-            else if(linebuf_chars < LINEBUF_SIZE)
-            {
-                
-                ksprintf(debugMsg,"keyIN:%d, charDec:%d\n charIn:%c\n",keyValIn, k.keyVal, k.keyVal);
-                logString(debugMsg);
-                linebuf[linebuf_chars++] = k.keyVal;
-                console_putc(k.keyVal);
-            }
+            ksprintf(debugMsg,"keyIN:%d, charDec:%d\n charIn:%c, linbuffChars:%d\n",keyValIn, k->keyVal, k->keyVal, linebuf_chars);
+            logString(debugMsg);
+            sleep(100);
+            k->keyPressed = 1;
         }
-        sleep(100);
-        throwAway++;
     }
-    else if(keyValIn != 0xf0)
+    else if(keyValIn == 0xf0)
     {
+        logString("key released\n");
+        keyReleased = 1;
+    }
+    if(keyReleased == 1 && k->keyPressed == 1)
+    {
+        ksprintf(debugMsg,"reseting char press:%c\n",k->keyVal);
+        logString(debugMsg);
+        k->keyPressed = 0;
         keyReleased = 0;
     }
 }
