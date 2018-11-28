@@ -1,3 +1,8 @@
+/*
+Code written by Thomas Gilman for Operating Systems One taught James Hudson.
+Some functions and implementations of code use code from the OS slides,
+the rest was written by Thomas Gilman.
+*/
 #include "interrupt.h"
 #include "intertable.h"
 #include "syscalls.h"
@@ -22,18 +27,18 @@ unsigned throwAway = 1;
 
 struct ScanCode keyTable[13][10] = { 
     {{0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0},{0,0,0,0}, {0,0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}},
-    {{0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {'\t',0,1,0}, {'\'','"',1,0},{0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}},
-    {{0,0,0}, {'q','Q',1,0}, {'1','!',1,0}, {0,0,0}, {0,0,0},{0,0,0}, {'z','Z',1,0}, {'s','S',1,0}, {'a','A',1,0}, {'w','W',1,0}},
-    {{'2','@',1,0}, {0,0,0}, {0,0,0}, {'c','C',1,0}, {'x','X',1,0},{'d','D',1,0}, {'e','E',1,0}, {'4','$',1,0}, {'3','#',1,0}, {0,0,0}},
-    {{0,0,0}, {' ',0,1,0}, {'v','V',1,0}, {'f','F',1,0}, {'t','T',1,0},{'r','R',1,0}, {'5','%',1,0}, {0,0,0}, {0,0,0}, {'n','N',1,0}},
-    {{'b','B',1,0}, {'h','H',1,0}, {'g','G',1,0}, {'y','Y',1,0}, {'6','^',1,0},{0,0,0}, {0,0,0}, {0,0,0}, {'m','M',1,0}, {'j','J',1,0}},
-    {{'u','U',1,0}, {'7','&',1,0}, {'8','*',1,0}, {0,0,0}, {0,0,0},{',','<',1,0}, {'k','K',1,0}, {'i','I',1,0}, {'o','O',1,0}, {'0',')',1,0}},
-    {{'9','(',1,0}, {0,0,0}, {0,0,0}, {'.','>',1,0}, {'/','?',1,0},{'l','L',1,0}, {';',':',1,0}, {'p','P',1,0}, {'-','_',1,0}, {0,0,0}},
-    {{0,0,0}, {0,0,0}, {'`','~',1,0}, {0,0,0}, {'[','{',1,0},{'=','+',1,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}},
-    {{'\n',0,1,0}, {']','}',1,0}, {0,0,0}, {'\\','|',1,0}, {0,0,0},{0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}},
-    {{0,0,0}, {0,0,0}, {127,0,1,0}, {0,0,0}, {0,0,0},{'1','!',1,0}, {0,0,0}, {'4',1,0}, {'7',1,0}, {0,0,0}},
-    {{0,0,0}, {0,0,0}, {'0',1,0}, {'.',1,0}, {'2',1,0},{'5',1,0}, {'6',1,0}, {'8',1,0}, {0,0,0}, {0,0,0}},
-    {{0,0,0}, {'+',1,0}, {'3',1,0}, {'-',1,0}, {0,0,0},{'9',1,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}}
+    {{0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {'\t',0,1,0}, {'`','~',1,0},{0,0,0,0}, {0,0,0,0}, {17,0,0,0}, {18,0,0,0}, {0,0,0,0}},
+    {{0,0,0,0}, {'q','Q',1,0}, {'1','!',1,0}, {0,0,0,0}, {0,0,0,0},{0,0,0,0}, {'z','Z',1,0}, {'s','S',1,0}, {'a','A',1,0}, {'w','W',1,0}},
+    {{'2','@',1,0}, {0,0,0,0}, {0,0,0,0}, {'c','C',1,0}, {'x','X',1,0},{'d','D',1,0}, {'e','E',1,0}, {'4','$',1,0}, {'3','#',1,0}, {0,0,0,0}},
+    {{0,0,0,0}, {' ',0,1,0}, {'v','V',1,0}, {'f','F',1,0}, {'t','T',1,0},{'r','R',1,0}, {'5','%',1,0}, {0,0,0,0}, {0,0,0,0}, {'n','N',1,0}},
+    {{'b','B',1,0}, {'h','H',1,0}, {'g','G',1,0}, {'y','Y',1,0}, {'6','^',1,0},{0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {'m','M',1,0}, {'j','J',1,0}},
+    {{'u','U',1,0}, {'7','&',1,0}, {'8','*',1,0}, {0,0,0,0}, {0,0,0,0},{',','<',1,0}, {'k','K',1,0}, {'i','I',1,0}, {'o','O',1,0}, {'0',')',1,0}},
+    {{'9','(',1,0}, {0,0,0,0}, {0,0,0,0}, {'.','>',1,0}, {'/','?',1,0},{'l','L',1,0}, {';',':',1,0}, {'p','P',1,0}, {'-','_',1,0}, {0,0,0,0}},
+    {{0,0,0,0}, {0,0,0,0}, {'\'','"',1,0}, {0,0,0,0}, {'[','{',1,0},{'=','+',1,0}, {0,0,0,0}, {0,0,0,0}, {88,0,0,0}, {18,0,0,0}},
+    {{'\n',0,1,0}, {']','}',1,0}, {0,0,0,0}, {'\\','|',1,0}, {0,0,0,0},{0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}},
+    {{0,0,0,0}, {0,0,0,0}, {127,0,1,0}, {0,0,0,0}, {0,0,0,0},{'1','!',1,0}, {0,0,0,0}, {'4',0,1,0}, {'7',0,1,0}, {0,0,0,0}},
+    {{0,0,0,0}, {0,0,0,0}, {'0',0,1,0}, {'.',0,1,0}, {'2',0,1,0},{'5',0,1,0}, {'6',0,1,0}, {'8',0,1,0}, {0,0,0,0}, {0,0,0,0}},
+    {{0,0,0,0}, {'+',0,1,0}, {'3',0,1,0}, {'-',0,1,0}, {0,0,0,0},{'9',0,1,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}
 };
 
 unsigned ring0StackInfo[] =
@@ -106,12 +111,8 @@ int keyboard_getline(char* buffer, unsigned num)
     if(buffer >= (char*)0x400000 && (buffer + num) < (char*)0x800000)
     {
         numCpy = (num < linebuf_chars) ? num : linebuf_chars;
-        ksprintf(debugMsg,"linebuf_read_state:%d, numCpy:%d, linebuf_chars:%d\nlinbuf[%.*s]\n",linebuf_ready, numCpy, linebuf_chars, linebuf_chars, linebuf);
-        logString(debugMsg);
         kmemcpy(buffer, linebuf, numCpy);
         kmemset(linebuf, numCpy);
-        ksprintf(debugMsg,"linebuf[%.*s], buffer[%.*s]\n",numCpy, linebuf, numCpy, buffer);
-        logString(debugMsg);
         linebuf_chars = 0;
         linebuf_ready = 0;
         return numCpy;
@@ -123,48 +124,70 @@ void keyHandler(unsigned keyValIn)
 {
     unsigned col = keyValIn % 10;
     unsigned row = (keyValIn - col) / 10;
-    static unsigned keyReleased = 0;
+    static unsigned keyReleased = 0, shifted = 0, capsLock = 0, capCount = 0;
     struct ScanCode *k = &keyTable[row][col];
     
-    ksprintf(debugMsg,"keyReleasedState:%d keyIN:%d, char:%d\n", keyReleased, keyValIn, k->lowerVal);
-    logString(debugMsg);
     if(keyValIn != 0xf0)
     {
-        if(k->keyPressed == 0 && k->printable)
+        if(k->keyPressed == 0 && k->printable)                              //printable char
         {
-            if(k->lowerVal == 127 && linebuf_chars > 0)                   //backspace
+            if(k->lowerVal == 127 && linebuf_chars > 0)                     //backspace
             {
                 console_putc(k->lowerVal);
                 linebuf[--linebuf_chars] = 0;
             }
-            else if(k->lowerVal == '\n')                                  //newline
+            else if(k->lowerVal == '\n')                                    //newline
             {
                 console_putc(k->lowerVal);
                 linebuf_ready = 1;
             }
-            else if(linebuf_chars < LINEBUF_SIZE && k->lowerVal != 127)   //put char
+            else if(linebuf_chars < LINEBUF_SIZE && k->lowerVal != 127)     //put char
             {
-                console_putc(k->lowerVal);
-                linebuf[linebuf_chars++] = k->lowerVal; 
+                if((shifted && !capsLock) || (!shifted && capsLock))
+                {
+                    console_putc(k->upperVal);
+                    linebuf[linebuf_chars++] = k->upperVal;
+                }
+                else
+                {
+                    console_putc(k->lowerVal);
+                    linebuf[linebuf_chars++] = k->lowerVal;
+                }
             }
-            ksprintf(debugMsg,"keyIN:%d, charDec:%d, charIn:%c, linbuffChars:%d\n",keyValIn, k->lowerVal, k->lowerVal, linebuf_chars);
-            logString(debugMsg);
             sleep(100);
             k->keyPressed = 1;
         }
-        else if(keyReleased == 1 && k->keyPressed == 1)
+        else if(k->lowerVal == 18 && k->keyPressed == 0)                    //shift
         {
-            ksprintf(debugMsg,"reseting char press:%c\n",k->lowerVal);
-            logString(debugMsg);
-            k->keyPressed = 0;
-            keyReleased = 0;
+            shifted = 1;
+            k->keyPressed = 1;
+        }
+        else if(k->lowerVal == 88 && k->keyPressed == 0)                    //capslock
+        {
+            capCount = 1;
+            capsLock = 1;
+            k->keyPressed = 1;
+        }
+        else if(keyReleased == 1 && k->keyPressed == 1)                     //reset key
+        {
+            if(k->lowerVal == 88 && capCount != 0)                          //capslock turnoff counter
+            {
+                capCount--;
+            }
+            else
+            {
+                k->keyPressed = 0;
+                keyReleased = 0;
+                if(k->lowerVal == 18)   //shift
+                    shifted = 0;
+                if(k->lowerVal == 88)   //capsLock
+                    capsLock = 0;
+            }
         }
     }
     else if(keyValIn == 0xf0)
     {
         keyReleased = 1;
-        ksprintf(debugMsg,"key released:%d\n",keyReleased);
-        logString(debugMsg);
     } 
 }
 
@@ -315,10 +338,7 @@ void syscall_handler(unsigned* ptr)
             }
             else if(fd == 0)
             {
-                logString("going to keyboard_getline\n");
                 ptr[0] = keyboard_getline((char*)ptr[2], count);
-                ksprintf(debugMsg,"read got:%d\n",ptr[0]);
-                logString(debugMsg);
             }
             else if(fd < 3) //illegal to read from screen
             {
@@ -384,11 +404,11 @@ void syscall_handler(unsigned* ptr)
                 "hlt":::"memory");
             break;
         case SYSCALL_PLAY:
-            logString("here");
+            logString("playing sound...\n");
             playSound(ptr[1]);
             break;
         case SYSCALL_SLEEP: ///FIX HERE
-            logString("waiting\n");
+            logString("waiting...\n");
             sleep(ptr[1]);
             break;
         case SYSCALL_LOG:

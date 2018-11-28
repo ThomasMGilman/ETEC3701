@@ -1,3 +1,8 @@
+/*
+Code written by Thomas Gilman for Operating Systems One taught James Hudson.
+Some functions and implementations of code use code from the OS slides,
+the rest was written by Thomas Gilman.
+*/
 #include "console.h"
 
 #define FrameWidth mbi->mbiFramebufferWidth
@@ -10,8 +15,6 @@ unsigned int pixCol = 0;				//Screen - X cord
 unsigned int pixRow = 0;				//Screen - Y cord
 char lastCharDrawn;						//save last char in case it is made bold
 unsigned brB = 0;						//backspace and delete or boldface char
-
-char debugMsg[50];
 
 //stuff for transitions of colors
 unsigned int colorChangeIndex = 0;

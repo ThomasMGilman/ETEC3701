@@ -1,3 +1,8 @@
+/*
+Code written by Thomas Gilman for Operating Systems One taught James Hudson.
+Some functions and implementations of code use code from the OS slides,
+the rest was written by Thomas Gilman.
+*/
 #include "file.h"
 
 struct BufferEntry blockbuffer[BUFFERSIZE];
@@ -202,7 +207,7 @@ int file_write(int fd, const void* buf, int count)
 {
     if(fd == stdin)
     {
-        kprintf("fd:%d\n",fd);
+        kprintf("cant write to keyboard!!! fd:%d\n",fd);
         return -ENOSYS; //no such system call
     }
     else

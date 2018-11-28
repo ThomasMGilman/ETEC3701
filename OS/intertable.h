@@ -1,3 +1,8 @@
+/*
+Code written by Thomas Gilman for Operating Systems One taught James Hudson.
+Some functions and implementations of code use code from the OS slides,
+the rest was written by Thomas Gilman.
+*/
 #pragma once
 
 extern volatile unsigned jiffies;

@@ -1,3 +1,8 @@
+/*
+Code written by Thomas Gilman for Operating Systems One taught James Hudson.
+Some functions and implementations of code use code from the OS slides,
+the rest was written by Thomas Gilman.
+*/
 #pragma once
 
 #define kStackSize 4096
@@ -39,8 +44,8 @@ struct LIDT{
 
 #pragma pack(push,1)
 struct ScanCode{
-    unsigned int lowerVal;
-    unsigned int upperVal;
+    char lowerVal;
+    char upperVal;
     unsigned int printable;
     unsigned int keyPressed;
 };

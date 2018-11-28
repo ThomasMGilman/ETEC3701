@@ -1,7 +1,9 @@
+/*
+Code written by Thomas Gilman for Operating Systems One taught James Hudson.
+Some functions and implementations of code use code from the OS slides,
+the rest was written by Thomas Gilman.
+*/
 #include "util.h"
-
-int ksprintf(char* s, const char* fmt, ... ) __attribute__((format (printf , 2, 3 ) ));
-char debugMsg[100];
 
 void haltForever(void)
 {
@@ -95,7 +97,6 @@ void kmemset(void *dstV, unsigned num)
 
 void playSound(int freq)
 {
-    logString("playing\n");
     unsigned v;
     int divisor = (freq > 0) ? (1193180 / freq) : 0;
     outb(0x43, 0xb6);
@@ -108,16 +109,11 @@ void playSound(int freq)
     {
         outb(0x61, (v|3));
     }
-    ksprintf(debugMsg,"CurDiv:%d, low:%d, high:%d, Freq:%d, v:%d\n\n"
-        ,divisor, divisor&0xff, divisor&0xff00, freq, v);
-    logString(debugMsg);
 }
 
 void sleep(int waitTime)
 {
     unsigned timeToWait = waitTime * (Frequency)*180; //wait time 18 jiffies per second, so convert time to jiffie time
-    ksprintf(debugMsg,"waitTime:%d\n", timeToWait);
-    logString(debugMsg);
     while(timeToWait--){;}
     logString("done waiting\n");
 }
