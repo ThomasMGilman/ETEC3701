@@ -181,12 +181,13 @@ void timerInterrupt(struct InterruptFrame* fr)      //interrupt 32
 __attribute__((interrupt))
 void KeyboardInterrupt(struct InterruptFrame* fr)   //interrupt 33
 {
-    logString("im getting keypress\n");
     unsigned keyCode = inb(0x60);   //get scancode
+    logString("im getting keypress ");
+    ksprintf(debugMsg,"ScanCode:%d\n\n",keyCode);
+    logString(debugMsg);
     keyHandler(keyCode);
     outb( 0x20, 32 );               //ack 1st PIC
-    ksprintf(debugMsg,"ScanCode:%d, logging keypress\n\n",keyCode);
-    logString(debugMsg);
+    
 }
 
 __attribute__((interrupt))

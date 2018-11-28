@@ -129,7 +129,35 @@ void keyHandler(unsigned keyValIn)
     
     if(keyValIn != 0xf0)
     {
-        if(k->keyPressed == 0 && k->printable)                              //printable char
+        if(keyReleased == 1 && k->keyPressed == 1)                          //reset key
+        {
+            if(k->lowerVal == 88 && capCount != 0)                          //capslock turnoff counter
+            {
+                capCount--;
+            }
+            else
+            {
+                k->keyPressed = 0;
+                keyReleased = 0;
+                if(k->lowerVal == 18)   //shift
+                    shifted = 0;
+                if(k->lowerVal == 88)   //capsLock
+                    capsLock = 0;
+            }
+        }
+        else if(k->keyPressed == 0)
+        {
+            k->keyPressed = 1;
+            if(k->lowerVal == 18)       //shift
+                shifted = 1;
+            else if(k->lowerVal == 88)  //capslock
+            {
+                capCount = 1;
+                capsLock = 1;
+            }
+        }
+        
+        if(k->keyPressed == 1 && k->printable)                              //printable char
         {
             if(k->lowerVal == 127 && linebuf_chars > 0)                     //backspace
             {
@@ -153,35 +181,6 @@ void keyHandler(unsigned keyValIn)
                     console_putc(k->lowerVal);
                     linebuf[linebuf_chars++] = k->lowerVal;
                 }
-            }
-            sleep(100);
-            k->keyPressed = 1;
-        }
-        else if(k->lowerVal == 18 && k->keyPressed == 0)                    //shift
-        {
-            shifted = 1;
-            k->keyPressed = 1;
-        }
-        else if(k->lowerVal == 88 && k->keyPressed == 0)                    //capslock
-        {
-            capCount = 1;
-            capsLock = 1;
-            k->keyPressed = 1;
-        }
-        else if(keyReleased == 1 && k->keyPressed == 1)                     //reset key
-        {
-            if(k->lowerVal == 88 && capCount != 0)                          //capslock turnoff counter
-            {
-                capCount--;
-            }
-            else
-            {
-                k->keyPressed = 0;
-                keyReleased = 0;
-                if(k->lowerVal == 18)   //shift
-                    shifted = 0;
-                if(k->lowerVal == 88)   //capsLock
-                    capsLock = 0;
             }
         }
     }
