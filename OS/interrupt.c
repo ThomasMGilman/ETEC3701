@@ -21,19 +21,19 @@ char debugMsg[100];
 unsigned throwAway = 1;
 
 struct ScanCode keyTable[13][10] = { 
-    {{0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0},{0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}},
-    {{0,0,0}, {0,0,0}, {0,0,0}, {9,1,0}, {39,1,0},{0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}},
-    {{0,0,0}, {113,1,0}, {49,1,0}, {0,0,0}, {0,0,0},{0,0,0}, {122,1,0}, {115,1,0}, {97,1,0}, {119,1,0}},
-    {{50,1,0}, {0,0,0}, {0,0,0}, {99,1,0}, {120,1,0},{100,1,0}, {101,1,0}, {52,1,0}, {51,1,0}, {0,0,0}},
-    {{0,0,0}, {32,1,0}, {118,1,0}, {102,1,0}, {116,1,0},{114,1,0}, {53,1,0}, {0,0,0}, {0,0,0}, {110,1,0}},
-    {{98,1,0}, {104,1,0}, {103,1,0}, {121,1,0}, {54,1,0},{0,0,0}, {0,0,0}, {0,0,0}, {109,1,0}, {106,1,0}},
-    {{117,1,0}, {55,1,0}, {56,1,0}, {0,0,0}, {0,0,0},{44,1,0}, {107,1,0}, {105,1,0}, {111,1,0}, {48,1,0}},
-    {{57,1,0}, {0,0,0}, {0,0,0}, {46,1,0}, {47,1,0},{108,1,0}, {59,1,0}, {112,1,0}, {45,1,0}, {0,0,0}},
-    {{0,0,0}, {0,0,0}, {96,1,0}, {0,0,0}, {91,1,0},{61,1,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}},
-    {{10,1,0}, {93,1,0}, {0,0,0}, {92,1,0}, {0,0,0},{0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}},
-    {{0,0,0}, {0,0,0}, {127,1,0}, {0,0,0}, {0,0,0},{49,1,0}, {0,0,0}, {52,1,0}, {55,1,0}, {0,0,0}},
-    {{0,0,0}, {0,0,0}, {48,1,0}, {46,1,0}, {50,1,0},{53,1,0}, {54,1,0}, {56,1,0}, {0,0,0}, {0,0,0}},
-    {{0,0,0}, {43,1,0}, {51,1,0}, {45,1,0}, {0,0,0},{57,1,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}}
+    {{0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0},{0,0,0,0}, {0,0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}},
+    {{0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {'\t',0,1,0}, {'\'','"',1,0},{0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}},
+    {{0,0,0}, {'q','Q',1,0}, {'1','!',1,0}, {0,0,0}, {0,0,0},{0,0,0}, {'z','Z',1,0}, {'s','S',1,0}, {'a','A',1,0}, {'w','W',1,0}},
+    {{'2','@',1,0}, {0,0,0}, {0,0,0}, {'c','C',1,0}, {'x','X',1,0},{'d','D',1,0}, {'e','E',1,0}, {'4','$',1,0}, {'3','#',1,0}, {0,0,0}},
+    {{0,0,0}, {' ',0,1,0}, {'v','V',1,0}, {'f','F',1,0}, {'t','T',1,0},{'r','R',1,0}, {'5','%',1,0}, {0,0,0}, {0,0,0}, {'n','N',1,0}},
+    {{'b','B',1,0}, {'h','H',1,0}, {'g','G',1,0}, {'y','Y',1,0}, {'6','^',1,0},{0,0,0}, {0,0,0}, {0,0,0}, {'m','M',1,0}, {'j','J',1,0}},
+    {{'u','U',1,0}, {'7','&',1,0}, {'8','*',1,0}, {0,0,0}, {0,0,0},{',','<',1,0}, {'k','K',1,0}, {'i','I',1,0}, {'o','O',1,0}, {'0',')',1,0}},
+    {{'9','(',1,0}, {0,0,0}, {0,0,0}, {'.','>',1,0}, {'/','?',1,0},{'l','L',1,0}, {';',':',1,0}, {'p','P',1,0}, {'-','_',1,0}, {0,0,0}},
+    {{0,0,0}, {0,0,0}, {'`','~',1,0}, {0,0,0}, {'[','{',1,0},{'=','+',1,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}},
+    {{'\n',0,1,0}, {']','}',1,0}, {0,0,0}, {'\\','|',1,0}, {0,0,0},{0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}},
+    {{0,0,0}, {0,0,0}, {127,0,1,0}, {0,0,0}, {0,0,0},{'1','!',1,0}, {0,0,0}, {'4',1,0}, {'7',1,0}, {0,0,0}},
+    {{0,0,0}, {0,0,0}, {'0',1,0}, {'.',1,0}, {'2',1,0},{'5',1,0}, {'6',1,0}, {'8',1,0}, {0,0,0}, {0,0,0}},
+    {{0,0,0}, {'+',1,0}, {'3',1,0}, {'-',1,0}, {0,0,0},{'9',1,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}}
 };
 
 unsigned ring0StackInfo[] =
@@ -43,7 +43,8 @@ unsigned ring0StackInfo[] =
     1<<3
 };
 
-struct GDTEntry gdt[] = {
+struct GDTEntry gdt[] = 
+{
     { 0,0,0,0,0,0 },            //zeros
     { 0xffff, 0,0,0, 0xcf92, 0},//data, ring 0
     { 0xffff, 0,0,0, 0xcf9a, 0},//code, ring 0
@@ -96,18 +97,21 @@ void setupPICS_RTC(unsigned rate)
 //&nbsp
 int keyboard_getline(char* buffer, unsigned num)
 {
-    unsigned numCpy = (num < (LINEBUF_SIZE - linebuf_chars)) ? num : (LINEBUF_SIZE - linebuf_chars);
+    unsigned numCpy;
     while(!linebuf_ready)
     {
         sti();                  //enable interrupts
         haltUntilInterrupt();
     }
-    if((*buffer) >= 0x400000 && ((*buffer)+num) < 0x800000)
+    if(buffer >= (char*)0x400000 && (buffer + num) < (char*)0x800000)
     {
-        logString("here\n");
-        kmemcpy(linebuf, buffer, numCpy);
+        numCpy = (num < linebuf_chars) ? num : linebuf_chars;
+        ksprintf(debugMsg,"linebuf_read_state:%d, numCpy:%d, linebuf_chars:%d\nlinbuf[%.*s]\n",linebuf_ready, numCpy, linebuf_chars, linebuf_chars, linebuf);
+        logString(debugMsg);
+        kmemcpy(buffer, linebuf, numCpy);
         kmemset(linebuf, numCpy);
-        linebuf_chars += numCpy;
+        ksprintf(debugMsg,"linebuf[%.*s], buffer[%.*s]\n",numCpy, linebuf, numCpy, buffer);
+        logString(debugMsg);
         linebuf_chars = 0;
         linebuf_ready = 0;
         return numCpy;
@@ -119,58 +123,49 @@ void keyHandler(unsigned keyValIn)
 {
     unsigned col = keyValIn % 10;
     unsigned row = (keyValIn - col) / 10;
-    unsigned keyReleased = 0;
+    static unsigned keyReleased = 0;
     struct ScanCode *k = &keyTable[row][col];
     
-    ksprintf(debugMsg,"keyIN:%d\n", keyValIn);
+    ksprintf(debugMsg,"keyReleasedState:%d keyIN:%d, char:%d\n", keyReleased, keyValIn, k->lowerVal);
     logString(debugMsg);
     if(keyValIn != 0xf0)
     {
-        if(k->keyPressed == 0)
+        if(k->keyPressed == 0 && k->printable)
         {
-            if(k->printable)
+            if(k->lowerVal == 127 && linebuf_chars > 0)                   //backspace
             {
-                if(k->keyVal == 127 && linebuf_chars > 0)
-                {
-                    logString("here\n");
-                    linebuf[linebuf_chars] = 0;
-                    if(linebuf > 0)
-                    {
-                        --linebuf_chars;
-                        console_putc(k->keyVal);
-                    }
-                }
-                else if(k->keyVal == '\n')
-                {
-                    logString("here1\n");
-                    linebuf_ready = 1;
-                    console_putc(k->keyVal);
-                }
-                else if(linebuf_chars < LINEBUF_SIZE && k->keyVal != 127)
-                {
-                    logString("here2\n");
-                    linebuf[linebuf_chars++] = k->keyVal;
-                    console_putc(k->keyVal);
-                }
+                console_putc(k->lowerVal);
+                linebuf[--linebuf_chars] = 0;
             }
-            ksprintf(debugMsg,"keyIN:%d, charDec:%d\n charIn:%c, linbuffChars:%d\n",keyValIn, k->keyVal, k->keyVal, linebuf_chars);
+            else if(k->lowerVal == '\n')                                  //newline
+            {
+                console_putc(k->lowerVal);
+                linebuf_ready = 1;
+            }
+            else if(linebuf_chars < LINEBUF_SIZE && k->lowerVal != 127)   //put char
+            {
+                console_putc(k->lowerVal);
+                linebuf[linebuf_chars++] = k->lowerVal; 
+            }
+            ksprintf(debugMsg,"keyIN:%d, charDec:%d, charIn:%c, linbuffChars:%d\n",keyValIn, k->lowerVal, k->lowerVal, linebuf_chars);
             logString(debugMsg);
             sleep(100);
             k->keyPressed = 1;
         }
+        else if(keyReleased == 1 && k->keyPressed == 1)
+        {
+            ksprintf(debugMsg,"reseting char press:%c\n",k->lowerVal);
+            logString(debugMsg);
+            k->keyPressed = 0;
+            keyReleased = 0;
+        }
     }
     else if(keyValIn == 0xf0)
     {
-        logString("key released\n");
         keyReleased = 1;
-    }
-    if(keyReleased == 1 && k->keyPressed == 1)
-    {
-        ksprintf(debugMsg,"reseting char press:%c\n",k->keyVal);
+        ksprintf(debugMsg,"key released:%d\n",keyReleased);
         logString(debugMsg);
-        k->keyPressed = 0;
-        keyReleased = 0;
-    }
+    } 
 }
 
 // static void send(unsigned short port, unsigned char val)
@@ -320,7 +315,10 @@ void syscall_handler(unsigned* ptr)
             }
             else if(fd == 0)
             {
-                ptr[0] = keyboard_getline((char*)ptr[2], ptr[3]);
+                logString("going to keyboard_getline\n");
+                ptr[0] = keyboard_getline((char*)ptr[2], count);
+                ksprintf(debugMsg,"read got:%d\n",ptr[0]);
+                logString(debugMsg);
             }
             else if(fd < 3) //illegal to read from screen
             {
@@ -328,14 +326,17 @@ void syscall_handler(unsigned* ptr)
                 logString("ERROR: cant read from screen!!\n");
                 break;
             }
-            pass = file_read(fd, (char*)ptr[2], count);
-            ptr[0] = pass;
-            if(pass >= 0) logString("successfully read from file!!\n");
             else
+            {
+                pass = file_read(fd, (char*)ptr[2], count);
+                ptr[0] = pass;
+            }
+            if(pass < 0)
             {
                 ksprintf(debugMsg,"ERROR: failed to write to fd:%d, code:%d\n!!", fd, ptr[0]);
                 logString(debugMsg);
             }
+            else logString("read from file\n");
             break;
         case SYSCALL_WRITE:
             if( (buf < 0x400000 || buf > 0x800000) ||

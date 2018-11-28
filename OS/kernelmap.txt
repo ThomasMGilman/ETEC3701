@@ -156,46 +156,46 @@ Linker script and memory map
                 0x000000000010321b                DskC0Interrupt
                 0x0000000000103260                DskC1Interrupt
                 0x00000000001032a5                syscallInterrupt
- .text          0x00000000001032f8      0xe34 interrupt.o
+ .text          0x00000000001032f8      0xf64 interrupt.o
                 0x00000000001032f8                setupPICS_RTC
                 0x00000000001034f8                keyboard_getline
-                0x0000000000103532                keyHandler
-                0x000000000010376b                table
-                0x00000000001037c0                setInterruptTable
-                0x0000000000103c47                setupKeyBoard
-                0x0000000000103ca4                setupGDT
-                0x0000000000103cef                syscall_handler
-                0x000000000010401b                exec
-                0x00000000001040cc                interrupt_init
- .text          0x000000000010412c      0x510 testsuite.o
-                0x000000000010426f                displayPPM
-                0x00000000001044e5                sweet
+                0x0000000000103618                keyHandler
+                0x0000000000103868                table
+                0x00000000001038bd                setInterruptTable
+                0x0000000000103d44                setupKeyBoard
+                0x0000000000103da1                setupGDT
+                0x0000000000103dec                syscall_handler
+                0x000000000010414a                exec
+                0x00000000001041fb                interrupt_init
+ .text          0x000000000010425c      0x510 testsuite.o
+                0x000000000010439f                displayPPM
+                0x0000000000104615                sweet
  *(.rodata)
  *(.rdata)
- .rdata         0x000000000010463c       0x2c kernelmain.o
- *fill*         0x0000000000104668       0x18 
- .rdata         0x0000000000104680     0x2000 console.o
- .rdata         0x0000000000106680       0x60 util.o
- .rdata         0x00000000001066e0     0x21e0 kprintf.o
- .rdata         0x00000000001088c0      0x160 disk.o
- .rdata         0x0000000000108a20      0x1ac file.o
- .rdata         0x0000000000108bcc      0x434 intertable.o
- .rdata         0x0000000000109000      0x25c interrupt.o
- .rdata         0x000000000010925c       0x94 testsuite.o
+ .rdata         0x000000000010476c       0x2c kernelmain.o
+ *fill*         0x0000000000104798        0x8 
+ .rdata         0x00000000001047a0     0x2000 console.o
+ .rdata         0x00000000001067a0       0x60 util.o
+ .rdata         0x0000000000106800     0x21e0 kprintf.o
+ .rdata         0x00000000001089e0      0x160 disk.o
+ .rdata         0x0000000000108b40      0x1ac file.o
+ .rdata         0x0000000000108cec      0x434 intertable.o
+ .rdata         0x0000000000109120      0x2e4 interrupt.o
+ .rdata         0x0000000000109404       0x94 testsuite.o
  *(.rdata$zzz)
- .rdata$zzz     0x00000000001092f0       0x14 kernelmain.o
- .rdata$zzz     0x0000000000109304       0x14 stdarg.o
- .rdata$zzz     0x0000000000109318       0x14 console.o
- .rdata$zzz     0x000000000010932c       0x14 util.o
- .rdata$zzz     0x0000000000109340       0x14 kprintf.o
- .rdata$zzz     0x0000000000109354       0x14 disk.o
- .rdata$zzz     0x0000000000109368       0x14 file.o
- .rdata$zzz     0x000000000010937c       0x14 intertable.o
- .rdata$zzz     0x0000000000109390       0x14 interrupt.o
- .rdata$zzz     0x00000000001093a4       0x14 testsuite.o
-                0x00000000001093b8                _textEnd = .
+ .rdata$zzz     0x0000000000109498       0x14 kernelmain.o
+ .rdata$zzz     0x00000000001094ac       0x14 stdarg.o
+ .rdata$zzz     0x00000000001094c0       0x14 console.o
+ .rdata$zzz     0x00000000001094d4       0x14 util.o
+ .rdata$zzz     0x00000000001094e8       0x14 kprintf.o
+ .rdata$zzz     0x00000000001094fc       0x14 disk.o
+ .rdata$zzz     0x0000000000109510       0x14 file.o
+ .rdata$zzz     0x0000000000109524       0x14 intertable.o
+ .rdata$zzz     0x0000000000109538       0x14 interrupt.o
+ .rdata$zzz     0x000000000010954c       0x14 testsuite.o
+                0x0000000000109560                _textEnd = .
                 0x000000000010a000                . = ALIGN (ABSOLUTE (.), 0x1000)
- *fill*         0x00000000001093b8      0xc48 
+ *fill*         0x0000000000109560      0xaa0 
                 0x000000000010a000                _dataStart = .
  *(.data)
  .data          0x000000000010a000        0x8 kernelmain.o
@@ -255,10 +255,11 @@ Linker script and memory map
  .bss           0x0000000000172120     0x4000 disk.o
  .bss           0x0000000000176120     0x2020 file.o
  .bss           0x0000000000178140        0x0 intertable.o
- .bss           0x0000000000178140       0x20 interrupt.o
+ .bss           0x0000000000178140       0x24 interrupt.o
                 0x0000000000178140                jiffies
- .bss           0x0000000000178160     0x1e00 testsuite.o
-                0x0000000000179f60                _bssEnd = .
+ *fill*         0x0000000000178164       0x1c 
+ .bss           0x0000000000178180     0x1e00 testsuite.o
+                0x0000000000179f80                _bssEnd = .
 
 .drectve        0x000000000017a000      0x200
  .drectve       0x000000000017a000       0x4c console.o

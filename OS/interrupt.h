@@ -39,7 +39,8 @@ struct LIDT{
 
 #pragma pack(push,1)
 struct ScanCode{
-    unsigned int keyVal;
+    unsigned int lowerVal;
+    unsigned int upperVal;
     unsigned int printable;
     unsigned int keyPressed;
 };

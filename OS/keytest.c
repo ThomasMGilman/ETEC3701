@@ -29,10 +29,6 @@ int write(int fd, char* buf, int size){
     return syscall(SYSCALL_WRITE,fd,(unsigned)buf,size);
 }
 
-int log(char c)
-{
-    return syscall(SYSCALL_LOG, c, 0, 0);
-}
     
 char* itoc(unsigned value, int width, char* buf){
     int places;
@@ -55,24 +51,18 @@ char* itoc(unsigned value, int width, char* buf){
     }
     return rv;
 }
-
-const char msg = 'H';
     
 int main(){
     char buf[128];
     char numbuff[5];
     while(1){
         write(1,"--> ",4);
-        log(msg);
         int nr = read(0,buf,sizeof(buf));
-        log(msg);
         write(1,"You typed ",10);
         itoc(nr,sizeof(numbuff)-1,numbuff);
         write(1,numbuff,sizeof(numbuff)-1);
-        log(msg);
         write(1," characters: ",13);
         write(1,buf,nr);
         write(1,"\n",1);
-        log(msg);
     }
 }
