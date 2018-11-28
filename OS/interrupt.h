@@ -53,6 +53,8 @@ struct ScanCode{
 
 int keyboard_getline(char* buffer, unsigned num);
 
+void show_cursor(void);
+
 void keyboard_interrupt();
 
 void keyHandler(unsigned keyValIn);

@@ -16,9 +16,10 @@ the rest was written by Thomas Gilman.
 void console_putc(char c);
 
 static char linebuf[LINEBUF_SIZE];
-static int linebuf_chars = 0;
-static volatile int linebuf_ready=0;
+static unsigned linebuf_chars = 0;
+static volatile unsigned linebuf_ready=0;
 volatile unsigned jiffies = 0;
+volatile static unsigned cursor = 0;
 unsigned Frequency = 2;
 
 char debugMsg[100];
@@ -105,6 +106,7 @@ int keyboard_getline(char* buffer, unsigned num)
     unsigned numCpy;
     while(!linebuf_ready)
     {
+        show_cursor();
         sti();                  //enable interrupts
         haltUntilInterrupt();
     }
@@ -118,6 +120,20 @@ int keyboard_getline(char* buffer, unsigned num)
         return numCpy;
     }
     return 0;
+}
+
+void show_cursor(void)
+{
+    if(cursor == 0 && (jiffies % (Frequency/8)) == 0)
+    {
+        console_putc('_');
+        cursor = 1;
+    }
+    else if(cursor == 1 && (jiffies % (Frequency/8)) == 0)
+    {
+        console_putc(127);
+        cursor = 0;
+    }
 }
 
 void keyHandler(unsigned keyValIn)
@@ -159,6 +175,11 @@ void keyHandler(unsigned keyValIn)
         
         if(k->keyPressed == 1 && k->printable)                              //printable char
         {
+            if(cursor == 1)
+            {
+                cursor = 0;
+                console_putc(127);
+            }
             if(k->lowerVal == 127 && linebuf_chars > 0)                     //backspace
             {
                 console_putc(k->lowerVal);
