@@ -23,3 +23,4 @@ write flower1.ppm flower1.ppm
 write ripple.ppm ripple.ppm
 write squawker.bin  squawker.bin
 write keytest.bin keytest.bin
+write mousetest.bin mousetest.bin

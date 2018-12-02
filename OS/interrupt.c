@@ -14,6 +14,7 @@ the rest was written by Thomas Gilman.
 #define LINEBUF_SIZE 20
 
 void console_putc(char c);
+void set_pixel(int x, int y, int r, int g, int b);
 
 static char linebuf[LINEBUF_SIZE];
 static unsigned linebuf_chars = 0;
@@ -21,6 +22,7 @@ static volatile unsigned linebuf_ready=0;
 volatile unsigned jiffies = 0;
 volatile static unsigned cursor = 0;
 unsigned Frequency = 2;
+volatile unsigned mousePosX, mousePosY;
 
 char debugMsg[100];
 
@@ -211,17 +213,22 @@ void keyHandler(unsigned keyValIn)
     } 
 }
 
-// static void send(unsigned short port, unsigned char val)
-// {
-//     while(inb(0x64) & 2){;}
-//     outb(port, val);
-// }
+void mouseHandler(unsigned flags, unsigned int x, unsigned int y)
+{
+    kprintf("flags:%d, xPos:%d, yPos:%d\r", flags, x, y);
+}
 
-// static unsigned char recv()
-// {
-//     while(!(inb(0x64) & 1)){;}
-//     return inb(0x60);
-// }
+static void send(unsigned short port, unsigned char val)
+{
+    while(inb(0x64) & 2){;}
+    outb(port, val);
+}
+
+static unsigned char recv()
+{
+    while(!(inb(0x64) & 1)){;}
+    return inb(0x60);
+}
 
 void table(int i, void* func)
 {
@@ -329,6 +336,23 @@ void setupKeyBoard(void)
     outb(0x60,oldv);            //The new value
 }
 
+void setupMouse(void)
+{
+    send(0x64,0xa8);    //turn on mouse input;
+                        //turn off disable mouse flag
+    send(0x64,0x20);    //get flags
+    unsigned w = recv();
+    w |= 2;             //set the "enable mouse interrupt" flag
+    send(0x64,0x60);    //write config flags
+    send(0x60,w);
+    send(0x64,0xd4);    //pipe next command to mouse
+    send(0x60,0xf6);    //reset mouse
+    recv();             //acknowledgement from mouse
+    send(0x64,0xd4);    //pipe next to mouse
+    send(0x60,0xf4);    //stream mode
+    recv();             //ack
+}
+
 void setupGDT(void)
 {
     unsigned tmp = (unsigned)ring0StackInfo;
@@ -346,6 +370,7 @@ void syscall_handler(unsigned* ptr)
     int fd = ptr[1];
     unsigned buf = ptr[2];
     unsigned count = ptr[3];
+    extern unsigned red, green, blue;           //variables contained in console.c
     switch(ptr[0])
     {
         case SYSCALL_READ:
@@ -435,6 +460,16 @@ void syscall_handler(unsigned* ptr)
             outb(QEMUPORT,ptr[1]);
             logString("\n");
             break;
+        case SYSCALL_MOUSE_GET:
+            ptr[0] = -ENOSYS;
+            //mouseHandler(ptr[1],ptr[2],ptr[3]); //flags, xPos, yPos
+            break;
+        case SYSCALL_CLEAR:
+            ptr[0] = -ENOSYS;
+            break;
+        case SYSCALL_SET_PIXEL:
+            set_pixel(ptr[1],ptr[2], red, green, blue);  //xPos, yPos
+            break;
         default:
             ptr[0] = -ENOSYS;
             break;
@@ -498,6 +533,7 @@ int interrupt_init(void)
         : "memory" );
     setInterruptTable();
     setupKeyBoard();
+    setupMouse();
     struct LIDT lidt;
     lidt.size = sizeof(idt);
     lidt.addr = &idt[0];

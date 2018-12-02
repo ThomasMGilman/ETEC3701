@@ -2,7 +2,7 @@
 Discarded input sections
 
  .eh_frame      0x0000000000000000       0x38 crtc.o
- .eh_frame      0x0000000000000000       0xd8 keytest.o
+ .eh_frame      0x0000000000000000      0x1e0 mousetest.o
 
 Memory Configuration
 
@@ -33,7 +33,7 @@ LOAD crtasm.o
 LOAD crtc.o
                 0x0000000000400000                . = 0x400000
 
-.text           0x0000000000400000     0x1000
+.text           0x0000000000400000     0x1600
                 0x0000000000400000                textStart = .
                 0x0000000000400000                _textStart = .
  *(.text)
@@ -42,41 +42,48 @@ LOAD crtc.o
  *fill*         0x0000000000400006        0x2 
  .text          0x0000000000400008       0x2c crtc.o
                 0x0000000000400008                _start
- .text          0x0000000000400034      0x254 keytest.o
-                0x0000000000400034                syscall
-                0x0000000000400057                open
-                0x0000000000400082                read
-                0x00000000004000ab                write
-                0x00000000004000d4                itoc
-                0x0000000000400183                main
+ .text          0x0000000000400034      0x824 mousetest.o
+                0x0000000000400034                abs
+                0x0000000000400049                syscallByReference
+                0x00000000004000ad                syscall
+                0x00000000004000db                open
+                0x0000000000400106                read
+                0x000000000040012f                write
+                0x0000000000400158                div
+                0x0000000000400168                mod
+                0x000000000040017a                itoc
+                0x0000000000400222                setPixel
+                0x000000000040024d                sine
+                0x000000000040027d                drawLine
+                0x000000000040045a                drawLineX
+                0x00000000004006ea                main
  *(.rodata)
  *(.rdata)
- .rdata         0x0000000000400288       0x20 keytest.o
  *(.rdata$zzz)
- .rdata$zzz     0x00000000004002a8       0x14 crtc.o
- .rdata$zzz     0x00000000004002bc       0x14 keytest.o
-                0x00000000004002d0                textEnd = .
-                0x00000000004002d0                _textEnd = .
+ .rdata$zzz     0x0000000000400858       0x14 crtc.o
+ .rdata$zzz     0x000000000040086c       0x14 mousetest.o
+                0x0000000000400880                textEnd = .
+                0x0000000000400880                _textEnd = .
                 0x0000000000401000                . = ALIGN (ABSOLUTE (.), 0x1000)
- *fill*         0x00000000004002d0      0xd30 
+ *fill*         0x0000000000400880      0x780 
                 0x0000000000401000                dataStart = .
                 0x0000000000401000                _dataStart = .
  *(.data)
  .data          0x0000000000401000        0x0 crtc.o
- .data          0x0000000000401000        0x0 keytest.o
-                0x0000000000401000                dataEnd = .
-                0x0000000000401000                _dataEnd = .
-                0x0000000000401000                bssStart = .
-                0x0000000000401000                _bssStart = .
+ .data          0x0000000000401000      0x5a0 mousetest.o
+                0x00000000004015a0                dataEnd = .
+                0x00000000004015a0                _dataEnd = .
+                0x00000000004015a0                bssStart = .
+                0x00000000004015a0                _bssStart = .
  *(COMMON)
  *(.bss)
- .bss           0x0000000000401000        0x0 crtc.o
- .bss           0x0000000000401000        0x0 keytest.o
-                0x0000000000401000                bssEnd = .
-                0x0000000000401000                _bssEnd = .
+ .bss           0x00000000004015a0        0x0 crtc.o
+ .bss           0x00000000004015a0        0x0 mousetest.o
+                0x00000000004015a0                bssEnd = .
+                0x00000000004015a0                _bssEnd = .
 
 /DISCARD/
  *(.eh_frame)
  *(.comment)
-LOAD keytest.o
-OUTPUT(keytest.tmp pei-i386)
+LOAD mousetest.o
+OUTPUT(mousetest.tmp pei-i386)

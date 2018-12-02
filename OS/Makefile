@@ -61,11 +61,14 @@ all:
 	$(OBJCOPY) -Obinary kernel.tmp kernel.bin
 	$(NASM)	crtasm.s -o crtasm.o
 	$(CC)	-c	crtc.c
+	$(CC)	-c	mousetest.c
+	#$(CC)	-c	keytest.c
 	#$(CC)	-c	squawker.c
-	$(CC)	-c	keytest.c
-	$(LD)	-Map userMap.txt	-T	linkerscript2.txt -o keytest.tmp keytest.o
+	$(LD)	-Map	userMap.txt	-T	linkerscript2.txt	-o	mousetest.tmp	mousetest.o
+	#$(LD)	-Map	userMap.txt	-T	linkerscript2.txt	-o	keytest.tmp 	keytest.o
 	#$(LD)	-Map	userMap.txt	-T	linkerscript2.txt	-o	squawker.tmp	squawker.o
-	$(OBJCOPY)	-Obinary	keytest.tmp	keytest.bin
+	$(OBJCOPY)	-Obinary	mousetest.tmp	mousetest.bin
+	#$(OBJCOPY)	-Obinary	keytest.tmp		keytest.bin
 	#$(OBJCOPY)	-Obinary	squawker.tmp	squawker.bin
 	$(TRUNCATE) -s 400000000 hd.img
 	$(MKE2FS) -b 4096 -F -I 128 -q -t ext2 -r 0 -L moocow -g 32768 hd.img

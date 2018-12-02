@@ -55,19 +55,21 @@ int keyboard_getline(char* buffer, unsigned num);
 
 void show_cursor(void);
 
-void keyboard_interrupt();
-
 void keyHandler(unsigned keyValIn);
 
-// static void send(unsigned short port, unsigned char val);
+void mouseHandler(unsigned flags, unsigned int x, unsigned int y);
 
-// static unsigned char recv();
+static void send(unsigned short port, unsigned char val);
+
+static unsigned char recv();
 
 void table(int i, void* func);
 
 void setupPICS_RTC(unsigned rate);
 
 void setupKeyBoard(void);
+
+void setupMouse(void);
 
 void setupGDT(void);
 

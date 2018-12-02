@@ -4,6 +4,7 @@ Some functions and implementations of code use code from the OS slides,
 the rest was written by Thomas Gilman.
 */
 #include "intertable.h"
+#include "syscalls.h"
 
 void haltForever(void);
 void haltUntilInterrupt(void);
@@ -261,6 +262,13 @@ void Av2Interrupt(struct InterruptFrame* fr)        //interrupt 43
 __attribute__((interrupt))
 void MouseInterrupt(struct InterruptFrame* fr)      //interrupt 44
 {
+    static unsigned int mouseValues[4];
+    static unsigned ready = 1;
+    mouseValues[0] = SYSCALL_MOUSE_GET;
+    for(ready = 1; ready < 4; ready++)
+        mouseValues[ready] = inb(0x60);
+        
+    syscall_handler(mouseValues);
     outb( 0x20, 32 );   //ack 1st PIC
     outb( 0xa0, 32 );   //ack 2nd PIC
 }
