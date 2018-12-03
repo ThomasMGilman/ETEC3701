@@ -13,13 +13,17 @@ struct MultibootInfo *mbi;				//my MultiBootInfo
 volatile unsigned char* framebuffer;	//FrameBuffer
 unsigned int pixCol = 0;				//Screen - X cord
 unsigned int pixRow = 0;				//Screen - Y cord
+int mouse_flags = 0;					//mouse flags
+int mouse_xPos = 0;						//mouse current xPos
+int mouse_yPos = 0;						//mouse current yPos
 char lastCharDrawn;						//save last char in case it is made bold
 unsigned brB = 0;						//backspace and delete or boldface char
 
 //stuff for transitions of colors
 unsigned int colorChangeIndex = 0;
 unsigned int colorPattern[6][3] = {{255,0,0}, {255,165,0}, {255,255,0}, {0,255,0}, {0,0,255}, {128,0,128}}; //Red,Orange,Yellow,Green,Blue,Purple
-unsigned int red = 255, green = 255, blue = 255; 															//Color Variables (set to White)
+unsigned int red = 255, green = 255, blue = 255; 															//Color Variables (set to White)int flags, mouse_xPos, mouse_yPos;
+volatile struct prevFrameData underMouse[10][16];
 
 void loop(void)
 {
@@ -123,6 +127,44 @@ void consoleDrawChar(char ch, int bold)
 		}
 	}
 	pixCol	+=	CHAR_WIDTH;												//move pixel pos to the right by CHAR_WIDTH
+}
+void drawMouse(int flags, int xDiff, int yDiff)
+{
+	const int *c = font_data[128];
+	unsigned xPos, yPos;
+	if(xDiff < 0)
+    {
+        if(!(mouse_xPos + xDiff < 0))   //not less then 0
+            mouse_xPos += xDiff;
+    }
+    else
+    {
+        if(!(mouse_xPos + xDiff > FrameWidth - CHAR_WIDTH))   //not greater than FrameWidth - CHAR_WIDTH
+            mouse_xPos += xDiff;
+    }
+    if(yDiff < 0)
+    {
+        if(!(mouse_yPos + yDiff < 0))   //not less then 0
+            mouse_yPos += yDiff;
+    }
+    else
+    {
+        if(!(mouse_yPos + yDiff > FrameHeight - CHAR_HEIGHT))   //not greater than FrameHeight - CHAR_HEIGHT
+            mouse_yPos += yDiff;
+    }
+	for(xPos = 0; xPos < CHAR_WIDTH; xPos++)
+	{
+		for(yPos = 0; yPos < CHAR_HEIGHT; yPos++)
+		{
+			((unsigned short*)framebuffer)[(underMouse[xPos][yPos].xPos+xPos) + (underMouse[xPos][yPos].yPos+yPos)*(FramePitch/2)] = underMouse[xPos][yPos].data; 	//reset data
+			underMouse[xPos][yPos].data = ((unsigned short*)framebuffer)[((mouse_xPos+xPos)+(mouse_yPos+yPos)*(FramePitch/2))];										//get new data
+			underMouse[xPos][yPos].xPos = mouse_xPos; underMouse[xPos][yPos].yPos = mouse_yPos;																		//set new data mPos
+			if((MASK_VALUE >> xPos) & c[yPos]) 								//toggle the bit at index cx of 16bits
+			{
+				set_pixel(mouse_xPos+xPos, mouse_yPos+yPos, red, green, blue);
+			}
+		}
+	}
 }
 void console_putc(char c)
 {

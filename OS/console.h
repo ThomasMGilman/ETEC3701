@@ -7,6 +7,11 @@ the rest was written by Thomas Gilman.
 #include "font.h"
 #pragma once
 
+struct prevFrameData{
+    unsigned xPos, yPos;
+    unsigned short data;
+};
+
 void set_pixel(int x, int y, int r, int g, int b);
 
 void smoothlyTransitionColors(void);
@@ -22,6 +27,8 @@ void newLine(void);
 void scroll(void);
 
 void consoleDrawChar(char ch, int bold);
+
+void drawMouse(int flags, int xDiff, int yDiff);
 
 void loop(void);
 

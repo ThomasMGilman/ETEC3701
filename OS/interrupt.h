@@ -57,7 +57,7 @@ void show_cursor(void);
 
 void keyHandler(unsigned keyValIn);
 
-void mouseHandler(unsigned flags, unsigned int x, unsigned int y);
+void printMouseCord(int xDiff, int yDiff);
 
 static void send(unsigned short port, unsigned char val);
 
@@ -73,7 +73,7 @@ void setupMouse(void);
 
 void setupGDT(void);
 
-void syscall_handler(unsigned* ptr);
+void syscall_handler(int* ptr);
 
 int exec(const char* filename);
 

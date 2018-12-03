@@ -31,11 +31,11 @@ void outw(unsigned short port, unsigned short value)
     asm volatile("out dx, ax" : : "a"(value), "d"(port) : "memory"); //ax is 16bit register
 }
 
-unsigned char inb(unsigned short port)
+char inb(unsigned short port)
 {
-    unsigned value;
+    int value;
     asm volatile("in al, dx" : "=a"(value): "d"(port) );
-    return (unsigned char) value;
+    return (char) value;
 }
 
 unsigned short inw(unsigned short port)
@@ -113,8 +113,12 @@ void playSound(int freq)
 
 void sleep(int waitTime)
 {
-    unsigned timeToWait = waitTime * (Frequency)*180; //wait time 18 jiffies per second, so convert time to jiffie time
-    while(timeToWait--){;}
+    while(jiffies < waitTime)
+    {
+        sti();
+        haltUntilInterrupt();
+    }
+    jiffies = 0;
     logString("done waiting\n");
 }
 

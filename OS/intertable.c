@@ -9,11 +9,11 @@ the rest was written by Thomas Gilman.
 void haltForever(void);
 void haltUntilInterrupt(void);
 void outb(unsigned short port, unsigned char value);
-unsigned char inb(unsigned short port);
+char inb(unsigned short port);
 int kprintf(const char* fmt, ... ) __attribute__((format (printf , 1, 2 ) ));
 int ksprintf(char* s, const char* fmt, ... ) __attribute__((format (printf , 2, 3 ) )); 
 void keyHandler(unsigned keyValIn);
-void syscall_handler(unsigned* ptr);
+void syscall_handler(int* ptr);
 void logString(char* myString);
 
 char debugMsg[50];
@@ -232,8 +232,7 @@ void int40trap(struct InterruptFrame* fr)           //interrupt 40 RTC
 {
     outb(0x70, 0xc);    //ack reading status reg
     inb(0x71);          //discard val
-    if(jiffies++ >= Frequency)
-        jiffies = 0;
+    jiffies++;
     outb( 0x20, 32 );   //ack 1st PIC
     outb( 0xa0, 32 );   //ack 2nd PIC
 }
@@ -262,13 +261,11 @@ void Av2Interrupt(struct InterruptFrame* fr)        //interrupt 43
 __attribute__((interrupt))
 void MouseInterrupt(struct InterruptFrame* fr)      //interrupt 44
 {
-    static unsigned int mouseValues[4];
-    static unsigned ready = 1;
-    mouseValues[0] = SYSCALL_MOUSE_GET;
+    static unsigned ready = 0;
+    int handler[4] = {SYSCALL_MOUSE_GET,0,0,0};
     for(ready = 1; ready < 4; ready++)
-        mouseValues[ready] = inb(0x60);
-        
-    syscall_handler(mouseValues);
+        handler[ready] = inb(0x60);
+    syscall_handler(handler);
     outb( 0x20, 32 );   //ack 1st PIC
     outb( 0xa0, 32 );   //ack 2nd PIC
 }
@@ -299,7 +296,7 @@ void syscallInterrupt(struct InterruptFrame* fr)
 {
     if( fr->esp < 0x400000 || fr->esp > 0x800000-(4*4)) //Invalid parameter. Ignore the system call.
         return;
-    unsigned* espCheck = (unsigned*)fr->esp;
+    int* espCheck = (int*)fr->esp;
     syscall_handler(espCheck);
     return;
 }

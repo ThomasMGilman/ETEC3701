@@ -14,15 +14,16 @@ the rest was written by Thomas Gilman.
 #define LINEBUF_SIZE 20
 
 void console_putc(char c);
+void drawMouse(int flags, int xDiff, int yDiff);
 void set_pixel(int x, int y, int r, int g, int b);
 
 static char linebuf[LINEBUF_SIZE];
 static unsigned linebuf_chars = 0;
 static volatile unsigned linebuf_ready=0;
-volatile unsigned jiffies = 0;
+volatile unsigned int jiffies = 0;
 volatile static unsigned cursor = 0;
 unsigned Frequency = 2;
-volatile unsigned mousePosX, mousePosY;
+extern int flags, mouse_xPos, mouse_yPos;
 
 char debugMsg[100];
 
@@ -102,7 +103,6 @@ void setupPICS_RTC(unsigned rate)
     logString(debugMsg);
 }
 
-//&nbsp
 int keyboard_getline(char* buffer, unsigned num)
 {
     unsigned numCpy;
@@ -213,9 +213,10 @@ void keyHandler(unsigned keyValIn)
     } 
 }
 
-void mouseHandler(unsigned flags, unsigned int x, unsigned int y)
+void printMouseCord(int xDiff, int yDiff)
 {
-    kprintf("flags:%d, xPos:%d, yPos:%d\r", flags, x, y);
+    ksprintf(debugMsg,"xPos:%i xDiff:%i, yPos:%i yDiff:%i\n",mouse_xPos, xDiff, mouse_yPos, yDiff);
+    logString(debugMsg);
 }
 
 static void send(unsigned short port, unsigned char val)
@@ -364,13 +365,13 @@ void setupGDT(void)
     gdt[5].base3 = (tmp>>24) & 0xff;
 }
 
-void syscall_handler(unsigned* ptr)
+void syscall_handler(int* ptr)
 {
     signed pass = 0;
     int fd = ptr[1];
     unsigned buf = ptr[2];
     unsigned count = ptr[3];
-    extern unsigned red, green, blue;           //variables contained in console.c
+    extern unsigned red, green, blue;
     switch(ptr[0])
     {
         case SYSCALL_READ:
@@ -452,7 +453,8 @@ void syscall_handler(unsigned* ptr)
             logString("playing sound...\n");
             playSound(ptr[1]);
             break;
-        case SYSCALL_SLEEP: ///FIX HERE
+        case SYSCALL_SLEEP:
+            jiffies = 0;
             logString("waiting...\n");
             sleep(ptr[1]);
             break;
@@ -461,14 +463,14 @@ void syscall_handler(unsigned* ptr)
             logString("\n");
             break;
         case SYSCALL_MOUSE_GET:
-            ptr[0] = -ENOSYS;
-            //mouseHandler(ptr[1],ptr[2],ptr[3]); //flags, xPos, yPos
+            drawMouse(ptr[1], ptr[2], ptr[3]);
+            printMouseCord(ptr[2],ptr[3]);         //xPos, yPos
             break;
         case SYSCALL_CLEAR:
             ptr[0] = -ENOSYS;
             break;
         case SYSCALL_SET_PIXEL:
-            set_pixel(ptr[1],ptr[2], red, green, blue);  //xPos, yPos
+            set_pixel(ptr[1],ptr[2], red, green, blue); //xPos, yPos
             break;
         default:
             ptr[0] = -ENOSYS;
