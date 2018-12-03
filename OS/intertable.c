@@ -119,7 +119,13 @@ void GFaultInterrupt(struct InterruptFrame* fr, unsigned code)         //interru
 __attribute__((interrupt))
 void PFaultInterrupt(struct InterruptFrame* fr, unsigned code)         //interrupt 14
 {
-    kprintf("\nERROR: Page Fault exception: Code=%x eip=%x\n", code, fr->eip);
+    unsigned faultingAddress;
+    asm volatile( "mov eax,cr2" : "=a"(faultingAddress));
+    kprintf("\nPage fault eip=%x addr=%x code=%x (%s %s)\n",
+    fr->eip,
+    faultingAddress, code,
+    (code & 2) ? "write":"read",
+    (code & 16) ? "instr":"data");
     haltForever();
 }
 
